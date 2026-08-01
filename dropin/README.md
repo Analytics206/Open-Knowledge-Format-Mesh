@@ -33,6 +33,9 @@ network, no secrets, no model.
 | `bake_viewer.py` | Regenerates the viewer's index from the bundles. `--check` gates CI. |
 | `check_bundles.py` | Conformance, profile, strip test, predicates, links, footnotes. |
 | `refresh.py` | Observes pointers, writes the observation cache, reports drift. `--check` gates CI. |
+| `enrich.py` | What needs enriching and the brief for doing it. Prints work; calls no model. |
+| `guard.py` | Checks a diff wrote only fields a `[model]` pass owns. |
+| `revalidate.py` | The human end: refresh a capture, add `verified`, clear the drift. |
 | `vocab/` | Controlled vocabularies — predicates and reason codes, in files rather than code. |
 
 ## Two modes
@@ -111,6 +114,33 @@ For in-place concepts — where the file *is* the concept — the body is hashed
 whole file. The captured hash was taken before frontmatter existed, so comparing whole files
 would report drift forever. Hashing the body gives it a useful meaning instead: *the prose
 changed since the description was extracted*, which is the enrichment work list.
+
+## Level 3
+
+OKFM holds **no credential** at Level 3. Your agent drives OKFM, not the other way round
+([DR-0009](../docs/decisions/0009-adoption-levels.md)) — so the components here print work
+and check results. The reasoning is your agent's; the list and the check are arithmetic.
+
+```bash
+python okfm/okfm.py enrich --brief                       # 1. what to do, and how
+#                                                          2. your agent does it
+python okfm/okfm.py guard                                # 3. did it stay in its lane?
+python okfm/okfm.py revalidate <path> --by human:you     # 4. you sign off
+```
+
+**Step 3 is what makes the human gate real.** `guard` reads the diff and fails if the pass
+touched `verified`, `okfm_relations`, `status`, `type`, `title`, `sources`, or
+`okfm_captured`. Until it existed, those were rules in a document.
+
+**Step 4 is the only thing that clears drift**, and no build does it for you. Refreshing a
+capture automatically would erase the signal drift exists to carry. Naming a path and a
+`human:` actor is how you assert you actually reviewed it — a `process:` actor is rejected,
+because that is the backfill dishonesty §16 forbids wearing a command's clothes.
+
+Enrichment **must** set `generated.by` to itself. That is not bookkeeping:
+`bootstrap --refresh` decides what it may recompute by reading that field, so an improved
+description that leaves it saying `process:okfm-bootstrap` gets silently clobbered later.
+This project lost a description that way before the rule was written down.
 
 ## Vocabularies
 

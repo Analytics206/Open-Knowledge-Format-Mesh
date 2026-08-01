@@ -9,6 +9,12 @@
     python okfm/okfm.py view            # bake the viewer index
     python okfm/okfm.py check           # validate every bundle
 
+Level 3, outside the pipeline because neither belongs in an unattended run:
+
+    python okfm/okfm.py enrich [--brief]  # what needs enriching, and how
+    python okfm/okfm.py guard             # did an edit pass write only what it owns?
+    python okfm/okfm.py revalidate P --by human:you   # human review clears drift
+
 The default run is `okfm-rebuild` from decisions/0008 with the model step left out: build,
 observe, bake, validate. Every step is `needs: []` for local sources -- no network, no
 secrets, no model -- so the whole thing is safe on a pull request from a fork.
@@ -33,7 +39,12 @@ STEPS = [
     ("view",    "bake_viewer.py",   [],          ["--check"]),
     ("check",   "check_bundles.py", [],          []),
 ]
-BY_NAME = {name: script for name, script, *_ in STEPS}
+
+# Not in the pipeline, and deliberately so. `enrich` prints work for a person or an agent
+# to do; `guard` checks the result afterwards. Neither belongs in an unattended run.
+EXTRA = {"enrich": "enrich.py", "guard": "guard.py", "revalidate": "revalidate.py"}
+
+BY_NAME = {name: script for name, script, *_ in STEPS} | EXTRA
 
 
 def run(script: str, args: list[str]) -> int:

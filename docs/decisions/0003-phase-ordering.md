@@ -1,14 +1,15 @@
 ---
 type: Decision
 title: DR-0003 — Where federation sits in the delivery order
-description: Phase 1 arXiv retrofit → Phase 2 extraction → **Phase 2.5 federation** → Phase 3 SugarPaws3d port.
+description: Federation's negotiation half lands after the SugarPaws3d port; its addressing half moved into Phase 1 because the repository is already a mesh.
 status: draft
-generated: { by: "process:okfm-bootstrap", at: 2026-08-01T00:00:00Z }
+verified: { by: "human:analytics206", at: 2026-08-01T22:35:38Z }
+generated: { by: "claude-opus-5/level3-enrich", at: 2026-08-01T00:00:00Z }
 sources:
   - id: self
     resource: /0003-phase-ordering.md
     okfm_role: subject
-    okfm_captured: { hash: "sha256:f9f4d169d3594933...", at: 2026-08-01 }
+    okfm_captured: { hash: "sha256:f23b5dd74d73dabf27f70c886d5a5450144d8462cb92779a42861f17a27a1fef", at: 2026-08-01 }
 okfm_scope: project
 ---
 # DR-0003 — Where federation sits in the delivery order

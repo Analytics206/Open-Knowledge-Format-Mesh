@@ -1,14 +1,15 @@
 ---
 type: Decision
 title: DR-0006 — Drift is observed at build time, never resolved at read time
-description: Four statements in the specification could not all be true at once.
+description: Trust and staleness are pure functions of data already in hand; drift needs the outside world, and the outside world does not belong on the read path.
 status: draft
-generated: { by: "process:okfm-bootstrap", at: 2026-08-01T00:00:00Z }
+verified: { by: "human:analytics206", at: 2026-08-01T22:35:38Z }
+generated: { by: "claude-opus-5/level3-enrich", at: 2026-08-01T00:00:00Z }
 sources:
   - id: self
     resource: /0006-drift-cost-and-caching.md
     okfm_role: subject
-    okfm_captured: { hash: "sha256:6702ebe5c8c720ce...", at: 2026-08-01 }
+    okfm_captured: { hash: "sha256:6fa09958c91c58a9f611cb08ab227ff4b932eafd9840bc59b4a4288fa928a1a1", at: 2026-08-01 }
 okfm_scope: project
 ---
 # DR-0006 — Drift is observed at build time, never resolved at read time
