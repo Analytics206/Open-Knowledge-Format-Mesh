@@ -28,18 +28,24 @@ LLM, and that is enforced in CI rather than promised here.
 Pointing your coding agent at this repository and asking it for whatever you want works from
 level 1. It is not a level.
 
-## Status: Phase 0 — specification and guide
+## Status: early Phase 1
 
-**There is no CLI yet.** Nothing in this repository executes. What exists today is the
-design, a working example bundle, and a viewer for it.
+**There is no CLI yet**, but the deterministic pieces run. This repository is its own first
+mesh — three bundles, 26 concepts, validated in CI.
 
 | | State |
 |---|---|
 | Specification, rationale, roadmap, prior art | ✅ written |
-| `okfm-guide/` — a real OKF bundle documenting OKFM | ✅ 10 concepts |
+| The mesh — registry, guide, decision records | ✅ 3 bundles, 26 concepts |
 | `okfm-viewer.html` — graph, closure ledger, health panel | ✅ works offline |
-| Level 2 — the deterministic drop-in build | ⬜ Phase 1 |
+| `templates/AGENTS.md` — the Level 3 prose contract | ✅ copy-pasteable |
+| Deterministic build — bootstrap, bake, validate | 🟡 in `scripts/`, not yet a drop-in folder |
+| `okfm` CLI, resolvers, drift cache | ⬜ Phase 1 |
 | Levels 3–4 — enrichment, providers, packs, federation | ⬜ Phase 2+ |
+
+Nothing here reads *unverified* by accident: every concept carries `status: draft` and no
+`verified` entry because nobody has reviewed them, which is the honest state of a bundle
+built by extraction. See [`scripts/`](scripts/README.md).
 
 The [roadmap](docs/roadmap.md) has the phases and exit criteria; [decisions](docs/decisions/index.md)
 has what is settled and what is still open.
@@ -131,13 +137,24 @@ spec/okfm-v0.2.1.md      normative — what makes a bundle a legal OKFM bundle
 docs/rationale.md        why the system is shaped this way
 docs/roadmap.md          assets, proving grounds, phases, open questions, measures
 docs/prior-art.md        the ecosystem, and the measurements that went against us
-docs/decisions/          dated decision records
-okfm-guide/              the bundled guide: documentation AND a real bundle
+
+okfm-registry/           the mesh map — one OKF Member concept per bundle
+okfm-guide/              level 1 — documentation AND a real bundle
+docs/decisions/          why this project is shaped the way it is — also a bundle
+
 okfm-viewer.html         read-only viewer — opens from disk, for people not agents
-okfm.json                this repo's own config; it self-hosts the guide
+okfm.json                this repo's own config; it self-hosts its own mesh
+templates/               AGENTS.md and a starter bundle — copy these
 examples/minimal/        what an adopter's config looks like instead
-scripts/                 Phase 0 consistency checks, runnable today
+scripts/                 the deterministic build, runnable today
+.github/workflows/       the tier-1 gate — no secrets, runs on forks
 ```
+
+**The three bundles are a real mesh, not a demo.** `okfm-registry` names the members;
+`okfm-guide` owns the format; `docs/decisions` owns the rationale. They have genuinely
+different change cadences — a guide change means the format moved, a decision is appended
+weekly — which is the §12.1 ownership seam rather than a split by size. More bundles join as
+levels ship, and never before.
 
 Section numbers are **global across the four documents** and preserved from the unified
 specification, so a reference like §12.3 means the same thing everywhere. Each document opens

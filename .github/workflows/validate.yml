@@ -1,0 +1,83 @@
+# Tier-1 gate: every job here is `needs: []` under decisions/0008 — no network, no
+# secrets, no model. That is what lets it run on a pull request from a fork, and it is
+# the property the component manifest exists to protect.
+#
+# When credentialed components arrive (`okfm refresh` resolving sys:// pointers), they
+# get a SEPARATE workflow gated on `main`, never this one.
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mesh:
+    name: mesh and docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # No `pip install` step, deliberately. If one ever appears here, the
+      # zero-dependency claim in decisions/0001 has quietly stopped being true.
+      - name: Validate the spec corpus
+        run: python scripts/check_docs.py
+
+      - name: Validate every bundle
+        run: python scripts/check_bundles.py
+
+      - name: Viewer index matches the bundles
+        run: python scripts/bake_viewer.py --check
+
+  boundaries:
+    name: boundaries
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # spec 13.3 — core carries no domain words. This is what keeps the scaffolding
+      # distributable while it is developed against two specific domains. Bundles and
+      # docs may name them freely; code may not.
+      - name: No domain words in code
+        run: |
+          set -e
+          DIRS=""
+          for d in scripts dropin tools; do [ -d "$d" ] && DIRS="$DIRS $d"; done
+          [ -n "$DIRS" ] || { echo "no code directories yet"; exit 0; }
+          if grep -rniE 'arxiv|sugarpaws|patron|sp3d' $DIRS; then
+            echo "::error::domain word found in code — see spec 13.3"
+            exit 1
+          fi
+          echo "clean: $DIRS"
+
+      # spec 13.3 — the drop-in folder must be liftable. If it reaches into tools/,
+      # pasting it into a stranger's project would not work.
+      - name: dropin does not import from tools
+        run: |
+          set -e
+          [ -d dropin ] || { echo "no dropin/ yet"; exit 0; }
+          if grep -rnE '(^|[^.\w])(from|import)\s+tools|tools\.' dropin; then
+            echo "::error::dropin/ depends on tools/ — the dependency is one-way"
+            exit 1
+          fi
+          echo "clean"
+
+      # decisions/0007 — the base layer must stand on its own.
+      - name: Base validates with tools/ deleted
+        run: |
+          set -e
+          rm -rf tools
+          python scripts/check_bundles.py
+          python scripts/check_docs.py

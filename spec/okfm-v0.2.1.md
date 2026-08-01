@@ -843,13 +843,13 @@ okfm/
     prior-art.md             # §21 — ecosystem, and the evidence against          ✓
     decisions/               # dated decision records                             ✓
   templates/
-    bundle/                  # index.md, log.md, one starter concept
-    AGENTS.md                # the prose contract — level 3, mode 2 (§13.6)
+    bundle/                  # index.md, log.md, one starter concept     ✓
+    AGENTS.md                # the prose contract — level 3, mode 2 (§13.6)  ✓
   examples/
     minimal/                 # an adopter-shaped config                            ✓
 
   # ---- the mesh: OKFM described in its own format (§12) -------------------
-  okfm-registry/             # the map — one OKF Member concept per bundle
+  okfm-registry/             # the map — one OKF Member concept per bundle  ✓
   okfm-guide/                # level 1 — the format (§14.5)                        ✓
   okfm-process/              # level 2 — the deterministic build
   okfm-enrich/               # level 3 — the reasoning components
@@ -872,7 +872,7 @@ okfm/
     packs/                   # research, warehouse, codebase
     console/                 # the served write UI (§14.7)
     benchmark/               # the §18 harness, runnable on any adopter's mesh
-  .github/workflows/         # forks run pure components; main adds credentialed
+  .github/workflows/         # forks run pure components; main adds credentialed ✓
 ```
 
 **The dependency direction is one-way and enforced.** `tools/` may import from `dropin/`;
