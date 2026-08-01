@@ -1,6 +1,7 @@
 # DR-0009 — Four adoption levels
 
-- **Status:** proposed — needs a call before Phase 1 fixes the repository layout
+- **Status:** **accepted** 2026-08-01 — levels defined by the steward across three
+  revisions; bundle location and scope delegated and decided below
 - **Date:** 2026-08-01
 - **Revisions:** r1 levels 2/3 split on *who does the work* · **r2 they split on whether the
   shipped components reason; "minimal but full featured" made the governing constraint**

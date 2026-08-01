@@ -781,9 +781,39 @@ does not.
 This is the primary architectural constraint, and it is stricter than "well-factored
 code": **anything that cannot be handed to a stranger does not belong in core.**
 
-### 13.2 Four layers
+### 13.2 Two layers, four levels
 
-| Layer | Contains | Who edits it | Domain-specific? |
+**OKFM is a format contract that installs nothing, plus a reference implementation that is
+optional and replaceable.** Someone who writes their own implementation against this
+specification has an OKFM implementation; the base is what they conformed to.
+
+| Layer | Contains | Installs |
+|---|---|---|
+| **Base** | this specification, the schema, the guide bundle, the viewer, templates, examples, and the deterministic build | nothing beyond a runtime |
+| **Implementation** | CLI, reasoning components, providers, packs, federation, console, benchmark | the reference implementation |
+
+An adopter engages at one of four **levels**, each cumulative, each a complete and usable
+process rather than a teaser for the next:
+
+| Level | What it is | Adopter supplies | Never needs |
+|---|---|---|---|
+| **1 — the format** | spec, guide, viewer, examples | a browser | anything |
+| **2 — the deterministic process** | a drop-in folder that builds a bundle from your files | a runtime | a key, a provider, a model |
+| **3 — the reasoning components** | the enrichment lifecycle | their own agent, LLM, or MCP | a key held by OKFM |
+| **4 — the full suite** | providers, packs, federation, workflows | a key, a provider, `okfm.json` | — |
+
+The **Level 2 / Level 3 boundary is exactly the model boundary**: nothing shipped at Level 2
+may require an LLM. That is mechanically checkable, and it is what keeps the promise true as
+the implementation grows.
+
+Pointing a coding agent at the repository and asking it for anything is available from Level
+1 and is not a level.
+
+#### The implementation's own decomposition
+
+Within the implementation layer, four sub-layers govern what an adopter touches:
+
+| Sub-layer | Contains | Who edits it | Domain-specific? |
 |---|---|---|---|
 | **Core** | Loop workflows, resolvers, validator, index injector, core vocabulary, federation primitives | Nobody, normally — it is upgraded, not modified | Never |
 | **Domain pack** | Reason codes, type conventions, prompt fragments, discovery adapter binding | Pack author | Yes |
@@ -812,31 +842,52 @@ okfm/
     roadmap.md               # §4, §11, §15-17, §19-20 — assets, phases, measures ✓
     prior-art.md             # §21 — ecosystem, and the evidence against          ✓
     decisions/               # dated decision records                             ✓
-  okfm-guide/                # the bundled guide: docs AND a real bundle (§14.5)  ✓
-  core/
-    workflows/               # acquisition loop, question loop, refresh, reconcile
-    resolvers/               # okf:// obj:// store:// sys:// url://
-    validate/                # official conformance + OKFM profile checks + strip test
-    inject/                  # index builder and injector
-    federate/                # registry, cross-bundle refs, feedback ledger
-    vocab/                   # core reason codes, predicates
-  packs/
-    research/                # arXiv-shaped: discovery via search, evaluation, trial
-    warehouse/               # schema/query/metric-shaped: introspection, attestation
-    codebase/                # repo-shaped: services, decisions, runbooks
   templates/
     bundle/                  # index.md, log.md, one starter concept
-    AGENTS.md                # agent-facing behavioral contract (§13.6)
+    AGENTS.md                # the prose contract — level 3, mode 2 (§13.6)
   examples/
-    minimal/                 # a tiny working mesh, no external stores
-  benchmark/                 # the §18 harness, runnable on any adopter's mesh
-  .github/workflows/         # validator gate, reusable as a composite action
+    minimal/                 # an adopter-shaped config                            ✓
+
+  # ---- the mesh: OKFM described in its own format (§12) -------------------
+  okfm-registry/             # the map — one OKF Member concept per bundle
+  okfm-guide/                # level 1 — the format (§14.5)                        ✓
+  okfm-process/              # level 2 — the deterministic build
+  okfm-enrich/               # level 3 — the reasoning components
+  okfm-suite/                # level 4 — providers, packs, federation, workflows
+
+  # ---- level 2: the drop-in folder. Copy this whole directory. ------------
+  dropin/
+    build  validate  index   # the deterministic pipeline (§13.7 level 2)
+    resolvers/               # file:// only — live schemes need credentials
+    vocab/                   # core reason codes, predicates
+    requirements.txt         # dependencies are permitted here; a model is not
+
+  # ---- levels 3-4: the implementation. Optional, replaceable. -------------
+  tools/
+    cli/                     # validate, build, index, refresh, view, init
+    enrich/                  # the components that require a model
+    providers/               # openai-compatible + anthropic adapters
+    resolvers/               # okf:// store:// sys:// — credentialed
+    federate/                # registry, cross-bundle refs, feedback ledger
+    packs/                   # research, warehouse, codebase
+    console/                 # the served write UI (§14.7)
+    benchmark/               # the §18 harness, runnable on any adopter's mesh
+  .github/workflows/         # forks run pure components; main adds credentialed
 ```
 
-**Core contains no domain words.** Enforced mechanically: CI greps `core/` for
-project and domain names (`arxiv`, `sugarpaws`, `patron`, …) and fails on a hit.
-That single test is what keeps the scaffolding distributable while it is developed
-against two specific domains.
+**The dependency direction is one-way and enforced.** `tools/` may import from `dropin/`;
+`dropin/` may never import from `tools/`. That single rule is what makes Level 2 liftable by
+construction rather than by discipline — if the drop-in folder needed anything outside
+itself, pasting it into a stranger's project would not work, and the build would have caught
+it.
+
+Two further boundaries are checked mechanically, not intended:
+
+1. **Base validates with `tools/` deleted.** CI runs it as an actual arm: remove the
+   directory, validate every bundle, open the viewer.
+2. **`dropin/` and `core` carry no domain words.** CI greps for project and domain names
+   (`arxiv`, `sugarpaws`, `patron`, …) and fails on a hit. That test is what keeps the
+   scaffolding distributable while it is developed against two specific domains.
 
 ### 13.4 The config surface
 
@@ -880,38 +931,74 @@ no concepts must pay nothing for having OKFM installed.
 
 ### 13.6 Runtime independence
 
-OKFM must run three ways, in decreasing order of integration:
+OKFM must run three ways. Presented in increasing order of integration, because that is
+the order an adopter meets them — the modes are the levels of §13.2 seen from the
+implementer's side:
 
-1. **Inside a harness.** Workflows call core directly; injection is a hook. The
-   reference implementation.
-2. **As agent instructions.** No hooks available: `templates/AGENTS.md` states the
-   contract in prose — read the index first; weigh `status`, `stale_after` and a
-   missing `verified` before relying on a concept; update the concept and `log.md`
-   after changes; validate before committing. Weaker than injection but portable to
-   any agent tool.
-3. **As plain CLI.** `okfm validate`, `okfm index`, `okfm refresh`, `okfm benchmark`
-   — no agent at all, usable in CI.
+1. **As plain CLI** — *level 2*. `okfm validate`, `okfm index`, `okfm build`, `okfm view`.
+   No agent, no key, usable in CI and liftable as a folder.
+2. **As agent instructions** — *level 3*. `templates/AGENTS.md` states the contract in
+   prose: read the index first; weigh `status`, `stale_after` and a missing `verified`
+   before relying on a concept; update the concept and `log.md` after changes; validate
+   before committing. Weaker than injection, and portable to any agent tool the adopter
+   already has.
+3. **Inside a harness** — *level 4*. Workflows call the implementation directly; injection
+   is a hook. The reference integration.
 
-Core therefore depends on no specific agent runtime, no LLM provider, and no MCP
-server. Adapters may; core may not.
+Mode 2 is not a fallback. It is the mode most adopters will use, because it requires
+nothing they do not already have — and it is the reason **OKFM itself never holds a
+credential below level 4.** In mode 2 the adopter's agent drives OKFM; only in mode 3 does
+OKFM drive a provider.
+
+The implementation therefore depends on no specific agent runtime, no LLM provider, and no
+MCP server. Adapters may; core may not. A harness integration is one worked example of mode
+3, never a requirement — the CLI path must remain a complete way to use level 4.
 
 ### 13.7 What an adopter does
 
+Four things, one per level. Each is a complete process; none is a teaser for the next.
+
+**Level 2** — paste and run. The folder defaults to the location it sits in, scans the
+files around it, and writes a bundle. First run with no config reports what it found and
+**writes the config it used**, so pruning scope is deleting a line rather than reading
+documentation about scoping.
+
 ```shell
-git clone <okfm> && cd my-project
+cp -r okfm/dropin my-project/okfm && cd my-project
+python okfm/build            # bundle written to okfm/bundle/, config written beside it
+```
+
+Open `okfm-viewer.html` and the mesh is there — unenriched, because no model was involved,
+and honest about it: extracted descriptions, `status: draft`, no `verified` entry anywhere.
+
+**Level 4** — the full suite.
+
+```shell
 okfm init --pack warehouse      # writes okfm.json, index.md, log.md, one concept
 okfm validate                   # green on an empty mesh
-# ...add concepts, or run a discovery adapter against a real source
 okfm index                      # see what an agent would be handed
 ```
 
-**The distribution test:** a competent stranger, given only the README, reaches a
-running mesh answering one real question about their own project in **under an
-hour**, editing configuration and concepts only — never core.
+#### The distribution test, one per level
 
-This replaces the earlier port-effort metric. Port effort measured whether *this
-builder* could move between domains; the distribution test measures whether anyone
-can, which is the stronger and more honest question.
+This replaces the earlier port-effort metric. Port effort measured whether *this builder*
+could move between domains; the distribution test measures whether anyone can, which is the
+stronger and more honest question.
+
+| Level | Passes when a competent stranger, given only the README, can… |
+|---|---|
+| **1** | hand-write a valid concept their own agent reads correctly — **nothing installed** |
+| **2** | paste the folder into a project with **no existing bundle**, run it, and open the viewer on a real generated mesh — **no key, no model** |
+| **3** | enrich a stale concept with their own agent and get a reviewable draft — **no credential held by OKFM** |
+| **4** | reach a running mesh answering one real question about their own project in **under an hour**, editing configuration and concepts only — never core |
+
+Levels 2 and 3 permit editing a config or a workflow first. That is the expected
+adaptation, not a failure: the promise is **a workflow that works and is a sound starting
+point, not one that fits every project unmodified.** What no level permits is an adopter
+having to write a process from scratch, or reverse-engineer what a correct one looks like.
+
+Level 1's is the strongest claim the project makes. A format that cannot be understood and
+copied without tooling is not a format.
 
 ### 13.8 Licensing and attribution
 
