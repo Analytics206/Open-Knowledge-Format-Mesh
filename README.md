@@ -72,7 +72,7 @@ cp -r okfm/dropin my-project/okfm && cd my-project
 ```
 
 ```bash
-python okfm/build.py --apply
+python okfm/okfm.py
 ```
 
 Descriptions are **extracted** from your files rather than written, so they can be unhelpful

@@ -876,8 +876,10 @@ okfm/
 
   # ---- level 2: the drop-in folder. Copy this whole directory. ------------
   dropin/                    # paste this whole directory into a project    ✓
-    build                    # the entry point — self-locating               ✓
-    okfm_core                # locating and frontmatter parsing              ✓
+    okfm                     # one entry point, dispatches the pipeline      ✓
+    build                    # markdown -> concepts, self-locating           ✓
+    refresh                  # observe pointers, report drift (§8.4)         ✓
+    okfm_core                # locating, frontmatter, vocabularies           ✓
     bootstrap                # extraction: title, description                ✓
     bake_viewer              # regenerate the viewer index                   ✓
     check_bundles            # conformance, profile, strip test              ✓

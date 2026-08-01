@@ -11,9 +11,21 @@ import re
 import sys
 from pathlib import Path
 
-for _s in (sys.stdout, sys.stderr):
-    if hasattr(_s, "reconfigure"):
-        _s.reconfigure(encoding="utf-8", errors="replace")
+def utf8_stdout() -> None:
+    """Windows consoles default to cp1252 and raise on an em dash or a box-drawing
+    character. The bundle is UTF-8 by specification; a terminal's default encoding should
+    not be what decides whether the build runs.
+
+    Called at import here, and by every entry point — including the dispatcher, which does
+    not otherwise depend on this module. It was reimplemented three times before being
+    hoisted, which is a good sign it belongs in one place.
+    """
+    for s in (sys.stdout, sys.stderr):
+        if hasattr(s, "reconfigure"):
+            s.reconfigure(encoding="utf-8", errors="replace")
+
+
+utf8_stdout()
 
 # The folder this file lives in, and the project it was dropped into.
 HERE = Path(__file__).resolve().parent

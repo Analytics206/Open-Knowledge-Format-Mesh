@@ -7,9 +7,12 @@ cp -r dropin my-project/okfm && cd my-project
 ```
 
 ```bash
-python okfm/build.py            # dry run — says what it would do
-python okfm/build.py --apply    # writes
+python okfm/okfm.py             # the whole pipeline: build, observe, bake, validate
+python okfm/okfm.py --check     # same, but writes nothing and fails on mismatch (CI)
 ```
+
+Individual steps stay runnable — `okfm.py build`, `refresh`, `view`, `check` — but one
+command is the one to remember.
 
 It defaults to the directory it was dropped into. With no configuration it scans that
 directory, reports what it found, and writes the config it used — so the first thing you
@@ -23,7 +26,8 @@ network, no secrets, no model.
 
 | File | Does |
 |---|---|
-| `build.py` | The entry point. Discovers config, scans sources, writes concepts. |
+| `okfm.py` | One entry point. Runs the pipeline, or dispatches a single step. |
+| `build.py` | Markdown → concepts. Discovers config, scans sources, writes concepts. |
 | `okfm_core.py` | Locating and frontmatter parsing. Knows nothing about where it was installed. |
 | `bootstrap.py` | Extraction — `title`, `description` — and in-place concept creation. |
 | `bake_viewer.py` | Regenerates the viewer's index from the bundles. `--check` gates CI. |
@@ -126,9 +130,16 @@ Adding a code is one line. **Changing what a code means is forbidden** — add a
 deprecate the old, because every historical record carrying it was written under the old
 meaning.
 
-## Still to come
+## What the pipeline is
 
-`build.py` writes concepts but does not yet bake the viewer or validate in one pass; run
-`bake_viewer.py` and `check_bundles.py` after it. Phase 1 folds them into one command and
-adds the drift observation cache from
-[DR-0006](../docs/decisions/0006-drift-cost-and-caching.md).
+`okfm.py` with no arguments runs `okfm-rebuild` from
+[DR-0008](../docs/decisions/0008-build-pipeline.md) with the model step left out:
+
+    build → refresh → view → check
+
+Enrichment is deliberately absent. It needs a model, which under DR-0008 makes any workflow
+containing it `needs: [model]` and moves the whole thing to Level 3. Keeping it out is what
+lets this run on a pull request from a fork with no secrets.
+
+The pipeline stops at the first failure. A later step reading what an earlier one failed to
+write reports a second, misleading problem.

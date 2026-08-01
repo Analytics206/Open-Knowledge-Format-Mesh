@@ -28,11 +28,9 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-# Windows consoles default to cp1252 and die on an em dash. The bundle is UTF-8 by
-# specification; the terminal should not be what decides whether the build runs.
-for _s in (sys.stdout, sys.stderr):
-    if hasattr(_s, "reconfigure"):
-        _s.reconfigure(encoding="utf-8", errors="replace")
+from okfm_core import utf8_stdout
+
+utf8_stdout()
 
 RESERVED = {"index.md", "log.md", "README.md"}
 

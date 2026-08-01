@@ -28,20 +28,18 @@ jobs:
 
       # No `pip install` step, deliberately. If one ever appears here, the
       # zero-dependency claim in decisions/0001 has quietly stopped being true.
+      #
+      # One command, because that is the command an adopter runs. If CI needs a
+      # different incantation than the README gives people, one of them is wrong.
+      # --check writes nothing: build dry-runs, drift and the viewer index fail on
+      # mismatch instead of updating.
+      - name: The level 2 pipeline
+        run: python dropin/okfm.py --check
+
+      # Project-specific: this repository's four-document spec corpus. Not part of the
+      # drop-in, which is why it lives in dev/.
       - name: Validate the spec corpus
         run: python dev/check_docs.py
-
-      - name: Validate every bundle
-        run: python dropin/check_bundles.py
-
-      # file:// resolution only, which needs no credential — `needs: []`. When live
-      # schemes land they are `needs: [secrets]` and get a separate workflow gated on
-      # main, never this one.
-      - name: Observe pointers, fail on drift in stable concepts
-        run: python dropin/refresh.py --check
-
-      - name: Viewer index matches the bundles
-        run: python dropin/bake_viewer.py --check
 
   boundaries:
     name: boundaries
