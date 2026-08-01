@@ -1,0 +1,34 @@
+# Core predicate vocabulary — spec §7.3.
+#
+# Typed relations are what make the graph mean anything: an untyped link shows
+# connectivity, a predicate shows what kind. Impact analysis, drift propagation, and
+# neighbour surfacing all read these as fact, which is why the validator REJECTS a
+# predicate that is not listed here. An edge asserted by a producer that guessed is worse
+# than no edge at all.
+#
+# Packs may overlay additional predicates. They may not redefine one of these — a
+# predicate's meaning is a fixed asset, exactly like a reason code (§10.2).
+
+evidential:
+  - supports          # this concept's evidence backs the target
+  - contradicts       # this concept's evidence tells against the target
+  - evaluates         # an Evaluation of the target
+  - derived_from      # produced by reasoning over the target
+
+structural:
+  - serves            # exists to advance the target (typically a Goal)
+  - part_of           # a component of the target
+  - depends_on        # breaks or goes stale if the target changes
+  - implements        # a concrete realisation of the target
+  - implemented_by    # inverse of implements
+
+semantic:
+  - perspective_on    # a named viewpoint on the target concept
+  - defines           # establishes the target's meaning
+  - measures          # quantifies the target
+  - differs_from      # deliberately disagrees with the target; both stand
+
+lifecycle:
+  - supersedes        # replaces the target
+  - superseded_by     # inverse of supersedes
+  - resulted_in       # the target is this concept's outcome

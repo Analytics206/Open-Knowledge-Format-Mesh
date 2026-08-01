@@ -1,0 +1,18 @@
+# Core reason-code vocabulary — spec §10.2.
+#
+# Carried as `okfm_reason_codes` on evaluations, decisions, and feedback, alongside
+# freeform prose in the body. The codes are what make six months of history comparable;
+# the prose is what makes a single record readable. Both, never one.
+#
+# ADDING a code is one line and one commit. CHANGING what a code means is forbidden —
+# add a new one and deprecate the old. Every historical record carrying the old code was
+# written under the old meaning, and silently redefining it rewrites the past.
+#
+# Only CORE codes live here. Domain vocabularies (research, subscription, and so on) are
+# pack overlays: they are domain words, and domain words do not belong in code (§13.3).
+
+core:
+  - already_evaluated      # this candidate was assessed before; see the prior record
+  - insufficient_evidence  # not enough to judge either way, yet
+  - superseded_by_better   # a stronger alternative was adopted instead
+  - out_of_scope           # outside what this goal is for

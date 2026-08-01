@@ -28,6 +28,7 @@ network, no secrets, no model.
 | `bootstrap.py` | Extraction — `title`, `description` — and in-place concept creation. |
 | `bake_viewer.py` | Regenerates the viewer's index from the bundles. `--check` gates CI. |
 | `check_bundles.py` | Conformance, profile, strip test, predicates, links, footnotes. |
+| `vocab/` | Controlled vocabularies — predicates and reason codes, in files rather than code. |
 
 ## Two modes
 
@@ -75,6 +76,24 @@ Each was added because the previous version got something wrong on a real corpus
 `--refresh` recomputes descriptions on concepts this tool created — identified by
 `generated.by` naming `process:okfm-bootstrap`. Anything a person or a model touched is
 left alone.
+
+## Vocabularies
+
+`vocab/predicates.yaml` and `vocab/reason_codes.yaml` hold the controlled lists. They are
+files rather than constants so a pack can overlay domain terms without forking core — point
+`vocab_overlays` in your config at additional files and they merge by family.
+
+**Predicates are rejected when unknown.** Typed relations drive impact analysis and drift
+propagation, which read an edge as fact, so a guessed edge is worse than a missing one
+(§7.3).
+
+**Reason codes only warn when unknown**, because core ships the four codes every domain
+shares and domain codes belong in packs. Failing would reject every legitimate domain code
+before there is a way to declare one.
+
+Adding a code is one line. **Changing what a code means is forbidden** — add a new one and
+deprecate the old, because every historical record carrying it was written under the old
+meaning.
 
 ## Still to come
 

@@ -135,6 +135,42 @@ def load_or_create_config(write: bool = True) -> tuple[Path, dict, bool]:
     return path, cfg, True
 
 
+# ── vocabularies ───────────────────────────────────────────────────────────────
+# Controlled lists live in files, not in code, so a pack can overlay them without a
+# fork. The shape is deliberately the smallest useful subset of YAML -- `family:` then
+# indented `- term` lines, with `#` comments -- which needs about ten lines to read and
+# no dependency. Anything richer would be a reason to reach for a real parser, and a
+# controlled vocabulary that needs a real parser has stopped being a controlled list.
+
+VOCAB = HERE / "vocab"
+
+
+def load_vocab(name: str, overlays: list[Path] | None = None) -> dict[str, list[str]]:
+    """Read `vocab/<name>.yaml` plus any overlays, merged by family."""
+    out: dict[str, list[str]] = {}
+    for path in [VOCAB / f"{name}.yaml", *(overlays or [])]:
+        if not path.is_file():
+            continue
+        family = None
+        for raw in path.read_text(encoding="utf-8").splitlines():
+            line = raw.split("#", 1)[0].rstrip()
+            if not line.strip():
+                continue
+            if not line.startswith((" ", "\t", "-")) and line.rstrip().endswith(":"):
+                family = line.rstrip()[:-1].strip()
+                out.setdefault(family, [])
+            elif family and line.lstrip().startswith("- "):
+                term = line.lstrip()[2:].strip()
+                if term and term not in out[family]:
+                    out[family].append(term)
+    return out
+
+
+def vocab_terms(name: str, overlays: list[Path] | None = None) -> set[str]:
+    """Every term across every family — what a validator actually checks against."""
+    return {t for terms in load_vocab(name, overlays).values() for t in terms}
+
+
 def bundle_root(cfg: dict) -> Path:
     """Where concepts are written. Inside the dropped folder by default, so that deleting
     the folder removes everything the tool ever created and leaves the project as it was."""

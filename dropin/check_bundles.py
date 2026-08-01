@@ -16,19 +16,13 @@ import re
 import sys
 from pathlib import Path
 
-from okfm_core import PROJECT, configured_bundles, load_or_create_config
+from okfm_core import PROJECT, configured_bundles, load_or_create_config, vocab_terms
 
 _FM = re.compile(r"\A---\r?\n(.*?)\r?\n---\r?\n", re.S)
 _OKFM_KEY = re.compile(r"^(okfm_[\w]+):", re.M)
 _STORED_VERDICT = re.compile(r"^okfm_(stale|drifted|drift|trust|tier|fresh)\s*:", re.M)
 
-# spec 7.3 -- freeform predicates are rejected by the validator, by design.
-PREDICATES = {
-    "supports", "contradicts", "evaluates", "derived_from",
-    "serves", "part_of", "depends_on", "implements", "implemented_by",
-    "perspective_on", "defines", "measures", "differs_from",
-    "supersedes", "superseded_by", "resulted_in",
-}
+_REASON_CODES = re.compile(r"^okfm_reason_codes:\s*(\[.*?\]|\n(?:[ \t]*-.*\n?)+)", re.M)
 
 
 def scalar(block, key):
@@ -44,6 +38,14 @@ def main() -> int:
     bundles = configured_bundles(cfg)
     errors, warnings = [], []
     total = 0
+
+    # Overlays let a pack add domain terms without forking core (spec 10.2). Core alone
+    # carries no domain words, which is what keeps the tooling portable (13.3).
+    overlays = [(PROJECT / p) for p in cfg.get("vocab_overlays", [])]
+    predicates = vocab_terms("predicates", overlays)
+    reason_codes = vocab_terms("reason_codes", overlays)
+    if not predicates:
+        errors.append("vocab/predicates.yaml is missing or empty — cannot check relations")
 
     if not bundles:
         print("No bundles found. Run build.py first, or point `bundles` at one.")
@@ -96,11 +98,26 @@ def main() -> int:
                 for pred, tgt in re.findall(
                     r"predicate:\s*([\w_]+),\s*target:\s*([^\s}]+)", rel_block.group(1)
                 ):
-                    if pred not in PREDICATES:
+                    if pred not in predicates:
                         errors.append(f"{rid}: predicate `{pred}` not in the vocabulary")
                     mesh_tgt = f"{root}{tgt}" if tgt.startswith("/") else tgt
                     if mesh_tgt not in mesh_paths:
                         errors.append(f"{rid}: relation target {tgt} resolves to nothing")
+
+            # --- profile: controlled reason codes (spec 10.2) ------------------
+            # A WARNING, not an error, until domain packs exist. Core carries only the
+            # four codes every domain shares, so failing on an unknown one would reject
+            # every legitimate domain code before there is any way to declare it.
+            rc = _REASON_CODES.search(block)
+            if rc:
+                raw = rc.group(1)
+                codes = (re.findall(r"[\w_]+", raw) if raw.strip().startswith("[")
+                         else re.findall(r"^\s*-\s*([\w_]+)", raw, re.M))
+                for code in codes:
+                    if code not in reason_codes:
+                        warnings.append(
+                            f"{rid}: reason code `{code}` is not in core vocabulary — "
+                            f"declare it in a pack overlay")
 
             # --- body links ---------------------------------------------------
             fence = False

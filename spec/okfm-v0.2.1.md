@@ -882,7 +882,7 @@ okfm/
     bake_viewer              # regenerate the viewer index                   ✓
     check_bundles            # conformance, profile, strip test              ✓
     resolvers/               # file:// only — live schemes need credentials
-    vocab/                   # core reason codes, predicates
+    vocab/                   # core reason codes, predicates                ✓
     # Python 3.13, standard library only. No requirements file, by design.
 
   dev/                       # this repository's own maintenance — ships to nobody ✓
