@@ -44,6 +44,7 @@ def main() -> int:
     overlays = [(PROJECT / p) for p in cfg.get("vocab_overlays", [])]
     predicates = vocab_terms("predicates", overlays)
     reason_codes = vocab_terms("reason_codes", overlays)
+    known_types = vocab_terms("types", overlays)
     if not predicates:
         errors.append("vocab/predicates.yaml is missing or empty — cannot check relations")
 
@@ -79,8 +80,15 @@ def main() -> int:
             total += 1
 
             # --- conformance -------------------------------------------------
-            if not scalar(block, "type"):
+            ctype = scalar(block, "type")
+            if not ctype:
                 errors.append(f"{rid}: missing or empty `type` (conformance failure)")
+            elif known_types and ctype not in known_types:
+                # A WARNING, never an error. Official OKF §6.2: `type` is not centrally
+                # registered and consumers must tolerate unknown values. This catches
+                # typos, it does not police vocabulary.
+                warnings.append(f"{rid}: type `{ctype}` is not a known type — typo, "
+                                f"or add it to a pack overlay")
 
             # --- strip test: type is official, so it must survive the strip ---
             stripped = _OKFM_KEY.sub("__stripped__:", block)

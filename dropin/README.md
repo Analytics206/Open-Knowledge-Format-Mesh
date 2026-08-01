@@ -36,6 +36,7 @@ network, no secrets, no model.
 | `enrich.py` | What needs enriching and the brief for doing it. Prints work; calls no model. |
 | `guard.py` | Checks a diff wrote only fields a `[model]` pass owns. |
 | `revalidate.py` | The human end: refresh a capture, add `verified`, clear the drift. |
+| `telemetry.py` | Writes one run record per pipeline run. |
 | `vocab/` | Controlled vocabularies — predicates and reason codes, in files rather than code. |
 
 ## Two modes
@@ -142,11 +143,33 @@ Enrichment **must** set `generated.by` to itself. That is not bookkeeping:
 description that leaves it saying `process:okfm-bootstrap` gets silently clobbered later.
 This project lost a description that way before the rule was written down.
 
+## Telemetry
+
+Every pipeline run writes one record to `references/telemetry/runs/` — schema version,
+run id, workflow, timings, each step and its exit code. Not a concept: it does not belong
+in the concept graph and would swamp it, so it sits outside the bundles and is invisible
+to conformance.
+
+`telemetry_schema` is versioned because the point is comparability. Six months of records
+are an asset only if a question asked of them means the same thing across all of them, so
+renaming or repurposing a field bumps the version.
+
+Two deliberate divergences from §10.1, both explained in `telemetry.py`: records live under
+the drop-in folder rather than inside a bundle (a run belongs to no single bundle), and they
+are gitignored by default rather than committed (per-machine run history, not shared bundle
+content — remove the ignore if your team wants it shared).
+
 ## Vocabularies
 
-`vocab/predicates.yaml` and `vocab/reason_codes.yaml` hold the controlled lists. They are
+`vocab/types.yaml`, `vocab/predicates.yaml` and `vocab/reason_codes.yaml` hold the
+controlled lists. They are
 files rather than constants so a pack can overlay domain terms without forking core — point
 `vocab_overlays` in your config at additional files and they merge by family.
+
+**Types only warn when unknown.** Official OKF §6.2 says `type` is not centrally
+registered and consumers must tolerate unknown values, so rejecting one would break
+conformance and stop you inventing the type your domain needs. The list catches typos —
+`Decison`, `Attested computation` — not vocabulary you meant.
 
 **Predicates are rejected when unknown.** Typed relations drive impact analysis and drift
 propagation, which read an edge as fact, so a guessed edge is worse than a missing one

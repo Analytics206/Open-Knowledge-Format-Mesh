@@ -10,6 +10,14 @@ okfm-viewer.local.html
 # The shipped viewer (okfm-viewer.html) IS committed: it contains metadata
 # for the bundled guide only, and fetches everything else at runtime.
 
+# ---- Telemetry ----------------------------------------------------------
+# Run records are written every build (spec 10.1). They are per-machine run history
+# here, not shared bundle content, and committing each one would be a commit's worth
+# of churn per run. A team that wants shared history removes this line — the records
+# are identical either way. Rationale in dropin/telemetry.py.
+
+dropin/references/telemetry/runs/
+
 # ---- Python -------------------------------------------------------------
 __pycache__/
 *.py[cod]

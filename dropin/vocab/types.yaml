@@ -1,0 +1,37 @@
+# Known concept types — spec §7.5.
+#
+# UNLIKE predicates, an unknown type is a WARNING, never an error. Official OKF §6.2 is
+# explicit: `type` is not centrally registered and consumers must tolerate unknown values.
+# Rejecting one would break conformance and would stop an adopter inventing the type their
+# domain actually needs.
+#
+# The list exists to catch typos — `Decison`, `Attested computation` — not to police
+# vocabulary. A domain that needs `Runbook` or `Incident` adds it in a pack overlay and the
+# warning goes away.
+
+reserved:
+  - Index               # a directory map; reserved filename index.md
+  - Log                 # a changelog; reserved filename log.md
+
+loop:                   # workflow residue — what a run leaves behind (§7.5)
+  - Goal                # the question or acquisition target, and what it serves
+  - Evidence            # what was gathered, from where, what was seen at capture
+  - Evaluation          # assessment against the goal: signals, reason codes, a recommendation
+  - Decision            # the human call: reject / monitor / trial / adopt
+  - Experiment          # hypothesis, baselines, success metrics, guardrails
+  - Outcome             # what actually happened, and whether the value was durable
+  - Feedback            # structured signal sent to a source or another bundle
+  - Answer              # a delivered answer, kept as a precedent
+
+meaning:                # what a domain's knowledge is made of (§7.5)
+  - Concept             # a business or technical concept
+  - Perspective         # a named viewpoint on a concept
+  - Rule                # a definition under a perspective
+  - Attested Computation  # official type: the sanctioned computation behind a number
+  - Metric              # the meaning of a measurable
+  - Source System       # a registered system — the anchor for sys:// pointers
+  - OKF Member          # a bundle registered in the federation registry
+
+general:                # not in the specification's tables, but common enough to expect
+  - Document            # what the drop-in build emits by default
+  - Runbook             # a procedure

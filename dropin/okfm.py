@@ -24,6 +24,7 @@ Enrichment is deliberately absent. It needs a model, which makes any workflow co
 """
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 from okfm_core import utf8_stdout
@@ -68,20 +69,38 @@ def main(argv: list[str]) -> int:
         return run(BY_NAME[cmd], rest[1:] + (["--check"] if check else []))
 
     # ---- full pipeline ----------------------------------------------------
+    from telemetry import Run
+
+    rec = Run(workflow="okfm-rebuild@1.0" + (" --check" if check else ""),
+              trigger="cli")
     width = max(len(n) for n, *_ in STEPS)
+    failed = None
+
     for i, (name, script, apply_args, check_args) in enumerate(STEPS, 1):
         args = check_args if check else apply_args
         print(f"\n{'─' * 62}\n {i}/{len(STEPS)}  {name:<{width}}  "
               f"{script} {' '.join(args)}\n{'─' * 62}")
+        t0 = time.monotonic()
         rc = run(script, args)
+        rec.step(name, script, args, rc, time.monotonic() - t0)
         if rc != 0:
             # Stop on the first failure. A later step reading what an earlier one failed
             # to write reports a second, misleading problem.
-            print(f"\n{name} failed (exit {rc}) — stopping", file=sys.stderr)
-            return rc
+            failed = (name, rc)
+            break
+
+    out = rec.write()
+    if failed:
+        name, rc = failed
+        print(f"\n{name} failed (exit {rc}) — stopping", file=sys.stderr)
+        if out:
+            print(f"run record: {out.relative_to(HERE)}", file=sys.stderr)
+        return rc
 
     print(f"\n{'─' * 62}")
     print(" done" + ("  (check mode — nothing was written)" if check else ""))
+    if out:
+        print(f" run {rec.id}  →  {out.relative_to(HERE)}")
     return 0
 
 
