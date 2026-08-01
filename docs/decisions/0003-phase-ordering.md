@@ -13,7 +13,9 @@ okfm_scope: project
 ---
 # DR-0003 — Where federation sits in the delivery order
 
-- **Status:** proposed — needs a call before Phase 2 planning
+- **Status:** accepted 2026-08-01 — the negotiation half of federation moves after the
+  SugarPaws3d port; the addressing half already landed early per
+  [DR-0010](0010-okfm-self-hosts-as-a-mesh.md)
 - **Date:** 2026-08-01
 - **Affects:** spec §15 (roadmap phases)
 
@@ -87,10 +89,27 @@ half is what this record was arguing about.
 | **Addressing** | registry bundle, `OKF Member` concepts, cross-bundle refs, commit pinning, cross-bundle drift, multi-bundle viewer | **Phase 1** |
 | **Negotiation** | agent interfaces, transport, feedback inbox/outbox, cross-owner routing | after the port, as argued above |
 
-The addressing half moves earlier because OKFM's own repository becomes a five-bundle mesh
-at effectively no cost — the content already exists as the level documentation — and it
-proves the project's central metaphor on day one rather than in Phase 5.
+The addressing half moves earlier because OKFM's own repository becomes a mesh at
+effectively no cost — the content already exists — and it proves the project's central
+metaphor on day one rather than at the end.
 
 The argument above stands unchanged for the negotiation half, which is the expensive,
 unproven, no-prior-art part that should not stand between the project and its only
 measurable payoff.
+
+## Resulting phase order
+
+| Phase | Delivers |
+|---|---|
+| **1** | Baseline adoption, arXiv retrofit, the Level 2 build, **federation's addressing half** — registry, `OKF Member` concepts, cross-bundle refs, commit pinning, multi-bundle viewer |
+| **2** | Extraction into a distributable project: core/packs/config split, the three runtime modes, the distribution tests |
+| **3** | **SugarPaws3d port** — `sys://` resolvers, meaning-family curation, attested computations, golden-report reconciliation |
+| **4** | **Federation's negotiation half** — agent interfaces, transport, the feedback inbox/outbox ledger, cross-owner routing |
+
+Phase 3 builds the two SugarPaws3d domains as sibling directories with an explicit seam:
+no concept in the rules domain reads a file in the data domain directly, even though
+nothing yet enforces it. That convention is what keeps the eventual split mechanical, and
+it is the mitigation for the first counter-argument above.
+
+By Phase 4 there are two real bundles with a real disagreement history to federate, which
+is a better test than a toy pair.

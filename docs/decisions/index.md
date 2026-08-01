@@ -19,7 +19,7 @@ on. `deferred` was decided *not* to decide, and carries a re-entry trigger.
 |---|---|---|---|
 | [0001](0001-runtime-and-packaging.md) | Runtime and packaging for the implementation | partial | §13.3, §13.6, §13.7 |
 | [0002](0002-version-scheme.md) | Version scheme | deferred | versioning policy, `okfm.json` |
-| [0003](0003-phase-ordering.md) | Where federation sits in the delivery order | **proposed** | §15 — amended by 0010 |
+| [0003](0003-phase-ordering.md) | Where federation sits in the delivery order | accepted | §15 — amended by 0010 |
 | [0004](0004-split-the-spec-preserve-numbers.md) | Split the spec, preserve section numbers | accepted | all four documents |
 | [0005](0005-path-resolution.md) | Bundle-relative in files, mesh-relative in the index | accepted | §6.5, §7.3, §12.3, §14.2 |
 | [0006](0006-drift-cost-and-caching.md) | Drift is observed at build time, never at read time | accepted | §3.4, §8.3–8.5, §13.4, §14.4, §20.8 |
@@ -27,7 +27,7 @@ on. `deferred` was decided *not* to decide, and carries a re-entry trigger.
 | [0008](0008-build-pipeline.md) | What each component requires, and what the rebuild does | accepted | §8.4, §10, §11.6, §13.6, §16 |
 | [0009](0009-adoption-levels.md) | Four adoption levels | accepted | §13.1, §13.3, §13.6, §13.7 |
 | [0010](0010-okfm-self-hosts-as-a-mesh.md) | OKFM's own repository is the first mesh | accepted | §12, §14.5, §21.5 |
-| [0011](0011-viewer-and-console.md) | Viewer stays read-only; a console is separate | **proposed** | §14.3, §14.7 |
+| [0011](0011-viewer-and-console.md) | Viewer stays read-only; a console is separate | deferred | §14.3, §14.7 |
 
 ## Two different axes, easily confused
 
@@ -49,14 +49,8 @@ needs an API key" true as the implementation grows, rather than a promise that q
 Level 4 packaging (`uvx` vs `pipx`, the PyPI name) is still open and not blocking, because
 Level 4 does not exist yet.
 
-**0011** keeps the read-only viewer intact and puts writes in a separate console. Phase 3,
-but it decides where 0008's `[human]` tier finally gets an interface.
-
-**0003** decides whether the *negotiation* half of federation lands before or after the
-SugarPaws3d port. Amended by 0010, which moved the *addressing* half into Phase 1.
-
 Two smaller questions sit inside accepted records: 0008's `Feedback` destination split, and
-0010's registry location.
+0010's registry location. Neither blocks anything.
 
 ## Settled
 
@@ -82,6 +76,15 @@ teaser for the next.
 **0010** — OKFM's own repository becomes a mesh, so the project runs the thing it describes
 instead of only specifying it. Amended: the registry names the bundles that exist and gains
 members as levels ship.
+
+**0003** — federation's negotiation half lands after the SugarPaws3d port; its addressing
+half already landed early under 0010. Phase order: baseline and addressing → distribution →
+the port → negotiation.
+
+**0011 — deferred.** The viewer stays read-only, which is the half that is a constraint and
+costs nothing to hold. The console is the half that is a build, and it waits: nothing depends
+on it, and a UI built before the workflow it serves is exercised gets built for an imagined
+workflow. Re-entry trigger to watch is Level 3 enrichment producing drafts at volume.
 
 **0006** — drift is observed during the build and cached; nothing resolves it at read time.
 Trust and staleness stay read-time because they are free. The cache stores observations, not

@@ -226,6 +226,13 @@ Four slices, each end-to-end. No phase builds platform without a user-visible qu
 ### Phase 1 — Baseline adoption + arXiv retrofit
 
 Scope: migrate the current OKF to conformant v0.2 using an **existing migrator** rather than a hand-written one (§21.2); the §7.4 sidecar audit, applying the §7.7 admission test to every existing concept; OKFM profile keys frozen; loop-family types; telemetry 1.0; initial reason vocabulary. Validation is **adopted, then extended**: an existing conformance validator and CI action handle official §11; a second OKFM pass adds vocab-checked predicates and reason codes, pointer resolvability, and the strip test. Retrofit the running loop to write concepts and telemetry, send stored `Feedback` to the arXiv MCP, and check `already_evaluated` before evaluating a candidate. Stand up the benchmark harness (§18.4) and take a baseline reading.
+
+Also in Phase 1, per [DR-0003](decisions/0003-phase-ordering.md) and
+[DR-0010](decisions/0010-okfm-self-hosts-as-a-mesh.md): **federation's addressing half** —
+the registry bundle, `OKF Member` concepts, cross-bundle references with commit pinning, and
+a viewer that renders more than one bundle. It costs almost nothing because OKFM's own
+repository is already a mesh of three bundles, and it proves the project's central metaphor
+now rather than at the end.
 **Exit:** "Why did we reject paper X?" answered from the bundle alone; one run fully reconstructable from telemetry; bundle passes official conformance in CI with every `okfm_` key stripped; a first benchmark run recorded, whatever it says.
 
 ### Phase 2 — Extraction into a distributable project
@@ -239,19 +246,48 @@ a first pass at the distribution test (§13.7) — someone other than the builde
 builder on a clean machine with only the README, reaches a running mesh in under an
 hour.
 
-### Phase 2.5 — Federation experiment
-
-Runs on assets that already exist: multiple OKFs with cross-relationships, not yet organized as a mesh.
-
-Scope: registry bundle with `OKF Member` concepts; existing cross-OKF relationships lifted into registry links; cross-bundle resolver with commit pinning; agent interface on at least two bundles (in-process transport is fine); one real cross-bundle question routed registry → member agents; one addressed-feedback round trip.
-**Exit:** a cross-bundle question answered by scatter-gather with citations resolving into two bundles; one feedback → response pair in both ledgers; one pinned ref correctly flagged as drifted after the owning bundle deprecates its target.
-
 ### Phase 3 — SugarPaws3d port
 
 Scope: `sys://` resolver for the patron DB and API captures; discovery adapter; curated schema/queries/rules ingested as meaning-family concepts; churn/acts/deacts/revenue concepts, perspectives, rules; **Attested Computations with real attesters** for each figure; golden-report reconciliation; declared-vs-observed reconciliation over the 9-month history; the §11.5 question workflows; actor-aware defaults and plain-language trust rendering; the gap → propose → verify loop; drift detection live on `sys://` pointers.
 **Exit:** one business question answered with a stated perspective, a **passing attestation**, resolvable citations, claim classification, and the answer recorded as an `Answer` concept. One attested computation reconciled against its existing trusted report. One declared/observed mismatch found (or consistency verified). One consumer question driving the full gap → propose → verify cycle. A benchmark run (§18.4) on real business questions, graded against the golden reports.
 
-Sequencing: Phase 2's exit rehearses Phase 3. Phase 2.5 precedes Phase 3 because SugarPaws3d sits on at least two ownership seams — a data bundle (schema, queries, captures) and a business-rules bundle (concepts, perspectives, rules) — so the port is born federated rather than split later.
+### Phase 4 — Federation, the negotiation half
+
+The addressing half — registry bundle, `OKF Member` concepts, cross-bundle references,
+commit pinning, a multi-bundle viewer — landed in Phase 1, because OKFM's own repository is
+a mesh and the content already existed.
+
+What remains is the expensive, unproven part.
+
+Scope: an agent interface on at least two bundles (in-process transport is fine); cross-bundle
+routing from the registry to member agents; the addressed-feedback inbox/outbox ledger; the
+agent as the access-control point; optionally a hosted instance as a remote member, which is
+the only way to exercise real transport.
+**Exit:** a cross-bundle question answered by scatter-gather with citations resolving into two
+bundles; one feedback → response pair in both ledgers; one pinned reference correctly flagged
+as drifted after the owning bundle deprecates its target.
+
+### Sequencing
+
+Phase 2's exit rehearses Phase 3.
+
+Phase 4 follows the port rather than preceding it — see
+[DR-0003](decisions/0003-phase-ordering.md). The original plan put federation first, on the
+grounds that SugarPaws3d sits on two ownership seams and should be born federated. The
+counter-argument won: §12.3 states that federation adds nothing *inside* a bundle, so
+splitting later is mechanical, while building a registry, transport, and a feedback ledger
+before knowing whether the meaning-family concepts are right is not. The port is also the
+only work with pre-existing ground truth (§11.4), and nothing unproven should stand between
+the project and its one measurable payoff.
+
+The port therefore builds its two domains — data and business rules — as sibling directories
+with an explicit seam: no concept in the rules domain reads a file in the data domain
+directly, even though nothing yet enforces it. That convention keeps the eventual split
+mechanical, and by Phase 4 there are two real bundles with a real disagreement history to
+federate, which is a better test than a toy pair.
+
+**Reverse this** if the two SugarPaws3d domains turn out to have distinct accountable owners
+today. That is the §12.1 split criterion, and it beats sequencing convenience.
 
 ---
 

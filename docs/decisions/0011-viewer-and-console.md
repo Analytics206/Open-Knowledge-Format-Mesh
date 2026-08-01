@@ -13,7 +13,8 @@ okfm_scope: project
 ---
 # DR-0011 — The viewer stays read-only; a console is a separate artifact
 
-- **Status:** proposed — needs a call before Phase 3 (level 3/4 work)
+- **Status:** **deferred** 2026-08-01 — picked up at the end, not before. See the re-entry
+  triggers at the foot of this record
 - **Date:** 2026-08-01
 - **Affects:** spec §14.3, §14.7; depends on [DR-0009](0009-adoption-levels.md), [DR-0008](0008-build-pipeline.md)
 
@@ -97,9 +98,40 @@ status, adding a `verified` entry, accepting a relation — all decisions about 
 Rewriting a concept body is authoring, and authoring happens in an editor against files,
 where git can see it.
 
-## Open
+## Deferred — 2026-08-01
+
+Not built yet, and deliberately last.
+
+The half of this record that is a *constraint* is already in force: **the viewer stays
+read-only**, and §14.3 and §14.7 hold unchanged. That costs nothing to keep and is the part
+that protects Level 1.
+
+The half that is a *build* — the console — waits. Nothing depends on it. The review queue it
+would serve currently holds 26 concepts, all `draft`, and promoting them is a text editor and
+a few minutes. A UI for that is a convenience, and conveniences built before the workflow they
+serve is exercised tend to be built for an imagined workflow.
+
+Deferring also keeps a decision open that would otherwise be made by accident: whether the
+console is a served application at all, or whether the review gate belongs in the CLI, in an
+agent's own interface via `AGENTS.md`, or in a pull request.
+
+### Re-entry triggers
+
+Revisit when **any** of these becomes true:
+
+| Trigger | Why it changes the answer |
+|---|---|
+| Level 3 enrichment ships and produces drafts at volume | Promoting by hand stops being a few minutes |
+| A second person reviews | Two people editing frontmatter by hand will diverge on convention |
+| A hosted instance exists ([DR-0010](0010-okfm-self-hosts-as-a-mesh.md)'s remote member) | It needs an interface and an auth answer regardless |
+| Configuration outgrows one small file | The editing case, which is currently the weaker half of the ask |
+
+The first is the one to watch, and it arrives in Phase 2.
+
+## Open, when it is picked up
 
 - Does the console write files directly, or shell out to the same CLI components so there is
   exactly one implementation of every mutation? The second is slower and much safer.
-- Does it require auth? Single-user local is fine at first; the moment it is hosted
-  ([DR-0010](0010-okfm-self-hosts-as-a-mesh.md)'s remote member) it needs an answer.
+- Does it require auth? Single-user local is fine at first; a hosted instance is not.
+- Is a served application the right shape at all, or does the review gate belong in the CLI,
+  in `AGENTS.md`, or in a pull request?
