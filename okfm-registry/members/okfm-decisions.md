@@ -42,7 +42,7 @@ guide.
 
 # Provenance, honestly
 
-These concepts were created by `scripts/bootstrap.py`: deterministic extraction, no model.
+These concepts were created by `dropin/bootstrap.py`: deterministic extraction, no model.
 Every `description` is copied from prose the record already contained, so it can be
 unhelpful but never wrong about what the record says.
 

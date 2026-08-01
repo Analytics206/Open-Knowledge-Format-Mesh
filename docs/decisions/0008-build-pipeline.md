@@ -13,8 +13,7 @@ okfm_scope: project
 ---
 # DR-0008 — What each component requires, and what the rebuild actually does
 
-- **Status:** **accepted** 2026-08-01 — ordering and the explicit `needs` set confirmed by
-  the steward; `Feedback` destination split still open below
+- **Status:** accepted 2026-08-01 — `Feedback` destination split still open below
 - **Date:** 2026-08-01
 - **Revisions:** r1 tiers classified fields · r2 tiers classify components · r3 credentials
   became a tier · **r4 ordered by exposure; components declare an explicit `needs` set**

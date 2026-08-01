@@ -13,8 +13,7 @@ okfm_scope: project
 ---
 # DR-0010 — OKFM's own repository is the first mesh
 
-- **Status:** **accepted** 2026-08-01 — *"a big key to this project is the OKF of OKFs. I
-  think we need to show that."* Registry location still open below
+- **Status:** accepted 2026-08-01 — registry location still open below
 - **Date:** 2026-08-01
 - **Affects:** spec §12, §14.5, §21.5; changes the premise of [DR-0003](0003-phase-ordering.md)
 

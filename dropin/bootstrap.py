@@ -17,7 +17,7 @@ decisions/0008 "Extraction is not drafting" and 0009 "Bootstrap from zero, witho
 
 `needs: []` -- no network, no secrets, no API key. Runs anywhere.
 
-    python scripts/bootstrap.py docs/decisions --type Decision [--apply]
+    python dropin/bootstrap.py docs/decisions --type Decision [--apply]
 
 Without --apply it prints what it would write and changes nothing.
 """

@@ -13,81 +13,65 @@ okfm_scope: project
 ---
 # DR-0001 — Runtime and packaging for the reference implementation
 
-- **Status:** proposed — **rescoped by [DR-0007](0007-two-layers.md)**, needs a call before Phase 1
-- **Date:** 2026-08-01 (rescoped 2026-08-01)
+- **Status:** partially settled 2026-08-01 — language and Level 2 dependency rule decided;
+  Level 4 packaging still open
+- **Date:** 2026-08-01
+- **Revisions:** r1 asked what "core" is written in · **r2 rescoped by
+  [DR-0007](0007-two-layers.md) and settled for the lower levels**
 - **Affects:** spec §13.3, §13.6, §13.7
 
-## Scope correction
+## Scope
 
-This record originally asked "what is *core* written in," treating OKFM as one installable
-thing. [DR-0007](0007-two-layers.md) splits it in two: a **base** layer that is a
-specification, a guide, a schema, and a viewer — requiring no install at all — and a
-**reference implementation** that is optional.
+[DR-0007](0007-two-layers.md) splits OKFM in two: a **base** that is a specification, a
+guide, and a viewer, and a **reference implementation** that is optional. This record is
+about the implementation only.
 
-Everything below applies **only to the reference implementation.** The base layer has no
-runtime, no package, and no install step, which is the point of it.
+[DR-0009](0009-adoption-levels.md) then splits the implementation by level, and the levels
+have different dependency rules — which is the whole answer.
 
-An earlier version of this record justified zero dependencies partly by a "single file,
-drop it anywhere" property. That phrase was borrowed from §21.2's description of the
-ecosystem's *validator*, which genuinely is one file. It does not describe OKFM and has
-been struck.
+## Decision
 
-## The gap
+**Python 3.13.**
 
-§13 never says what the implementation is written in or how it installs.
-`references/attesters/<name>.py` and `okfm validate` imply Python and a CLI, but nothing
-states it. That choice decides packaging, CI, the dependency surface, and whether §13.7's
-"stranger with a README and an hour" is achievable at all.
+**`dropin/` (Level 2) is standard library only.** No `requirements.txt`, no install step
+beyond having Python. It is a folder you paste into a project and run, and every dependency
+added to it is friction on the one level whose promise is that there is none.
 
-## Proposal
+**`tools/` (Levels 3–4) may take dependencies freely.** An adopter at those levels has
+already chosen to install something.
 
-**Python 3.11+, installable with `uvx okfm` or `pipx install okfm`, standard library only
-in core.**
+## Why Level 2 holds the line
 
-Three reasons:
+The drop-in folder is copied into a stranger's repository and run there. A dependency means
+that stranger now resolves a package tree before anything happens, in whatever environment
+they happen to have — which is exactly the friction Level 2 exists to remove.
 
-1. **Zero dependencies is why the ecosystem's validator is adoptable.** §21.2 records
-   that its single-file, zero-config shape is the thing that makes it usable in someone
-   else's CI without negotiation. The moment core needs a resolver for a dependency
-   tree, the hour in §13.7 is gone.
+This is not theoretical. The four components in `dropin/` today parse frontmatter for 26
+concepts across 3 bundles using about 40 lines of regex and no PyYAML. The subset of YAML
+that OKF frontmatter actually uses is small: scalars, lists, one level of nesting, and flow
+mappings. Standard library is sufficient, demonstrated rather than assumed.
+
+If writing frontmatter ever needs more than round-tripping, that is the moment to reopen
+this — and the answer would be a vendored parser, not a dependency.
+
+## On 3.13
+
+Nothing in `dropin/` currently uses anything newer than Python 3.9. Pinning 3.13 narrows the
+audience more than the code requires, and the floor can drop later without changing a line if
+adoption ever argues for it. CI runs 3.13 so the supported version is the tested one.
 2. **Attesters are Python already.** §6.6 and §9 put deterministic, LLM-free attesters
    in the bundle. A Python core runs them without a bridge.
-3. **`uvx` gives a genuine no-install path.** `uvx okfm validate` in a foreign CI job is
-   one line and leaves nothing behind.
+## Why Python
 
-Adapters, packs, and the benchmark harness **may** take dependencies. Core may not.
+Attesters are Python by specification (§6.6, §9), so a Python implementation runs them
+without a bridge. The viewer is already dependency-free HTML and needs no toolchain of its
+own.
 
-## The one real cost
+Rejected: **Node/TypeScript** (attesters would need a second runtime), **Go** and **Rust**
+(best single-binary story, worst attester story, and a compile step between an adopter and a
+fix they want to make).
 
-YAML. Frontmatter parsing is the only place core needs it, and PyYAML would be the
-single dependency. Options:
+## Still open
 
-| | Cost |
-|---|---|
-| Depend on PyYAML | One dependency in the validator — the one component an adopter may want to run in their own CI without adopting the toolchain |
-| Vendor a minimal parser | ~150 lines to write and own; handles the frontmatter subset only |
-| Require frontmatter be JSON | Non-conformant — official OKF says YAML |
-
-The dependency only really bites in the **validator**. It is the component most likely to
-be lifted into someone else's pipeline on its own, and the one where "add a requirements
-file first" is the difference between adopted and ignored. The rest of the implementation
-may take dependencies freely.
-
-**Recommendation: vendor a minimal parser.** The frontmatter subset in play is small
-(scalars, lists, one level of nesting, flow mappings). The Phase 0 consistency checks
-already parse it with ~40 lines of regex and correctly validated all ten guide concepts,
-which is evidence the subset is tractable rather than a guess.
-
-Emit through a real serializer if writing ever needs more than round-tripping.
-
-## Rejected
-
-- **Node/TypeScript** — the viewer is already dependency-free HTML and needs no toolchain;
-  attesters would need a second runtime.
-- **Go** — best single-binary story, worst attester story, and a compile step between an
-  adopter and a fix.
-- **Rust** — same, more so.
-
-## Open
-
-Does `okfm` publish to PyPI under that name, and is it available?
+Level 4 packaging. `uvx okfm` and `pipx install okfm` are the obvious candidates, and the
+name's availability on PyPI is unchecked. Not blocking — Level 4 does not exist yet.

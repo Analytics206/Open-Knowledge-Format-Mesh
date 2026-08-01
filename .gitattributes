@@ -1,0 +1,22 @@
+# Line endings are pinned because content hashes are load-bearing here.
+#
+# OKFM stores `okfm_captured.hash` — a sha256 of a source file — and reports drift when a
+# later observation disagrees. If line endings flip between platforms, the hash changes
+# without the content changing, and the mesh reports drift that is not real. Drift has to
+# mean "the source actually changed" or it means nothing.
+
+* text=auto eol=lf
+
+*.md    text eol=lf
+*.py    text eol=lf
+*.json  text eol=lf
+*.yaml  text eol=lf
+*.yml   text eol=lf
+*.html  text eol=lf
+*.txt   text eol=lf
+
+# Binaries, left alone.
+*.png   binary
+*.jpg   binary
+*.pdf   binary
+*.ico   binary

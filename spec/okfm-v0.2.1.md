@@ -856,11 +856,13 @@ okfm/
   okfm-suite/                # level 4 — providers, packs, federation, workflows
 
   # ---- level 2: the drop-in folder. Copy this whole directory. ------------
-  dropin/
-    build  validate  index   # the deterministic pipeline (§13.7 level 2)
+  dropin/                                                                    ✓
+    bootstrap  bake_viewer   # build the bundle, bake the viewer index       ✓
+    check_bundles            # conformance, profile, strip test              ✓
+    check_docs               # the spec corpus                               ✓
     resolvers/               # file:// only — live schemes need credentials
     vocab/                   # core reason codes, predicates
-    requirements.txt         # dependencies are permitted here; a model is not
+    # Python 3.13, standard library only. No requirements file, by design.
 
   # ---- levels 3-4: the implementation. Optional, replaceable. -------------
   tools/

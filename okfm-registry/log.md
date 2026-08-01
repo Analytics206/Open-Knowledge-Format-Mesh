@@ -12,7 +12,7 @@ okfm_scope: project
 `okfm-guide` and `okfm-decisions` registered. Both already existed as content; neither was
 authored to populate the mesh.
 
-The decision records were converted to concepts by `scripts/bootstrap.py` — deterministic
+The decision records were converted to concepts by `dropin/bootstrap.py` — deterministic
 extraction, no model — so every description is copied from text the record already contained
 and every concept landed `status: draft` with no `verified` entry. That is the honest state:
 extraction produced them, nobody has reviewed them.

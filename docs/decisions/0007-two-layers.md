@@ -13,9 +13,7 @@ okfm_scope: project
 ---
 # DR-0007 — Two layers: a base that installs nothing, and an optional implementation
 
-- **Status:** **accepted** 2026-08-01 — *"I don't want to make the base okfm anything anyone
-  needs to install to use it; they can download, connect their agent to the okfm for
-  documentation and build their own implementation, or reuse the base project."*
+- **Status:** accepted 2026-08-01
 - **Date:** 2026-08-01
 - **Affects:** spec §13.2, §13.3, §13.6, §13.7, §14; rescopes [DR-0001](0001-runtime-and-packaging.md)
 

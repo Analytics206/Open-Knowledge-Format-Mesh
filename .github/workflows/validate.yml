@@ -24,18 +24,18 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.13"
 
       # No `pip install` step, deliberately. If one ever appears here, the
       # zero-dependency claim in decisions/0001 has quietly stopped being true.
       - name: Validate the spec corpus
-        run: python scripts/check_docs.py
+        run: python dropin/check_docs.py
 
       - name: Validate every bundle
-        run: python scripts/check_bundles.py
+        run: python dropin/check_bundles.py
 
       - name: Viewer index matches the bundles
-        run: python scripts/bake_viewer.py --check
+        run: python dropin/bake_viewer.py --check
 
   boundaries:
     name: boundaries
@@ -45,7 +45,7 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.13"
 
       # spec 13.3 — core carries no domain words. This is what keeps the scaffolding
       # distributable while it is developed against two specific domains. Bundles and
@@ -54,7 +54,7 @@ jobs:
         run: |
           set -e
           DIRS=""
-          for d in scripts dropin tools; do [ -d "$d" ] && DIRS="$DIRS $d"; done
+          for d in dropin tools; do [ -d "$d" ] && DIRS="$DIRS $d"; done
           [ -n "$DIRS" ] || { echo "no code directories yet"; exit 0; }
           if grep -rniE 'arxiv|sugarpaws|patron|sp3d' $DIRS; then
             echo "::error::domain word found in code — see spec 13.3"
@@ -79,5 +79,5 @@ jobs:
         run: |
           set -e
           rm -rf tools
-          python scripts/check_bundles.py
-          python scripts/check_docs.py
+          python dropin/check_bundles.py
+          python dropin/check_docs.py

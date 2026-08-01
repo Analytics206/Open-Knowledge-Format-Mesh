@@ -12,7 +12,7 @@ Trust and staleness are NOT written here. They are derived by the viewer at rend
 
 `needs: []` -- no network, no secrets, no model.
 
-    python scripts/bake_viewer.py [--check]
+    python dropin/bake_viewer.py [--check]
 
 --check exits non-zero if the committed viewer is out of date, for CI.
 """

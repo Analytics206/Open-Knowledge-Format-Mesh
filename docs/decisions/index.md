@@ -17,12 +17,12 @@ on. `deferred` was decided *not* to decide, and carries a re-entry trigger.
 
 | # | Decision | Status | Affects |
 |---|---|---|---|
-| [0001](0001-runtime-and-packaging.md) | Runtime and packaging for the implementation | **proposed** | §13.3, §13.6, §13.7 |
+| [0001](0001-runtime-and-packaging.md) | Runtime and packaging for the implementation | partial | §13.3, §13.6, §13.7 |
 | [0002](0002-version-scheme.md) | Version scheme | deferred | versioning policy, `okfm.json` |
 | [0003](0003-phase-ordering.md) | Where federation sits in the delivery order | **proposed** | §15 — amended by 0010 |
 | [0004](0004-split-the-spec-preserve-numbers.md) | Split the spec, preserve section numbers | accepted | all four documents |
 | [0005](0005-path-resolution.md) | Bundle-relative in files, mesh-relative in the index | accepted | §6.5, §7.3, §12.3, §14.2 |
-| [0006](0006-drift-cost-and-caching.md) | What drift costs, and where the answer is cached | **proposed** | §3.4, §8.3–8.5, §13.4, §14.4, §20.8 |
+| [0006](0006-drift-cost-and-caching.md) | Drift is observed at build time, never at read time | accepted | §3.4, §8.3–8.5, §13.4, §14.4, §20.8 |
 | [0007](0007-two-layers.md) | Base installs nothing; the implementation is optional | accepted | §13.2, §13.3, §13.6, §13.7, §14 |
 | [0008](0008-build-pipeline.md) | What each component requires, and what the rebuild does | accepted | §8.4, §10, §11.6, §13.6, §16 |
 | [0009](0009-adoption-levels.md) | Four adoption levels | accepted | §13.1, §13.3, §13.6, §13.7 |
@@ -45,12 +45,9 @@ needs an API key" true as the implementation grows, rather than a promise that q
 
 ## Still open
 
-**0001** decides the language and install path for the implementation. Blocks Phase 1 code.
-Partially answered — Python dependencies are acceptable at Level 2 — but the packaging
-question stands.
-
-**0006** must be settled before the Phase 2 resolvers, because it decides what a resolver
-returns on a cold cache. No input yet.
+**0001** — settled for the lower levels: Python 3.13, standard library only in `dropin/`.
+Level 4 packaging (`uvx` vs `pipx`, the PyPI name) is still open and not blocking, because
+Level 4 does not exist yet.
 
 **0011** keeps the read-only viewer intact and puts writes in a separate console. Phase 3,
 but it decides where 0008's `[human]` tier finally gets an interface.
@@ -82,5 +79,11 @@ tier number.
 **0009** — four cumulative adoption levels, each a complete usable process rather than a
 teaser for the next.
 
-**0010** — OKFM's own repository becomes a five-bundle mesh, so the project runs the thing
-it describes instead of only specifying it.
+**0010** — OKFM's own repository becomes a mesh, so the project runs the thing it describes
+instead of only specifying it. Amended: the registry names the bundles that exist and gains
+members as levels ship.
+
+**0006** — drift is observed during the build and cached; nothing resolves it at read time.
+Trust and staleness stay read-time because they are free. The cache stores observations, not
+verdicts, and a pointer that has never been observed reports `unknown` rather than defaulting
+to fresh.

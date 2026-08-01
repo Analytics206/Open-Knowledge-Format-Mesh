@@ -13,8 +13,7 @@ okfm_scope: project
 ---
 # DR-0009 — Four adoption levels
 
-- **Status:** **accepted** 2026-08-01 — levels defined by the steward across three
-  revisions; bundle location and scope delegated and decided below
+- **Status:** accepted 2026-08-01
 - **Date:** 2026-08-01
 - **Revisions:** r1 levels 2/3 split on *who does the work* · **r2 they split on whether the
   shipped components reason; "minimal but full featured" made the governing constraint**
@@ -64,20 +63,13 @@ An earlier revision made "agent-generated" Level 3. That was wrong: it described
 
 Cumulative — each includes everything below it.
 
-### Level 1 — the format
+### Level 1 — download it
 
-Download OKFM, open `okfm-viewer.html`, read the guide, copy the pattern into your project
-by hand or with your own agent.
+Download the project. Open `okfm-viewer.html`. Read the guide.
+
+That is the entire level. There is nothing to install and nothing to run.
 
 **Ships:** `spec/`, `okfm-guide/`, `okfm-viewer.html`, `docs/`, `examples/`, `templates/`.
-**Adopter supplies:** a browser.
-**Installs:** nothing.
-
-The complete, usable thing at this level is the *format itself* plus a working bundle
-demonstrating it. That is enough to maintain a mesh entirely by hand.
-
-This level must never regress. A format that cannot be understood and copied without
-tooling is not a format.
 
 ### Level 2 — the deterministic process, as a drop-in folder
 
@@ -89,15 +81,15 @@ Not a process the adopter builds from an example. A process they paste and run.
 
 **Ships:** + every component whose `needs` excludes `model` — including credentialed
 resolvers, which are deterministic even when they reach a warehouse.
-**Adopter supplies:** a Python runtime, and their own credentials if they resolve live
-pointers.
-**Installs:** possibly some Python dependencies. **Never** a key, a provider, or a model.
+**Adopter supplies:** Python 3.13, and their own credentials if they resolve live pointers.
+**Installs:** nothing. Standard library only — see [DR-0001](0001-runtime-and-packaging.md).
 **Shape:** a self-contained directory, copy-pasteable, with no assumption that it was
 installed as a package.
 
-The constraint here is **liftable**, not zero-dependency. `pip install -r requirements.txt`
-inside the dropped folder is acceptable; requiring the adopter to adopt OKFM's CLI, config
-schema, and directory conventions to get a validator is not.
+Two constraints, and both matter. **Liftable**: the folder is pasted into a stranger's
+repository and run there, so it may not reach outside itself. **No install step**: a
+dependency means that stranger resolves a package tree before anything happens, in whatever
+environment they have — which is the friction this level exists to remove.
 
 #### Where it writes, and what it scans
 
