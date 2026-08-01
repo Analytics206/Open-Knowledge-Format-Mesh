@@ -1,9 +1,17 @@
 # Line endings are pinned because content hashes are load-bearing here.
 #
 # OKFM stores `okfm_captured.hash` — a sha256 of a source file — and reports drift when a
-# later observation disagrees. If line endings flip between platforms, the hash changes
-# without the content changing, and the mesh reports drift that is not real. Drift has to
-# mean "the source actually changed" or it means nothing.
+# later observation disagrees. Drift has to mean "the source actually changed" or it means
+# nothing, so anything that changes a hash without changing the content is a defect.
+#
+# Measured, not assumed: hashing raw bytes gives different digests for LF and CRLF copies
+# of identical content; hashing through Python's text mode gives the same digest, because
+# universal-newline translation normalizes before the hash is taken. The current resolver
+# reads text, so it is already immune — see the note in dropin/bootstrap.py, which exists
+# so nobody "optimizes" it to read_bytes() and reintroduces the problem.
+#
+# This file covers what that immunity does not: diff noise, and any future resolver that
+# hashes bytes because the source is not text.
 
 * text=auto eol=lf
 

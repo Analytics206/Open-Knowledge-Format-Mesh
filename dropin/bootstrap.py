@@ -126,6 +126,11 @@ def build(src: Path, ctype: str, scope: str | None, stamp: str,
             out.append((f, "skip (already a concept)", ""))
             continue
 
+        # Hash the TEXT, never the raw bytes. `read_text` applies universal-newline
+        # translation, so an LF and a CRLF copy of identical content hash the same —
+        # which is what keeps `okfm_captured` stable across platforms and stops the
+        # mesh reporting drift that did not happen. Switching to read_bytes() here
+        # would be a silent correctness regression, not an optimization.
         sha = hashlib.sha256(text.encode("utf-8")).hexdigest()
         lines = [
             "---",
