@@ -1,3 +1,16 @@
+---
+type: Decision
+title: DR-0006 — What drift costs, and where the answer is cached
+description: If drift is derived on every read, and injection is a read that happens at the start of every run, then every run pays one resolution per pointer in the mesh. For a `file://` pointer that is a stat…
+status: draft
+generated: { by: "process:okfm-bootstrap", at: 2026-08-01T00:00:00Z }
+sources:
+  - id: self
+    resource: /0006-drift-cost-and-caching.md
+    okfm_role: subject
+    okfm_captured: { hash: "sha256:6702ebe5c8c720ce...", at: 2026-08-01 }
+okfm_scope: project
+---
 # DR-0006 — What drift costs, and where the answer is cached
 
 - **Status:** proposed — needs a call before the resolvers are built in Phase 2

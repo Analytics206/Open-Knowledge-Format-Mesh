@@ -1,3 +1,16 @@
+---
+type: Decision
+title: DR-0008 — What each component requires, and what the rebuild actually does
+description: That is correct and it generalizes.
+status: draft
+generated: { by: "process:okfm-bootstrap", at: 2026-08-01T00:00:00Z }
+sources:
+  - id: self
+    resource: /0008-build-pipeline.md
+    okfm_role: subject
+    okfm_captured: { hash: "sha256:3471204a94d9172f...", at: 2026-08-01 }
+okfm_scope: project
+---
 # DR-0008 — What each component requires, and what the rebuild actually does
 
 - **Status:** **accepted** 2026-08-01 — ordering and the explicit `needs` set confirmed by

@@ -1,3 +1,16 @@
+---
+type: Decision
+title: DR-0004 — Split the spec, preserve section numbers
+description: "The unified `okfm-spec-v0.2.1.md` was 1,535 lines carrying four jobs at once: a normative specification, a rationale, a roadmap, and a lab notebook. For a project whose primary constraint is that a…"
+status: draft
+generated: { by: "process:okfm-bootstrap", at: 2026-08-01T00:00:00Z }
+sources:
+  - id: self
+    resource: /0004-split-the-spec-preserve-numbers.md
+    okfm_role: subject
+    okfm_captured: { hash: "sha256:e5854f2c400eed7f...", at: 2026-08-01 }
+okfm_scope: project
+---
 # DR-0004 — Split the spec, preserve section numbers
 
 - **Status:** accepted — done in Phase 0

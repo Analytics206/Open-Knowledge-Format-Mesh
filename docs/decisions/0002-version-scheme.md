@@ -1,3 +1,16 @@
+---
+type: Decision
+title: DR-0002 — Version scheme
+description: "The **release number on OKFM itself** — the `0.2.1` in `\"okfm\": \"0.2.1\"` — in the same sense a library is at `v1.4.2`."
+status: draft
+generated: { by: "process:okfm-bootstrap", at: 2026-08-01T00:00:00Z }
+sources:
+  - id: self
+    resource: /0002-version-scheme.md
+    okfm_role: subject
+    okfm_captured: { hash: "sha256:8eee7efd10063864...", at: 2026-08-01 }
+okfm_scope: project
+---
 # DR-0002 — Version scheme
 
 - **Status:** **deferred** — reviewed 2026-08-01, current scheme kept (see Resolution)

@@ -1,3 +1,16 @@
+---
+type: Decision
+title: DR-0009 — Four adoption levels
+description: Worth stating plainly, because the two were conflated during drafting.
+status: draft
+generated: { by: "process:okfm-bootstrap", at: 2026-08-01T00:00:00Z }
+sources:
+  - id: self
+    resource: /0009-adoption-levels.md
+    okfm_role: subject
+    okfm_captured: { hash: "sha256:1efbd92c95dbcb33...", at: 2026-08-01 }
+okfm_scope: project
+---
 # DR-0009 — Four adoption levels
 
 - **Status:** **accepted** 2026-08-01 — levels defined by the steward across three

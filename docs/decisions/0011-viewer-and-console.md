@@ -1,3 +1,16 @@
+---
+type: Decision
+title: DR-0011 — The viewer stays read-only; a console is a separate artifact
+description: A web UI at Level 3 or 4 that can edit configuration, and view at minimum.
+status: draft
+generated: { by: "process:okfm-bootstrap", at: 2026-08-01T00:00:00Z }
+sources:
+  - id: self
+    resource: /0011-viewer-and-console.md
+    okfm_role: subject
+    okfm_captured: { hash: "sha256:89fbb25f902c59c1...", at: 2026-08-01 }
+okfm_scope: project
+---
 # DR-0011 — The viewer stays read-only; a console is a separate artifact
 
 - **Status:** proposed — needs a call before Phase 3 (level 3/4 work)

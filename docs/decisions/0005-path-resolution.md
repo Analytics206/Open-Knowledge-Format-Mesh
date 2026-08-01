@@ -1,3 +1,16 @@
+---
+type: Decision
+title: DR-0005 — Bundle-relative in files, mesh-relative in the index
+description: The specification defines bundle-relative paths (`/rules/churn-billing.md`) and cross-bundle addressing (`okf://sp3d-rules/rules/churn-billing.md`), but never says how a bundle-relative path becomes…
+status: draft
+generated: { by: "process:okfm-bootstrap", at: 2026-08-01T00:00:00Z }
+sources:
+  - id: self
+    resource: /0005-path-resolution.md
+    okfm_role: subject
+    okfm_captured: { hash: "sha256:efd39c50cd5ecd21...", at: 2026-08-01 }
+okfm_scope: project
+---
 # DR-0005 — Bundle-relative in files, mesh-relative in the index
 
 - **Status:** accepted — provisional, revisit when `okfm view` is built

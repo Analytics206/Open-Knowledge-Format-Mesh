@@ -1,3 +1,12 @@
+---
+type: Index
+title: Decision records
+description: What was decided about OKFM, why, and what would reverse it.
+status: stable
+generated: { by: "human:analytics206", at: 2026-08-01T00:00:00Z }
+okfm_scope: project
+---
+
 # Decision records
 
 Dated, numbered, short. One decision per file, kept even when superseded — the record of

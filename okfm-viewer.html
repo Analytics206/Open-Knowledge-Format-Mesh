@@ -245,22 +245,188 @@
 -----------------------------------------------------------------------------*/
 const INDEX_URL = (window.OKFM_INDEX_URL) || "./okfm-index.json";
 const BOOTSTRAP = {
- "name": "OKFM guide (bundled)",
- "generated_at": "2026-07-31",
+ "name": "OKFM mesh (bundled)",
+ "generated_at": "2026-08-01",
  "bundles": [
   {
+   "id": "okfm-registry",
+   "title": "okfm-registry",
+   "owner": "human:analytics206"
+  },
+  {
    "id": "okfm-guide",
-   "title": "OKFM guide",
-   "owner": "process:okfm-scaffold"
+   "title": "okfm-guide",
+   "owner": "human:analytics206"
+  },
+  {
+   "id": "okfm-decisions",
+   "title": "okfm-decisions",
+   "owner": "human:analytics206"
   }
  ],
  "concepts": [
+  {
+   "p": "/docs/decisions/0001-runtime-and-packaging.md",
+   "b": "okfm-decisions",
+   "t": "Decision",
+   "title": "DR-0001 — Runtime and packaging for the reference implementation",
+   "d": "This record originally asked \"what is *core* written in,\" treating OKFM as one installable thing. [DR-0007](0007-two-layers.md) splits it in two: a **base** layer that is a specification, a guide, a…",
+   "v": null,
+   "sa": null,
+   "src": 1,
+   "drift": 0,
+   "r": [],
+   "scope": "project"
+  },
+  {
+   "p": "/docs/decisions/0002-version-scheme.md",
+   "b": "okfm-decisions",
+   "t": "Decision",
+   "title": "DR-0002 — Version scheme",
+   "d": "The **release number on OKFM itself** — the `0.2.1` in `\"okfm\": \"0.2.1\"` — in the same sense a library is at `v1.4.2`.",
+   "v": null,
+   "sa": null,
+   "src": 1,
+   "drift": 0,
+   "r": [],
+   "scope": "project"
+  },
+  {
+   "p": "/docs/decisions/0003-phase-ordering.md",
+   "b": "okfm-decisions",
+   "t": "Decision",
+   "title": "DR-0003 — Where federation sits in the delivery order",
+   "d": "Phase 1 arXiv retrofit → Phase 2 extraction → **Phase 2.5 federation** → Phase 3 SugarPaws3d port.",
+   "v": null,
+   "sa": null,
+   "src": 1,
+   "drift": 0,
+   "r": [],
+   "scope": "project"
+  },
+  {
+   "p": "/docs/decisions/0004-split-the-spec-preserve-numbers.md",
+   "b": "okfm-decisions",
+   "t": "Decision",
+   "title": "DR-0004 — Split the spec, preserve section numbers",
+   "d": "The unified `okfm-spec-v0.2.1.md` was 1,535 lines carrying four jobs at once: a normative specification, a rationale, a roadmap, and a lab notebook. For a project whose primary constraint is that a…",
+   "v": null,
+   "sa": null,
+   "src": 1,
+   "drift": 0,
+   "r": [],
+   "scope": "project"
+  },
+  {
+   "p": "/docs/decisions/0005-path-resolution.md",
+   "b": "okfm-decisions",
+   "t": "Decision",
+   "title": "DR-0005 — Bundle-relative in files, mesh-relative in the index",
+   "d": "The specification defines bundle-relative paths (`/rules/churn-billing.md`) and cross-bundle addressing (`okf://sp3d-rules/rules/churn-billing.md`), but never says how a bundle-relative path becomes…",
+   "v": null,
+   "sa": null,
+   "src": 1,
+   "drift": 0,
+   "r": [],
+   "scope": "project"
+  },
+  {
+   "p": "/docs/decisions/0006-drift-cost-and-caching.md",
+   "b": "okfm-decisions",
+   "t": "Decision",
+   "title": "DR-0006 — What drift costs, and where the answer is cached",
+   "d": "If drift is derived on every read, and injection is a read that happens at the start of every run, then every run pays one resolution per pointer in the mesh. For a `file://` pointer that is a stat…",
+   "v": null,
+   "sa": null,
+   "src": 1,
+   "drift": 0,
+   "r": [],
+   "scope": "project"
+  },
+  {
+   "p": "/docs/decisions/0007-two-layers.md",
+   "b": "okfm-decisions",
+   "t": "Decision",
+   "title": "DR-0007 — Two layers: a base that installs nothing, and an optional implementation",
+   "d": "The specification treats OKFM as one thing that an adopter installs and runs. §13.2's four layers — core, domain pack, config, bundle — are all *implementation* layers, and §13.3's repository tree…",
+   "v": null,
+   "sa": null,
+   "src": 1,
+   "drift": 0,
+   "r": [],
+   "scope": "project"
+  },
+  {
+   "p": "/docs/decisions/0008-build-pipeline.md",
+   "b": "okfm-decisions",
+   "t": "Decision",
+   "title": "DR-0008 — What each component requires, and what the rebuild actually does",
+   "d": "That is correct and it generalizes.",
+   "v": null,
+   "sa": null,
+   "src": 1,
+   "drift": 0,
+   "r": [],
+   "scope": "project"
+  },
+  {
+   "p": "/docs/decisions/0009-adoption-levels.md",
+   "b": "okfm-decisions",
+   "t": "Decision",
+   "title": "DR-0009 — Four adoption levels",
+   "d": "Worth stating plainly, because the two were conflated during drafting.",
+   "v": null,
+   "sa": null,
+   "src": 1,
+   "drift": 0,
+   "r": [],
+   "scope": "project"
+  },
+  {
+   "p": "/docs/decisions/0010-okfm-self-hosts-as-a-mesh.md",
+   "b": "okfm-decisions",
+   "t": "Decision",
+   "title": "DR-0010 — OKFM's own repository is the first mesh",
+   "d": "§21.5 names federation as the least-evidenced thing in the design: *\"Nothing in the ecosystem so far covers the loop family, federation, content-based drift, perspectives, or declared-versus-observed…",
+   "v": null,
+   "sa": null,
+   "src": 1,
+   "drift": 0,
+   "r": [],
+   "scope": "project"
+  },
+  {
+   "p": "/docs/decisions/0011-viewer-and-console.md",
+   "b": "okfm-decisions",
+   "t": "Decision",
+   "title": "DR-0011 — The viewer stays read-only; a console is a separate artifact",
+   "d": "A web UI at Level 3 or 4 that can edit configuration, and view at minimum.",
+   "v": null,
+   "sa": null,
+   "src": 1,
+   "drift": 0,
+   "r": [],
+   "scope": "project"
+  },
+  {
+   "p": "/docs/decisions/index.md",
+   "b": "okfm-decisions",
+   "t": "Index",
+   "title": "Decision records",
+   "d": "What was decided about OKFM, why, and what would reverse it.",
+   "v": null,
+   "sa": null,
+   "src": 0,
+   "drift": 0,
+   "r": [],
+   "scope": "project"
+  },
   {
    "p": "/okfm-guide/admission-test.md",
    "b": "okfm-guide",
    "t": "Concept",
    "title": "The admission test",
-   "d": "Write down what the code cannot say \u2014 and nothing else.",
+   "d": "Write down what the code cannot say — and nothing else.",
    "v": null,
    "sa": null,
    "src": 1,
@@ -428,6 +594,68 @@ const BOOTSTRAP = {
     ]
    ],
    "scope": "guide"
+  },
+  {
+   "p": "/okfm-registry/index.md",
+   "b": "okfm-registry",
+   "t": "Index",
+   "title": "OKFM mesh registry",
+   "d": "The map of this repository's bundles. Owns membership, never member content.",
+   "v": null,
+   "sa": null,
+   "src": 0,
+   "drift": 0,
+   "r": [],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-registry/log.md",
+   "b": "okfm-registry",
+   "t": "Log",
+   "title": "Registry changelog",
+   "d": "Append-only history of mesh membership.",
+   "v": null,
+   "sa": null,
+   "src": 0,
+   "drift": 0,
+   "r": [],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-registry/members/okfm-decisions.md",
+   "b": "okfm-registry",
+   "t": "OKF Member",
+   "title": "OKFM decision records",
+   "d": "Why this project is shaped the way it is — the rationale no source file can state.",
+   "v": null,
+   "sa": null,
+   "src": 0,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-registry/index.md"
+    ]
+   ],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-registry/members/okfm-guide.md",
+   "b": "okfm-registry",
+   "t": "OKF Member",
+   "title": "OKFM guide",
+   "d": "The format, and a working bundle that demonstrates it by being one.",
+   "v": null,
+   "sa": null,
+   "src": 0,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-registry/index.md"
+    ]
+   ],
+   "scope": "project"
   }
  ]
 };

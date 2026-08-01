@@ -1,3 +1,16 @@
+---
+type: Decision
+title: "DR-0010 — OKFM's own repository is the first mesh"
+description: "§21.5 names federation as the least-evidenced thing in the design: *\"Nothing in the ecosystem so far covers the loop family, federation, content-based drift, perspectives, or declared-versus-observed…"
+status: draft
+generated: { by: "process:okfm-bootstrap", at: 2026-08-01T00:00:00Z }
+sources:
+  - id: self
+    resource: /0010-okfm-self-hosts-as-a-mesh.md
+    okfm_role: subject
+    okfm_captured: { hash: "sha256:2b67346d647d548c...", at: 2026-08-01 }
+okfm_scope: project
+---
 # DR-0010 — OKFM's own repository is the first mesh
 
 - **Status:** **accepted** 2026-08-01 — *"a big key to this project is the OKF of OKFs. I
@@ -84,6 +97,34 @@ But this record splits federation in two, and the cheap half is nearly free:
 DR-0003 should be amended rather than reversed: the addressing half moves into Phase 1
 because it costs almost nothing and proves the project's central metaphor on day one; the
 negotiation half stays where DR-0003 put it.
+
+## Amendment — the mesh grows as levels ship
+
+The decision above implies authoring five bundles at once, four of which describe levels that
+do not exist yet. That is exactly the failure the "What this costs" section warns about, and
+it is avoidable: **the registry starts with the bundles that are real and gains a member when
+a level ships.**
+
+Today two bundles are real, and neither requires inventing anything:
+
+| Bundle | Is | Why it qualifies |
+|---|---|---|
+| `okfm-guide/` | level 1, the format | Already exists |
+| `docs/decisions/` | the decision record set | Already exists, and every file is literally a `Decision` |
+
+`okfm-process/`, `okfm-enrich/`, and `okfm-suite/` join when Phases 1, 2, and 3 build them.
+A registry naming a member that does not exist would be the mesh lying about itself in the
+one place it cannot afford to.
+
+**The decision records are the better of the two demonstrations.** They pass §7.7's admission
+test outright — a decision record records *why*, the alternative rejected, the reasoning that
+would otherwise evaporate, none of which any source file can state. They are also real
+`Decision` concepts of the loop family (§7.5), authored by a human, which makes them
+tier-`[human]` under [DR-0008](0008-build-pipeline.md) and correct by construction. And they
+directly serve success measure §20.2: *"Why did we decide X?" answered from the bundle in one
+query.*
+
+Two real members with genuine content beat five with four restating a README.
 
 ## What this costs
 

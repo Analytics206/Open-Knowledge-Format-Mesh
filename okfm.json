@@ -1,7 +1,11 @@
 {
   "okfm": "0.2.1",
   "pack": null,
-  "bundles": { "guide": "./okfm-guide" },
+  "bundles": {
+    "okfm-registry": "./okfm-registry",
+    "okfm-guide": "./okfm-guide",
+    "okfm-decisions": "./docs/decisions"
+  },
   "viewer": {
     "path": "./okfm-viewer.html",
     "index": "./okfm-index.json",
@@ -13,5 +17,5 @@
   },
   "exclude_scopes": ["guide"],
   "stores": {},
-  "federation": { "registry": null }
+  "federation": { "registry": "./okfm-registry" }
 }

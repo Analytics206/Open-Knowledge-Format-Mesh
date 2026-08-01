@@ -1,3 +1,16 @@
+---
+type: Decision
+title: DR-0003 — Where federation sits in the delivery order
+description: Phase 1 arXiv retrofit → Phase 2 extraction → **Phase 2.5 federation** → Phase 3 SugarPaws3d port.
+status: draft
+generated: { by: "process:okfm-bootstrap", at: 2026-08-01T00:00:00Z }
+sources:
+  - id: self
+    resource: /0003-phase-ordering.md
+    okfm_role: subject
+    okfm_captured: { hash: "sha256:f9f4d169d3594933...", at: 2026-08-01 }
+okfm_scope: project
+---
 # DR-0003 — Where federation sits in the delivery order
 
 - **Status:** proposed — needs a call before Phase 2 planning
