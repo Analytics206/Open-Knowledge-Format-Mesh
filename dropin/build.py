@@ -69,7 +69,7 @@ def mirror(src_dir: Path, out_dir: Path, ctype: str, stamp: str, apply: bool) ->
             "  - id: source",
             f"    resource: {_rel(dest, f)}",
             "    okfm_role: subject",
-            f'    okfm_captured: {{ hash: "sha256:{sha[:16]}...", at: {stamp[:10]} }}',
+            f'    okfm_captured: {{ hash: "sha256:{sha}", at: {stamp[:10]} }}',
             "---",
             "",
             f"# {_title(text, f)}",

@@ -274,7 +274,7 @@ const BOOTSTRAP = {
    "v": null,
    "sa": null,
    "src": 1,
-   "drift": 0,
+   "drift": 1,
    "r": [],
    "scope": "project"
   },
@@ -300,7 +300,7 @@ const BOOTSTRAP = {
    "v": null,
    "sa": null,
    "src": 1,
-   "drift": 0,
+   "drift": 1,
    "r": [],
    "scope": "project"
   },
@@ -339,7 +339,7 @@ const BOOTSTRAP = {
    "v": null,
    "sa": null,
    "src": 1,
-   "drift": 0,
+   "drift": 1,
    "r": [],
    "scope": "project"
   },
@@ -352,7 +352,7 @@ const BOOTSTRAP = {
    "v": null,
    "sa": null,
    "src": 1,
-   "drift": 0,
+   "drift": 1,
    "r": [],
    "scope": "project"
   },
@@ -365,7 +365,7 @@ const BOOTSTRAP = {
    "v": null,
    "sa": null,
    "src": 1,
-   "drift": 0,
+   "drift": 1,
    "r": [],
    "scope": "project"
   },
@@ -378,7 +378,7 @@ const BOOTSTRAP = {
    "v": null,
    "sa": null,
    "src": 1,
-   "drift": 0,
+   "drift": 1,
    "r": [],
    "scope": "project"
   },
@@ -391,7 +391,7 @@ const BOOTSTRAP = {
    "v": null,
    "sa": null,
    "src": 1,
-   "drift": 0,
+   "drift": 1,
    "r": [],
    "scope": "project"
   },
@@ -404,7 +404,7 @@ const BOOTSTRAP = {
    "v": null,
    "sa": null,
    "src": 1,
-   "drift": 0,
+   "drift": 1,
    "r": [],
    "scope": "project"
   },
@@ -692,14 +692,19 @@ const color = t => TYPE_COLOR[t] || "#6b7480";
 const today = MESH.today || new Date().toISOString().slice(0,10);
 function trustOf(c){ return c.v === "human" ? "human" : c.v === "machine" ? "machine" : "unverified"; }
 function freshOf(c){
-  if (c.drift) return "drifted";
+  // Three states plus staleness, never two. `drift: null` means the pointer has NEVER
+  // been observed -- and rendering that as "fresh" would be a stored opinion wearing a
+  // computed one's clothes, which is the failure spec 3.4 exists to prevent (DR-0006).
+  // Known-bad outranks known-due outranks not-known.
+  if (c.drift === 1) return "drifted";
   if (c.sa && c.sa <= today) return "stale";
+  if (c.drift === null || c.drift === undefined) return "unknown";
   return "fresh";
 }
 const TRUST_COLOR = {human:"var(--verified)", machine:"var(--machine)", unverified:"var(--unverified)"};
 const TRUST_HEX   = {human:"#1f6f5c", machine:"#4a6fa5", unverified:"#98a0aa"};
 const TRUST_LABEL = {human:"human-reviewed", machine:"machine-confirmed", unverified:"unverified"};
-const FRESH_HEX   = {fresh:"#1f6f5c", stale:"#c08a1e", drifted:"#a83e2b"};
+const FRESH_HEX   = {fresh:"#1f6f5c", stale:"#c08a1e", drifted:"#a83e2b", unknown:"#98a0aa"};
 
 let byPath = new Map(), types = [];
 function derive(){
@@ -714,12 +719,12 @@ function derive(){
 /* ---------- filter state ---------- */
 const state = {
   view:"graph", types:new Set(), trust:new Set(["human","machine","unverified"]),
-  fresh:new Set(["fresh","stale","drifted"]), bundles:new Set(), selected:null, body:null
+  fresh:new Set(["fresh","stale","drifted","unknown"]), bundles:new Set(), selected:null, body:null
 };
 function resetFilters(){
   state.types = new Set(types);
   state.trust = new Set(["human","machine","unverified"]);
-  state.fresh = new Set(["fresh","stale","drifted"]);
+  state.fresh = new Set(["fresh","stale","drifted","unknown"]);
   state.bundles = new Set(MESH.bundles.map(b=>b.id));
 }
 const visible = () => MESH.concepts.filter(c =>
@@ -792,7 +797,7 @@ function filters(){
     grp("Type", types.map(t=>chk("types",t,t,color(t),counts(t))).join("")) +
     grp("Trust", ["human","machine","unverified"].map(v=>chk("trust",v,TRUST_LABEL[v],TRUST_HEX[v],
         MESH.concepts.filter(c=>c.trust===v).length)).join("")) +
-    grp("Freshness", ["fresh","stale","drifted"].map(v=>chk("fresh",v,v,FRESH_HEX[v],
+    grp("Freshness", ["fresh","stale","drifted","unknown"].map(v=>chk("fresh",v,v,FRESH_HEX[v],
         MESH.concepts.filter(c=>c.fresh===v).length)).join("")) +
     grp("Bundle", MESH.bundles.map(b=>chk("bundles",b.id,b.id,null,
         MESH.concepts.filter(c=>c.b===b.id).length)).join("")) +
@@ -974,7 +979,7 @@ function buildStats(){
   const typeRows = types.map(t=>bar(t.toLowerCase(), all.filter(c=>c.t===t).length, n, color(t))).join("");
   const trustRows = ["human","machine","unverified"].map(v=>
     bar(TRUST_LABEL[v], all.filter(c=>c.trust===v).length, n, TRUST_HEX[v])).join("");
-  const freshRows = ["fresh","stale","drifted"].map(v=>
+  const freshRows = ["fresh","stale","drifted","unknown"].map(v=>
     bar(v, all.filter(c=>c.fresh===v).length, n, FRESH_HEX[v])).join("");
 
   const needs = all.filter(c=>c.fresh!=="fresh" || c.trust==="unverified" || (c.r.length===0&&c.inb===0)

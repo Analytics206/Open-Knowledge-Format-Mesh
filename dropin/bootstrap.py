@@ -176,7 +176,7 @@ def build(src: Path, ctype: str, scope: str | None, stamp: str,
             "  - id: self",
             f"    resource: /{f.name}",
             "    okfm_role: subject",
-            f'    okfm_captured: {{ hash: "sha256:{sha[:16]}...", at: {stamp[:10]} }}',
+            f'    okfm_captured: {{ hash: "sha256:{sha}", at: {stamp[:10]} }}',
         ]
         if scope:
             lines.append(f"okfm_scope: {scope}")

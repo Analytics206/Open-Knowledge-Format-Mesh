@@ -21,10 +21,11 @@ import re
 import sys
 from pathlib import Path
 
-from okfm_core import PROJECT, configured_bundles, load_or_create_config
+from okfm_core import HERE, PROJECT, configured_bundles, load_or_create_config
 
 ROOT = PROJECT
 VIEWER = PROJECT / "okfm-viewer.html"
+CACHE = HERE / ".okfm-cache" / "observations.json"
 
 RESERVED_TYPES = {"Index", "Log"}
 _FM = re.compile(r"\A---\r?\n(.*?)\r?\n---\r?\n", re.S)
@@ -59,8 +60,44 @@ def trust(block: str):
     return "human" if re.search(r"^verified:.*human:", block, re.M) else "machine"
 
 
+_CAPTURED = re.compile(r"resource:\s*(\S+)[\s\S]*?hash:\s*\"?sha256:([0-9a-f]+)")
+
+
+def load_observations() -> dict:
+    """The cache holds OBSERVATIONS, never verdicts (DR-0006). Baking derives the verdict
+    by comparing what was observed against what the concept captured — a comparison, not a
+    resolution, so it stays `needs: []`."""
+    if not CACHE.is_file():
+        return {}
+    try:
+        return json.loads(CACHE.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+
+
+def drift_of(block: str, rid: str, obs: dict) -> int | None:
+    """1 drifted, 0 match, None never observed.
+
+    None is emitted as JSON `null` and the viewer renders it `unknown`. Defaulting it to
+    0 would be the stored-opinion failure spec §3.4 exists to prevent.
+    """
+    pairs = _CAPTURED.findall(block)
+    if not pairs:
+        return 0                            # nothing pinned means nothing to drift from
+    seen_any = False
+    for uri, captured in pairs:
+        entry = obs.get(f"{uri}@{rid}")
+        if not entry:
+            continue
+        seen_any = True
+        if not entry.get("observed", "").removeprefix("sha256:").startswith(captured):
+            return 1
+    return 0 if seen_any else None
+
+
 def collect():
     _, cfg, _ = load_or_create_config(write=False)
+    obs = load_observations()
     bundles, concepts = [], []
 
     for bundle_id, src in configured_bundles(cfg).items():
@@ -90,9 +127,7 @@ def collect():
                 "v": trust(block),
                 "sa": scalar(block, "stale_after"),
                 "src": len(re.findall(r"^\s+- id:", block, re.M)),
-                # Drift needs a live resolution and a cache with a TTL (decisions/0006).
-                # The bake step is `needs: []`, so it reports 0 rather than guessing.
-                "drift": 0,
+                "drift": drift_of(block, f"{bundle_id}/{f.relative_to(src).as_posix()}", obs),
                 "r": relations(block, root),
                 "scope": scalar(block, "okfm_scope"),
             })

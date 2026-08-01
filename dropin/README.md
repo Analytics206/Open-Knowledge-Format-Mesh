@@ -28,6 +28,7 @@ network, no secrets, no model.
 | `bootstrap.py` | Extraction — `title`, `description` — and in-place concept creation. |
 | `bake_viewer.py` | Regenerates the viewer's index from the bundles. `--check` gates CI. |
 | `check_bundles.py` | Conformance, profile, strip test, predicates, links, footnotes. |
+| `refresh.py` | Observes pointers, writes the observation cache, reports drift. `--check` gates CI. |
 | `vocab/` | Controlled vocabularies — predicates and reason codes, in files rather than code. |
 
 ## Two modes
@@ -76,6 +77,36 @@ Each was added because the previous version got something wrong on a real corpus
 `--refresh` recomputes descriptions on concepts this tool created — identified by
 `generated.by` naming `process:okfm-bootstrap`. Anything a person or a model touched is
 left alone.
+
+## Drift
+
+```bash
+python okfm/refresh.py            # observe, cache, report
+python okfm/refresh.py --check    # exit 1 on drift in a `stable` concept
+```
+
+**Drift is observed here and nowhere else.** Nothing on the read path resolves a pointer —
+not the viewer, not an injected index, not an agent. That is what keeps reading a mesh free
+([DR-0006](../docs/decisions/0006-drift-cost-and-caching.md)).
+
+Three states, never two: `match`, `drifted`, and **`unknown`** for a pointer never observed.
+Unknown renders as unknown. Defaulting it to fresh would be a stored opinion wearing a
+computed one's clothes.
+
+The cache holds **observations, not verdicts** — *this pointer hashed to X at time T* stays
+true forever, which is why caching it does not violate derive-don't-store. The verdict is
+recomputed by whoever reads.
+
+Only `status: stable` concepts fail the build. A draft is expected to be out of step with its
+source; that is what draft means.
+
+**A human refreshes `okfm_captured`, never the build.** Doing it automatically would erase
+the very signal drift exists to carry.
+
+For in-place concepts — where the file *is* the concept — the body is hashed rather than the
+whole file. The captured hash was taken before frontmatter existed, so comparing whole files
+would report drift forever. Hashing the body gives it a useful meaning instead: *the prose
+changed since the description was extracted*, which is the enrichment work list.
 
 ## Vocabularies
 

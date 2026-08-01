@@ -34,6 +34,12 @@ jobs:
       - name: Validate every bundle
         run: python dropin/check_bundles.py
 
+      # file:// resolution only, which needs no credential — `needs: []`. When live
+      # schemes land they are `needs: [secrets]` and get a separate workflow gated on
+      # main, never this one.
+      - name: Observe pointers, fail on drift in stable concepts
+        run: python dropin/refresh.py --check
+
       - name: Viewer index matches the bundles
         run: python dropin/bake_viewer.py --check
 
