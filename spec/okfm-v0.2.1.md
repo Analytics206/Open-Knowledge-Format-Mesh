@@ -10,6 +10,24 @@ Normative. What makes a bundle a legal OKFM bundle, and what the scaffolding mus
 **Date:** 2026-07-31
 **Audience:** The builder, adopters of the scaffolding, and the AI agents working the codebase
 
+### Status of this document
+
+**A working specification, not a standard.** It was written to think the system through
+before building it, and parts of it are wrong in ways that only become visible once
+something runs.
+
+Where this document and the implementation disagree, **the implementation is right.** The
+document gets updated and a record goes in [`docs/decisions/`](../docs/decisions/index.md)
+saying what changed and why. An unmet clause here is not a defect in the code.
+
+This is §3.10 — *the spec follows the implementation* — meant literally. Treating a clause
+as binding because it is written down inverts it, and produces decision records for things
+that should just be decided.
+
+Read it for the shape of the system and the reasoning behind it. The `okfm_` key rules, the
+strip test, and the vocabularies in §7 and §10 are the parts that genuinely must hold,
+because other people's bundles depend on them.
+
 ### Versioning policy
 
 OKFM versions are `<okf-major>.<okf-minor>.<okfm-revision>`. **The first two numbers name the OKF baseline this release targets; the third is OKFM's own revision against it.**

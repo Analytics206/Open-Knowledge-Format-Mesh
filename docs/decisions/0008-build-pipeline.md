@@ -326,12 +326,22 @@ is worse than a missing one because traversal, impact analysis, and drift propag
 treat it as fact. A `[model]` component may *propose* relations in a review artifact; it may
 not write them.
 
-## Open
+## Settled details
 
-- Can a `[model]` component write proposals into a separate review file that a `[human]`
-  step merges, without that becoming a back door?
-- Does `okfm build` fail or warn on an unfilled `[model]` field — an empty `description`
-  blocks a useful index but is not malformed.
-- Confirm or override the `Feedback` destination split.
-- Is `needs` a closed vocabulary of four, or should `network` (fetching a public URL — no
-  secret, but not offline either) be a fifth? It sits awkwardly between `[]` and `secrets`.
+Decided rather than left open, because none of these is an architecture question.
+
+**A `[model]` component may write proposals to `review/`, never to a concept.** Proposals
+are a separate artifact a `[human]` step merges. That is not a back door — the rule is
+about which *file* is written, and a proposal file is not a concept.
+
+**`okfm build` warns on an unfilled `[model]` field; it never fails.** An empty
+`description` is unhelpful, not malformed. Failing would break Level 2 on something only
+Level 3 can fix, which would make the level model a lie.
+
+**The `Feedback` destination split stands as written.** Source-system feedback is
+`[model]`; cross-bundle filing is `[human]`, and `[human, secrets]` when the target is
+remote. It is Phase 4 work and can be revisited when the ledger exists.
+
+**`needs` stays a closed vocabulary of four.** `network` was considered and rejected: a
+fifth value earns its place only when a component genuinely needs the open internet and no
+credential, and none does yet.

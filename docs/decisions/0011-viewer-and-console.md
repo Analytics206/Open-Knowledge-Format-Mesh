@@ -13,8 +13,8 @@ okfm_scope: project
 ---
 # DR-0011 — The viewer stays read-only; a console is a separate artifact
 
-- **Status:** **deferred** 2026-08-01 — picked up at the end, not before. See the re-entry
-  triggers at the foot of this record
+- **Status:** accepted 2026-08-01, **built last** — a full web UI is planned; only the
+  timing is deferred
 - **Date:** 2026-08-01
 - **Affects:** spec §14.3, §14.7; depends on [DR-0009](0009-adoption-levels.md), [DR-0008](0008-build-pipeline.md)
 
@@ -98,40 +98,40 @@ status, adding a `verified` entry, accepting a relation — all decisions about 
 Rewriting a concept body is authoring, and authoring happens in an editor against files,
 where git can see it.
 
-## Deferred — 2026-08-01
+## The console is planned; it is built last
 
-Not built yet, and deliberately last.
+A full web UI is the intended end state. This is a sequencing decision, not a doubt about
+whether it happens.
 
-The half of this record that is a *constraint* is already in force: **the viewer stays
-read-only**, and §14.3 and §14.7 hold unchanged. That costs nothing to keep and is the part
-that protects Level 1.
+**Built last**, because it is the natural consumer of everything below it. The review queue
+it serves currently holds 26 concepts and promoting them is a text editor and a few minutes;
+by the time Level 3 enrichment is producing drafts at volume, the workflow it should support
+will be known rather than guessed.
 
-The half that is a *build* — the console — waits. Nothing depends on it. The review queue it
-would serve currently holds 26 concepts, all `draft`, and promoting them is a text editor and
-a few minutes. A UI for that is a convenience, and conveniences built before the workflow they
-serve is exercised tend to be built for an imagined workflow.
+The half of this record that is a *constraint* is already in force and costs nothing to
+hold: **the viewer stays read-only**, §14.3 and §14.7 unchanged.
 
-Deferring also keeps a decision open that would otherwise be made by accident: whether the
-console is a served application at all, or whether the review gate belongs in the CLI, in an
-agent's own interface via `AGENTS.md`, or in a pull request.
+## The CLI and the UI are one surface
 
-### Re-entry triggers
+They are not competing interfaces, and the boundary between them does not need deciding in
+advance:
 
-Revisit when **any** of these becomes true:
+> **Every mutation has exactly one implementation. The UI calls it; the CLI exposes it.**
 
-| Trigger | Why it changes the answer |
-|---|---|
-| Level 3 enrichment ships and produces drafts at volume | Promoting by hand stops being a few minutes |
-| A second person reviews | Two people editing frontmatter by hand will diverge on convention |
-| A hosted instance exists ([DR-0010](0010-okfm-self-hosts-as-a-mesh.md)'s remote member) | It needs an interface and an auth answer regardless |
-| Configuration outgrows one small file | The editing case, which is currently the weaker half of the ask |
+Whether a given command exists because the CLI needed it or because the UI needed it is
+immaterial — building the UI is what reveals which commands are actually required, and those
+commands are the CLI. That is a better way to arrive at a command surface than designing one
+up front and discovering later that half of it is unused.
 
-The first is the one to watch, and it arrives in Phase 2.
+The practical consequence, and the only rule worth stating: **the console never writes files
+directly.** It calls the same components the CLI calls. Slower, and it means a mutation
+cannot behave one way in the UI and another on the command line.
 
-## Open, when it is picked up
+## When it is built
 
-- Does the console write files directly, or shell out to the same CLI components so there is
-  exactly one implementation of every mutation? The second is slower and much safer.
-- Does it require auth? Single-user local is fine at first; a hosted instance is not.
-- Is a served application the right shape at all, or does the review gate belong in the CLI,
-  in `AGENTS.md`, or in a pull request?
+- **Auth.** Single-user local needs none. A hosted instance
+  ([DR-0010](0010-okfm-self-hosts-as-a-mesh.md)'s remote member) does, and that is the point
+  at which it stops being optional.
+- **Scope.** The console edits *metadata decisions* — promote a status, add a `verified`
+  entry, accept a proposed relation, edit configuration. Rewriting a concept body is
+  authoring, and authoring happens against files where git can see it.

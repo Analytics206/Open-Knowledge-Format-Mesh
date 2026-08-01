@@ -12,8 +12,13 @@ okfm_scope: project
 Dated, numbered, short. One decision per file, kept even when superseded — the record of
 what was decided and why is worth more than a tidy list of what is currently true.
 
-`proposed` needs a call before the affected work starts. `accepted` was decided and acted
-on. `deferred` was decided *not* to decide, and carries a re-entry trigger.
+`accepted` was decided. `deferred` was decided *not* to decide, and carries a re-entry
+trigger. Nothing here is a blocking question — where a detail was open, it was decided and
+noted rather than left to resurface.
+
+These records exist so a rule that gets broken later is broken on purpose and on the record.
+The [specification](../../spec/okfm-v0.2.1.md) is a working document, not law: where it and
+the implementation disagree, the implementation is right and a record here says what changed.
 
 | # | Decision | Status | Affects |
 |---|---|---|---|
@@ -27,7 +32,7 @@ on. `deferred` was decided *not* to decide, and carries a re-entry trigger.
 | [0008](0008-build-pipeline.md) | What each component requires, and what the rebuild does | accepted | §8.4, §10, §11.6, §13.6, §16 |
 | [0009](0009-adoption-levels.md) | Four adoption levels | accepted | §13.1, §13.3, §13.6, §13.7 |
 | [0010](0010-okfm-self-hosts-as-a-mesh.md) | OKFM's own repository is the first mesh | accepted | §12, §14.5, §21.5 |
-| [0011](0011-viewer-and-console.md) | Viewer stays read-only; a console is separate | deferred | §14.3, §14.7 |
+| [0011](0011-viewer-and-console.md) | Viewer stays read-only; a console is separate | accepted, built last | §14.3, §14.7 |
 
 ## Two different axes, easily confused
 
@@ -81,10 +86,10 @@ members as levels ship.
 half already landed early under 0010. Phase order: baseline and addressing → distribution →
 the port → negotiation.
 
-**0011 — deferred.** The viewer stays read-only, which is the half that is a constraint and
-costs nothing to hold. The console is the half that is a build, and it waits: nothing depends
-on it, and a UI built before the workflow it serves is exercised gets built for an imagined
-workflow. Re-entry trigger to watch is Level 3 enrichment producing drafts at volume.
+**0011** — a full web UI is planned and built last, as the natural consumer of everything
+below it. The viewer stays read-only regardless. The CLI and the UI are one surface: every
+mutation has exactly one implementation, the UI calls it, the CLI exposes it, and building
+the UI is what reveals which commands are actually needed.
 
 **0006** — drift is observed during the build and cached; nothing resolves it at read time.
 Trust and staleness stay read-time because they are free. The cache stores observations, not

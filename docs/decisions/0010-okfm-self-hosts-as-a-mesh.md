@@ -150,12 +150,17 @@ consequences. Under this record the registry would carry a dangling member. Miti
 registry treats a missing member as a resolvable condition, not an error — which is
 §6.7's tolerance requirement applied to the mesh level, and worth proving anyway.
 
-## Open
+## Settled details
 
-- Does the registry live at `okfm-registry/` or at the repository root? Root reads as
-  "master bundle," which §12.2 explicitly warns against.
-- Do the four level bundles carry `okfm_scope: guide` like the current guide does, so they
-  stay out of an adopter's statistics? Probably yes for all of them, with `exclude_scopes`
-  doing the same work it does today.
-- Does a hosted instance need to exist before Phase 1 exits, or is it a Phase 2 addition
-  with the local four-bundle mesh sufficient for now?
+**The registry lives at `okfm-registry/`, not the repository root.** Root would read as a
+master bundle, which §12.2 warns against, and a registry that sits beside its members rather
+than above them says the right thing about what it owns.
+
+**Two scopes.** `guide` for teaching material, excluded everywhere including here. `project`
+for OKFM's own knowledge about itself — counted in this repository's statistics, because the
+decision records genuinely are this project's mesh. An adopter who vendors OKFM adds
+`project` to their exclusions.
+
+**A hosted instance is Phase 4**, with the negotiation half of federation. The local mesh
+proves addressing; transport is the thing a hosted member adds, and transport is Phase 4
+work per [DR-0003](0003-phase-ordering.md).
