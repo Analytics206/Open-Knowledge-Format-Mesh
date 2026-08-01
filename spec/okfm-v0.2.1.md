@@ -72,7 +72,8 @@ A reader never has to ask which OKF version a given OKFM release speaks. Documen
 1. **Conformance first.** Anything expressible in official OKF v0.2 is expressed that way. Invention requires a stated reason. Every OKFM addition must survive being read by an official consumer that ignores it.
 2. **Memory before learning.** At solo scale, feedback volume cannot train rankers; it can absolutely power organizational memory. Design every record to be queryable first.
 3. **Files are the substrate.** Anything that fits in files lives in files. Anything that does not — a million papers, raw API history — lives in its native store and is referenced.
-4. **Record signals, not verdicts.** (Adopted from official OKF §5.1.) Store the objective facts that support a judgement; let consumers derive the judgement. Scores are subjective, unportable, and go stale. This applies to OKFM's own flags: trust tier, staleness, drift, and reconciliation status are **computed at read time** from stored signals (`okfm_captured`, `verified`, `stale_after`), not frozen into files. A stored verdict is a stored opinion with an expiry date.
+4. **Record signals, not verdicts.** (Adopted from official OKF §5.1.) Store the objective facts that support a judgement; let consumers derive the judgement. Scores are subjective, unportable, and go stale. This applies to OKFM's own flags — none of trust tier, staleness, drift, or reconciliation status is ever frozen into a file. A stored verdict is a stored opinion with an expiry date.
+    **Where they are derived differs by cost.** Trust tier, staleness, and reconciliation are pure functions of frontmatter already in hand, so they are computed on every read. Drift requires re-resolving a pointer against the outside world, so it is **observed during the build and cached**, and nothing on the read path resolves it (§8.3). Caching an observation is not storing a verdict: *this pointer hashed to X at time T* does not become false later, and the verdict is still derived from it.
 5. **Evidence pointers reach into systems, not just files.** A source may be a file span, another concept, an external store record, a database column, a query, or a captured payload.
 6. **Drift detection is the refresh workflow, generalized.** When the pointed-at thing changes, dependent concepts go stale.
 7. **Schema stability is a feature.** Telemetry and reason codes are versioned, controlled vocabularies. Six months of logs are an asset only if comparable.
@@ -856,13 +857,18 @@ okfm/
   okfm-suite/                # level 4 — providers, packs, federation, workflows
 
   # ---- level 2: the drop-in folder. Copy this whole directory. ------------
-  dropin/                                                                    ✓
-    bootstrap  bake_viewer   # build the bundle, bake the viewer index       ✓
+  dropin/                    # paste this whole directory into a project    ✓
+    build                    # the entry point — self-locating               ✓
+    okfm_core                # locating and frontmatter parsing              ✓
+    bootstrap                # extraction: title, description                ✓
+    bake_viewer              # regenerate the viewer index                   ✓
     check_bundles            # conformance, profile, strip test              ✓
-    check_docs               # the spec corpus                               ✓
     resolvers/               # file:// only — live schemes need credentials
     vocab/                   # core reason codes, predicates
     # Python 3.13, standard library only. No requirements file, by design.
+
+  dev/                       # this repository's own maintenance — ships to nobody ✓
+    check_docs               # the four-document spec corpus                 ✓
 
   # ---- levels 3-4: the implementation. Optional, replaceable. -------------
   tools/

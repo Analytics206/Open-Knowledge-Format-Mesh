@@ -29,7 +29,7 @@ jobs:
       # No `pip install` step, deliberately. If one ever appears here, the
       # zero-dependency claim in decisions/0001 has quietly stopped being true.
       - name: Validate the spec corpus
-        run: python dropin/check_docs.py
+        run: python dev/check_docs.py
 
       - name: Validate every bundle
         run: python dropin/check_bundles.py
@@ -80,4 +80,4 @@ jobs:
           set -e
           rm -rf tools
           python dropin/check_bundles.py
-          python dropin/check_docs.py
+          python dev/check_docs.py

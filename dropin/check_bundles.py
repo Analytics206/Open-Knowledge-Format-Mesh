@@ -12,17 +12,11 @@ which is the evidence behind decisions/0001's zero-dependency validator argument
 
 `needs: []` -- no network, no secrets, no model. Exits non-zero on any failure.
 """
-import json
 import re
 import sys
 from pathlib import Path
 
-for _s in (sys.stdout, sys.stderr):
-    if hasattr(_s, "reconfigure"):
-        _s.reconfigure(encoding="utf-8", errors="replace")
-
-ROOT = Path(__file__).resolve().parent.parent
-CONFIG = ROOT / "okfm.json"
+from okfm_core import PROJECT, configured_bundles, load_or_create_config
 
 _FM = re.compile(r"\A---\r?\n(.*?)\r?\n---\r?\n", re.S)
 _OKFM_KEY = re.compile(r"^(okfm_[\w]+):", re.M)
@@ -46,26 +40,29 @@ def scalar(block, key):
 
 
 def main() -> int:
-    cfg = json.loads(CONFIG.read_text(encoding="utf-8"))
+    _, cfg, _ = load_or_create_config(write=False)
+    bundles = configured_bundles(cfg)
     errors, warnings = [], []
     total = 0
 
-    # Every concept path in the mesh, so relation targets can be resolved across bundles.
+    if not bundles:
+        print("No bundles found. Run build.py first, or point `bundles` at one.")
+        return 0
+
+    # Every concept path in the mesh, so relation targets resolve across bundles.
     mesh_paths = set()
-    for bid, rel in cfg["bundles"].items():
-        src = (ROOT / rel).resolve()
+    for bid, src in bundles.items():
         if src.is_dir():
-            root = "/" + rel.lstrip("./").rstrip("/")
+            root = f"/{bid}"
             for f in src.rglob("*.md"):
                 if _FM.match(f.read_text(encoding="utf-8")):
                     mesh_paths.add(f"{root}/{f.relative_to(src).as_posix()}")
 
-    for bid, rel in sorted(cfg["bundles"].items()):
-        src = (ROOT / rel).resolve()
+    for bid, src in sorted(bundles.items()):
         if not src.is_dir():
-            errors.append(f"{bid}: configured path {rel} does not exist")
+            errors.append(f"{bid}: configured path does not exist ({src})")
             continue
-        root = "/" + rel.lstrip("./").rstrip("/")
+        root = f"/{bid}"
         n = 0
 
         for f in sorted(src.rglob("*.md")):
@@ -126,7 +123,7 @@ def main() -> int:
 
         print(f"  {n:>3} concepts  {bid}")
 
-    print(f"\n{total} concepts across {len(cfg['bundles'])} bundles")
+    print(f"\n{total} concepts across {len(bundles)} bundles")
     for w in warnings:
         print(f"  warn  {w}")
     for e in errors:

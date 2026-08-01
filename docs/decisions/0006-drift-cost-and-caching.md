@@ -1,7 +1,7 @@
 ---
 type: Decision
 title: DR-0006 — Drift is observed at build time, never resolved at read time
-description: Trust and staleness are pure functions of data already in hand; drift requires the outside world, and the outside world does not belong on the read path.
+description: Four statements in the specification could not all be true at once.
 status: draft
 generated: { by: "process:okfm-bootstrap", at: 2026-08-01T00:00:00Z }
 sources:

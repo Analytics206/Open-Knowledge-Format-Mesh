@@ -39,9 +39,14 @@ RESERVED = {"index.md", "log.md", "README.md"}
 _H1 = re.compile(r"^#\s+(.+?)\s*$", re.M)
 _FM = re.compile(r"\A---\r?\n(.*?)\r?\n---\r?\n", re.S)
 
-# A chunk that opens with any of these is structure, not prose: heading, list item,
-# table row, bold metadata block, fence, or horizontal rule.
-_NOT_PROSE = re.compile(r"^(#|[-*+]\s|\d+\.\s|\||\*\*|```|~~~|---\s*$)")
+# A chunk opening with any of these is structure, not prose: heading, list item, table
+# row, fence, or horizontal rule.
+#
+# `**` is deliberately NOT here. It was, and it silently discarded every paragraph that
+# opens with a bold lead-in — which is most of this project's own prose. Bold-led chunks
+# are handled by length below, where a short one is a metadata header and a long one is
+# a paragraph.
+_NOT_PROSE = re.compile(r"^(#|[-*+]\s|\d+\.\s|\||```|~~~|---\s*$)")
 
 
 def _extract_description(text: str, limit: int = 200, prefer_blockquote: bool = False) -> str:
@@ -53,44 +58,56 @@ def _extract_description(text: str, limit: int = 200, prefer_blockquote: bool = 
     2. Prefer the first prose paragraph *after the first `##` heading*. A paragraph floating
        before any heading is usually front-matter prose, not a summary.
 
-    `prefer_blockquote` restores the original preference. It was right for the corpus it was
-    written against -- those specs open with a `> Layer note` summary -- and wrong here, where
-    blockquotes are pull-quotes and examples. Corpus convention, not a universal.
+    3. A blockquote wins only when it is the FIRST block after the H1. That position is
+       conventionally a summary; a blockquote further down is a pull-quote or an example.
+       This replaced a `--prefer-blockquote` flag, which pushed a corpus-specific judgement
+       onto the adopter for something the document's own structure already answers.
+
+    `prefer_blockquote` forces the old behaviour for corpora where blockquotes summarize
+    wherever they appear.
     """
     body = _H1.sub("", text, count=1)
-    regions = []
-    parts = body.split("\n## ", 1)
-    if len(parts) > 1 and "\n" in parts[1]:
-        # Drop the remainder of the heading LINE itself -- the split consumed its "## "
-        # marker, so without this the heading text reads as the section's first paragraph.
-        regions.append(parts[1].split("\n", 1)[1])
-    regions.append(body)                      # fall back to the whole body
 
-    for region in regions:
-        blockquote = paragraph = None
-        for raw in re.split(r"\n\s*\n", region):
-            chunk = raw.strip()
-            if not chunk:
-                continue
-            first = chunk.splitlines()[0].strip()
-            if first.startswith(">"):
-                cleaned = " ".join(re.sub(r"^>\s?", "", chunk, flags=re.M).split())
-                if len(cleaned) >= 12 and blockquote is None:
-                    blockquote = cleaned
-            elif _NOT_PROSE.match(first):
-                continue
-            else:
-                cleaned = " ".join(chunk.split())
-                # A paragraph ending in ":" introduces a list, table, or quote -- it is a
-                # lead-in, not a summary, and reads as a fragment torn from its context.
-                if len(cleaned) >= 12 and not cleaned.endswith(":") and paragraph is None:
-                    paragraph = cleaned
-        picked = (blockquote or paragraph) if prefer_blockquote else (paragraph or blockquote)
-        if picked:
-            break
-    else:
-        picked = None
+    # A blockquote in the LEAD position — the first block after the H1 — is conventionally
+    # a summary, and is the best description a document can offer. Further down it is a
+    # pull-quote or an example, so position decides rather than a flag.
+    lead = next((c.strip() for c in re.split(r"\n\s*\n", body) if c.strip()), "")
+    if lead.startswith(">"):
+        cleaned = " ".join(re.sub(r"^>\s?", "", lead, flags=re.M).split())
+        if len(cleaned) >= 12:
+            return cleaned[:limit].rsplit(" ", 1)[0].rstrip(".,;:—- ") + "…" \
+                if len(cleaned) > limit else cleaned
 
+    blockquote = paragraph = None
+    for raw in re.split(r"\n\s*\n", body):
+        chunk = raw.strip()
+        if not chunk:
+            continue
+        first = chunk.splitlines()[0].strip()
+
+        if first.startswith(">"):
+            cleaned = " ".join(re.sub(r"^>\s?", "", chunk, flags=re.M).split())
+            if len(cleaned) >= 12 and blockquote is None:
+                blockquote = cleaned
+            continue
+
+        if _NOT_PROSE.match(first):
+            continue
+
+        cleaned = " ".join(chunk.split())
+        if first.startswith("**"):
+            # A bold-led chunk is a metadata header (`**Status:** draft`) when it is one
+            # short line, and ordinary prose when it runs on. Skipping every bold-led
+            # chunk discarded real opening paragraphs; length is the honest discriminator.
+            if len(cleaned) < 100:
+                continue
+
+        # A paragraph ending in ":" introduces a list, table, or quote -- it is a lead-in,
+        # not a summary, and reads as a fragment torn from its context.
+        if len(cleaned) >= 12 and not cleaned.endswith(":") and paragraph is None:
+            paragraph = cleaned
+
+    picked = (blockquote or paragraph) if prefer_blockquote else (paragraph or blockquote)
     out = (picked or "").strip()
     if len(out) > limit:                       # cut on a word boundary, never mid-word
         out = out[:limit].rsplit(" ", 1)[0].rstrip(".,;:—- ") + "…"
@@ -115,14 +132,27 @@ def _yaml_str(s: str) -> str:
 
 
 def build(src: Path, ctype: str, scope: str | None, stamp: str,
-          prefer_bq: bool = False) -> list[tuple[Path, str, str]]:
+          prefer_bq: bool = False, refresh: bool = False) -> list[tuple[Path, str, str]]:
     """Return (path, action, frontmatter) for every concept in src."""
     out = []
     for f in sorted(src.glob("*.md")):
         if f.name in RESERVED:
             continue
         text = f.read_text(encoding="utf-8")
-        if _FM.match(text):
+        m = _FM.match(text)
+        if m:
+            # Refresh only what this tool owns. `generated.by` naming this process is the
+            # proof that the description was EXTRACTED rather than written by a person or
+            # drafted by a model -- and recomputing an extracted field is a tier-`[]`
+            # operation. Anything else is somebody's work and is left alone.
+            if refresh and "process:okfm-bootstrap" in m.group(1):
+                new_desc = _extract_description(text[m.end():], prefer_blockquote=prefer_bq)
+                block = re.sub(r"^description: .*(?:\n[ \t]+\S.*)*$",
+                               f"description: {_yaml_str(new_desc)}", m.group(1), count=1,
+                               flags=re.M)
+                if block != m.group(1):
+                    out.append((f, "refresh", f"---\n{block}\n---\n" + text[m.end():]))
+                    continue
             out.append((f, "skip (already a concept)", ""))
             continue
 
@@ -163,6 +193,8 @@ def main() -> int:
     ap.add_argument("--apply", action="store_true", help="write; otherwise dry-run")
     ap.add_argument("--prefer-blockquote", action="store_true",
                     help="corpora whose files open with a blockquote summary")
+    ap.add_argument("--refresh", action="store_true",
+                    help="recompute extracted descriptions on concepts this tool created")
     a = ap.parse_args()
 
     if not a.src.is_dir():
@@ -171,7 +203,7 @@ def main() -> int:
 
     # No wall-clock in the value itself beyond the date -- a rerun must not churn the diff.
     stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT00:00:00Z")
-    plan = build(a.src, a.type, a.scope, stamp, a.prefer_blockquote)
+    plan = build(a.src, a.type, a.scope, stamp, a.prefer_blockquote, a.refresh)
 
     wrote = skipped = 0
     for path, action, fm in plan:
@@ -180,10 +212,16 @@ def main() -> int:
             skipped += 1
             continue
         desc = re.search(r"^description: (.*)$", fm, re.M).group(1)
-        print(f"  {'write ' if a.apply else 'would '} {path.name}")
+        verb = action if action == "refresh" else ("write " if a.apply else "would ")
+        print(f"  {verb:7} {path.name}")
         print(f"           {desc[:96]}")
         if a.apply:
-            path.write_text(fm + path.read_text(encoding="utf-8"), encoding="utf-8")
+            if action == "refresh":
+                # `fm` is the whole rewritten file, not a prefix.
+                path.write_text(fm, encoding="utf-8", newline="\n")
+            else:
+                path.write_text(fm + path.read_text(encoding="utf-8"),
+                                encoding="utf-8", newline="\n")
         wrote += 1
 
     print(f"\n{wrote} concept(s) {'written' if a.apply else 'planned'}, {skipped} skipped")

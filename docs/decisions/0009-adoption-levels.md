@@ -91,6 +91,23 @@ repository and run there, so it may not reach outside itself. **No install step*
 dependency means that stranger resolves a package tree before anything happens, in whatever
 environment they have — which is the friction this level exists to remove.
 
+#### Mirror by default; in-place on request
+
+The folder is pasted into other people's repositories, so the first run must not rewrite
+their files.
+
+**Mirror (default).** Concepts are written into the bundle and point back at the source via
+`resource` and `okfm_captured`. The adopter's markdown is never touched. If they delete the
+folder, nothing of theirs changed.
+
+**In-place (`--in-place`).** Frontmatter is added to their markdown, so their files *become*
+the concepts. Right when the documents are themselves the knowledge — this project's own
+decision records, for instance — and wrong for a docs tree that concepts are merely *about*.
+
+The distinction is whether the source *is* the knowledge or merely *carries* it. Mirror is
+the safe default because a stranger pasting a folder into their repository has not consented
+to a rewrite of every markdown file in it.
+
 #### Where it writes, and what it scans
 
 Two separate questions, and the second is the one that matters.

@@ -21,9 +21,10 @@ import re
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
-VIEWER = ROOT / "okfm-viewer.html"
-CONFIG = ROOT / "okfm.json"
+from okfm_core import PROJECT, configured_bundles, load_or_create_config
+
+ROOT = PROJECT
+VIEWER = PROJECT / "okfm-viewer.html"
 
 RESERVED_TYPES = {"Index", "Log"}
 _FM = re.compile(r"\A---\r?\n(.*?)\r?\n---\r?\n", re.S)
@@ -59,14 +60,13 @@ def trust(block: str):
 
 
 def collect():
-    cfg = json.loads(CONFIG.read_text(encoding="utf-8"))
+    _, cfg, _ = load_or_create_config(write=False)
     bundles, concepts = [], []
 
-    for bundle_id, rel in cfg["bundles"].items():
-        root = "/" + rel.lstrip("./").rstrip("/")
-        src = (ROOT / rel).resolve()
+    for bundle_id, src in configured_bundles(cfg).items():
+        root = f"/{bundle_id}"
         if not src.is_dir():
-            print(f"  warn: bundle '{bundle_id}' -> {rel} does not exist", file=sys.stderr)
+            print(f"  warn: bundle '{bundle_id}' -> {src} does not exist", file=sys.stderr)
             continue
 
         found = 0

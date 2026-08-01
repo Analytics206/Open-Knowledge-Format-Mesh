@@ -1,7 +1,7 @@
 ---
 type: Decision
 title: DR-0001 — Runtime and packaging for the reference implementation
-description: "This record originally asked \"what is *core* written in,\" treating OKFM as one installable thing. [DR-0007](0007-two-layers.md) splits it in two: a **base** layer that is a specification, a guide, a…"
+description: "[DR-0007](0007-two-layers.md) splits OKFM in two: a **base** that is a specification, a guide, and a viewer, and a **reference implementation** that is optional. This record is about the…"
 status: draft
 generated: { by: "process:okfm-bootstrap", at: 2026-08-01T00:00:00Z }
 sources:

@@ -1,50 +1,84 @@
 # dropin/
 
-The Level 2 deterministic build. Copy this folder into a project and run it.
+The Level 2 deterministic build. **Copy this folder into a project and run it.**
 
-Python 3.13, **standard library only** — no install step, no requirements file. Every
-component here is `needs: []` under
-[DR-0008](../docs/decisions/0008-build-pipeline.md): no network, no secrets, no model. That
-is what lets it run in CI on a pull request from a fork, and it is the rule the boundary
-checks exist to protect.
+```bash
+cp -r dropin my-project/okfm && cd my-project
+```
 
-| Script | Does |
+```bash
+python okfm/build.py            # dry run — says what it would do
+python okfm/build.py --apply    # writes
+```
+
+It defaults to the directory it was dropped into. With no configuration it scans that
+directory, reports what it found, and writes the config it used — so the first thing you
+edit is a file it made for you.
+
+Python 3.13, **standard library only**. No install step, no requirements file. Every
+component is `needs: []` under [DR-0008](../docs/decisions/0008-build-pipeline.md): no
+network, no secrets, no model.
+
+## Files
+
+| File | Does |
 |---|---|
-| `bootstrap.py` | Turns plain markdown into concepts. Extracts `title` and `description` from text that already exists; computes `resource` and `okfm_captured`. Dry-run by default. |
-| `bake_viewer.py` | Regenerates the viewer's baked index from the bundles. `--check` fails if the committed viewer is stale. |
-| `check_bundles.py` | Validates every bundle: conformance, profile, strip test, controlled predicates, links, footnotes. |
-| `check_docs.py` | Validates the spec corpus: one home per section, every §N.M reference resolves, every link exists. |
+| `build.py` | The entry point. Discovers config, scans sources, writes concepts. |
+| `okfm_core.py` | Locating and frontmatter parsing. Knows nothing about where it was installed. |
+| `bootstrap.py` | Extraction — `title`, `description` — and in-place concept creation. |
+| `bake_viewer.py` | Regenerates the viewer's index from the bundles. `--check` gates CI. |
+| `check_bundles.py` | Conformance, profile, strip test, predicates, links, footnotes. |
 
-```bash
-python dropin/bootstrap.py docs/decisions --type Decision --scope project
-```
+## Two modes
 
-```bash
-python dropin/bake_viewer.py && python dropin/check_bundles.py && python dropin/check_docs.py
-```
+**Mirror (default).** Concepts are written into `bundle/` and point back at your files via
+`resource`. Your markdown is never touched.
 
-All four exit non-zero on failure and run from any working directory.
+**In-place (`--in-place`).** Frontmatter is added to your files, so they *become* the
+concepts. Right when the documents are themselves the knowledge — decision records, for
+instance — and wrong for a docs tree the concepts are merely *about*.
 
-## What they establish
+Mirror is the default because this folder gets pasted into other people's repositories.
 
-**A bundle can be built with no model.** `bootstrap.py` created all eleven decision concepts
-by extraction alone — every `description` copied from prose the record already contained.
-Extraction can be unhelpful; it cannot be wrong about what the source says. Results land
-`status: draft` with no `verified` entry, so the trust machinery reports them accurately with
-no special case.
+## What it can and cannot fill
 
-**Standard library is enough.** These parse frontmatter for 26 concepts across 3 bundles with
-about 40 lines of regex and no PyYAML. The subset of YAML that OKF frontmatter uses is
-small — scalars, lists, one level of nesting, flow mappings — which is why
-[DR-0001](../docs/decisions/0001-runtime-and-packaging.md) can hold the no-dependency line
-here rather than hoping.
+Every field it writes is **extracted or computed**, never drafted:
 
-**Generating beats checking.** `bake_viewer.py` replaced an earlier checker that compared the
-guide against a hand-maintained viewer index. Generating the index makes that drift
-impossible rather than merely detected.
+| Filled | How |
+|---|---|
+| `title` | first `# H1`, else the filename de-slugged |
+| `description` | a lead blockquote if there is one, else the first real paragraph |
+| `resource` | relative path back to the source |
+| `okfm_captured` | sha256 of the source, as seen now |
+
+Left empty, because filling them needs a model or a person: `tags`, prose sections,
+`okfm_relations` (never inferred — a wrong typed edge is worse than a missing one), and
+`verified` (never machine, ever).
+
+Everything lands `status: draft` with no `verified` entry. That is accurate, not a
+placeholder: extraction produced it and nobody has reviewed it.
+
+## Extraction rules, and why each exists
+
+Each was added because the previous version got something wrong on a real corpus:
+
+- **Skip lists, tables, headings, and fences.** Decision records open with a
+  `- **Status:**` block that would otherwise be swallowed whole.
+- **A lead blockquote wins.** The first block after the H1 is conventionally a summary.
+  Further down it is a pull-quote, so position decides rather than a flag.
+- **Bold-led chunks are judged by length.** Short means a metadata header
+  (`**Status:** draft`); long means an ordinary paragraph that happens to open in bold.
+  Rejecting all of them silently discarded real opening paragraphs.
+- **Paragraphs ending in `:` are skipped.** They introduce a list or a quote, and read as
+  a fragment torn from its context.
+
+`--refresh` recomputes descriptions on concepts this tool created — identified by
+`generated.by` naming `process:okfm-bootstrap`. Anything a person or a model touched is
+left alone.
 
 ## Still to come
 
-This folder is not yet paste-and-go. It reads `okfm.json` from the repository root and
-assumes this repository's layout. Phase 1 makes it default to wherever it is dropped, scan
-the files around it, and write the config it used.
+`build.py` writes concepts but does not yet bake the viewer or validate in one pass; run
+`bake_viewer.py` and `check_bundles.py` after it. Phase 1 folds them into one command and
+adds the drift observation cache from
+[DR-0006](../docs/decisions/0006-drift-cost-and-caching.md).

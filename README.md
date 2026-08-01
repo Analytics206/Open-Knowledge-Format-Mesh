@@ -39,8 +39,8 @@ runs, and there is no CLI yet.
 | The mesh — registry, guide, decision records | ✅ 3 bundles, 26 concepts |
 | `okfm-viewer.html` — graph, closure ledger, health panel | ✅ works offline |
 | `templates/AGENTS.md` — the level 3 agent contract | ✅ |
-| `dropin/` — bootstrap, bake, validate | 🟡 runs; not yet a paste-and-go folder |
-| `okfm` CLI, resolvers, drift cache | ⬜ Phase 1 |
+| `dropin/` — paste into a project, build a mesh | ✅ mirror mode, self-locating |
+| `okfm` CLI, live resolvers, drift cache | ⬜ Phase 1 |
 | Enrichment, providers, packs, federation | ⬜ Phase 2+ |
 
 See the [roadmap](docs/roadmap.md) for phases, and [decisions](docs/decisions/index.md) for
@@ -72,7 +72,7 @@ cp -r okfm/dropin my-project/okfm && cd my-project
 ```
 
 ```bash
-python okfm/build
+python okfm/build.py --apply
 ```
 
 Descriptions are **extracted** from your files rather than written, so they can be unhelpful
@@ -125,7 +125,8 @@ okfm-viewer.html         read-only viewer — opens from disk, for people not ag
 okfm.json                this repo's config; it self-hosts its own mesh
 templates/               AGENTS.md and a starter bundle — copy these
 examples/minimal/        an adopter-shaped config
-dropin/                  the deterministic build, runnable today
+dropin/                  the level 2 build — paste this into a project
+dev/                     this repository's own maintenance scripts
 .github/workflows/       CI — no secrets, runs on forks
 ```
 
