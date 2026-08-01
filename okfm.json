@@ -1,0 +1,17 @@
+{
+  "okfm": "0.2.1",
+  "pack": null,
+  "bundles": { "guide": "./okfm-guide" },
+  "viewer": {
+    "path": "./okfm-viewer.html",
+    "index": "./okfm-index.json",
+    "serve_port": 7345
+  },
+  "index": {
+    "max_concepts": 60,
+    "priority_types": ["Attested Computation", "Rule", "Metric", "Perspective"]
+  },
+  "exclude_scopes": ["guide"],
+  "stores": {},
+  "federation": { "registry": null }
+}

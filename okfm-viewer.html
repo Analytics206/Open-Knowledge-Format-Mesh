@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OKFM mesh viewer</title>
+<style>
+  :root{
+    --ink:#16191d;
+    --paper:#eef1f0;
+    --panel:#f7f9f8;
+    --line:#c9d2ce;
+    --line-soft:#dde3e0;
+    --slate:#5c6672;
+    --slate-dim:#8b93a0;
+
+    --verified:#1f6f5c;
+    --machine:#4a6fa5;
+    --unverified:#98a0aa;
+    --stale:#c08a1e;
+    --drift:#a83e2b;
+
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--sans); font-size:14px; line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+  }
+  /* ---------- masthead ---------- */
+  header{
+    border-bottom:1px solid var(--line);
+    background:var(--panel);
+    padding:14px 20px 0;
+  }
+  .brand{display:flex; align-items:baseline; gap:14px; flex-wrap:wrap}
+  .brand h1{
+    font-family:var(--mono); font-size:15px; font-weight:700;
+    letter-spacing:.14em; text-transform:uppercase; margin:0;
+  }
+  .brand .sub{font-family:var(--mono); font-size:11px; color:var(--slate); letter-spacing:.06em}
+  .brand .badge{
+    font-family:var(--mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase;
+    border:1px solid var(--line); border-radius:2px; padding:2px 7px; color:var(--slate);
+    background:var(--paper);
+  }
+  /* gauge strip */
+  .gauges{display:flex; gap:0; flex-wrap:wrap; margin:14px 0 0; border-top:1px solid var(--line-soft)}
+  .gauge{
+    padding:10px 18px 12px 0; margin-right:18px; min-width:104px;
+    border-right:1px solid var(--line-soft);
+  }
+  .gauge:last-child{border-right:none}
+  .gauge .k{
+    font-family:var(--mono); font-size:9.5px; letter-spacing:.11em; text-transform:uppercase;
+    color:var(--slate-dim); display:block; margin-bottom:3px;
+  }
+  .gauge .v{font-family:var(--mono); font-size:19px; font-weight:600; letter-spacing:-.02em}
+  .gauge .v small{font-size:11px; font-weight:400; color:var(--slate); letter-spacing:0}
+  .bar{height:3px; background:var(--line-soft); margin-top:5px; position:relative; overflow:hidden}
+  .bar i{position:absolute; inset:0 auto 0 0; background:var(--ink)}
+  .bar.good i{background:var(--verified)} .bar.warn i{background:var(--stale)} .bar.bad i{background:var(--drift)}
+  /* tabs */
+  nav.views{display:flex; gap:2px; margin-top:12px}
+  nav.views button{
+    font-family:var(--mono); font-size:11px; letter-spacing:.09em; text-transform:uppercase;
+    background:none; border:1px solid transparent; border-bottom:none; color:var(--slate);
+    padding:8px 15px; cursor:pointer; border-radius:3px 3px 0 0; margin-bottom:-1px;
+  }
+  nav.views button[aria-selected="true"]{
+    background:var(--paper); border-color:var(--line); color:var(--ink); font-weight:600;
+  }
+  nav.views button:focus-visible{outline:2px solid var(--machine); outline-offset:1px}
+  /* ---------- shell ---------- */
+  main{display:grid; grid-template-columns:212px 1fr 268px; height:calc(100vh - 168px); min-height:440px}
+  aside{border-right:1px solid var(--line); overflow-y:auto; padding:16px 14px}
+  aside.detail{border-right:none; border-left:1px solid var(--line); background:var(--panel)}
+  section.stage{overflow:hidden; position:relative}
+  h2.grp{
+    font-family:var(--mono); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--slate-dim); margin:0 0 8px; font-weight:600;
+  }
+  .grp + .grp{margin-top:20px}
+  label.chk{display:flex; align-items:center; gap:7px; padding:3px 0; cursor:pointer; font-size:12.5px}
+  label.chk input{accent-color:var(--ink); margin:0}
+  label.chk .swatch{width:9px; height:9px; border-radius:50%; flex:none}
+  label.chk .n{margin-left:auto; font-family:var(--mono); font-size:10.5px; color:var(--slate-dim)}
+  .filter-actions{margin-top:10px}
+  .filter-actions button{
+    font-family:var(--mono); font-size:10px; letter-spacing:.07em; text-transform:uppercase;
+    background:none; border:1px solid var(--line); color:var(--slate); padding:4px 9px;
+    cursor:pointer; border-radius:2px;
+  }
+  .filter-actions button:hover{border-color:var(--slate); color:var(--ink)}
+  /* graph */
+  #graph{width:100%; height:100%; display:block; cursor:grab}
+  #graph.dragging{cursor:grabbing}
+  .legend-note{
+    position:absolute; left:14px; bottom:12px; font-family:var(--mono); font-size:10px;
+    color:var(--slate-dim); background:rgba(238,241,240,.9); padding:5px 8px; border:1px solid var(--line-soft);
+    line-height:1.7;
+  }
+  .legend-note b{color:var(--slate); font-weight:600}
+  /* chains */
+  .chains{height:100%; overflow-y:auto; padding:18px 22px}
+  .chain{border-bottom:1px solid var(--line-soft); padding:13px 0}
+  .chain:last-child{border-bottom:none}
+  .chain .ttl{font-size:13px; font-weight:600; margin-bottom:2px}
+  .chain .meta{font-family:var(--mono); font-size:10px; color:var(--slate-dim); letter-spacing:.05em; margin-bottom:9px}
+  .track{display:grid; grid-template-columns:repeat(5,1fr); gap:6px}
+  .slot{
+    border:1px solid var(--line); border-radius:2px; padding:7px 9px; min-height:50px;
+    background:var(--panel); cursor:pointer; position:relative;
+  }
+  .slot.empty{border-style:dashed; background:none; cursor:default; opacity:.62}
+  .slot:not(.empty):hover{border-color:var(--ink)}
+  .slot .st{
+    font-family:var(--mono); font-size:8.5px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--slate-dim); display:block; margin-bottom:3px;
+  }
+  .slot .sv{font-size:11.5px; line-height:1.3}
+  .slot .dot{position:absolute; top:7px; right:7px; width:6px; height:6px; border-radius:50%}
+  .chain.open .track{outline:1px solid var(--drift); outline-offset:3px}
+  .verdict{
+    font-family:var(--mono); font-size:10px; letter-spacing:.06em; margin-top:7px; color:var(--slate);
+  }
+  .verdict b{font-weight:600}
+  .verdict.neg b{color:var(--drift)} .verdict.pos b{color:var(--verified)} .verdict.open b{color:var(--stale)}
+  /* stats */
+  .stats{height:100%; overflow-y:auto; padding:20px 24px; display:grid; gap:22px;
+         grid-template-columns:repeat(auto-fit,minmax(258px,1fr)); align-content:start}
+  .card{border:1px solid var(--line); background:var(--panel); padding:14px 16px 16px}
+  .card h3{
+    font-family:var(--mono); font-size:10px; letter-spacing:.11em; text-transform:uppercase;
+    margin:0 0 3px; font-weight:600;
+  }
+  .card p.hint{font-size:11.5px; color:var(--slate); margin:0 0 12px; line-height:1.4}
+  .row{display:flex; align-items:center; gap:9px; padding:3px 0; font-size:12px}
+  .row .lbl{min-width:112px; font-family:var(--mono); font-size:10.5px; color:var(--slate)}
+  .row .track2{flex:1; height:9px; background:var(--line-soft); position:relative}
+  .row .track2 i{position:absolute; inset:0 auto 0 0}
+  .row .num{font-family:var(--mono); font-size:11px; min-width:34px; text-align:right}
+  .warnlist{list-style:none; margin:0; padding:0}
+  .warnlist li{
+    display:flex; gap:8px; align-items:baseline; padding:5px 0; border-bottom:1px solid var(--line-soft);
+    font-size:12px;
+  }
+  .warnlist li:last-child{border-bottom:none}
+  .warnlist .tag{
+    font-family:var(--mono); font-size:9px; letter-spacing:.08em; text-transform:uppercase;
+    padding:1px 5px; border-radius:2px; color:#fff; flex:none;
+  }
+  .warnlist code{font-family:var(--mono); font-size:11px; color:var(--slate)}
+  /* detail */
+  .detail h3{font-size:14px; margin:0 0 3px; line-height:1.3}
+  .detail .path{font-family:var(--mono); font-size:10.5px; color:var(--slate); word-break:break-all; margin-bottom:12px}
+  .pill{
+    display:inline-block; font-family:var(--mono); font-size:9.5px; letter-spacing:.08em;
+    text-transform:uppercase; padding:2px 7px; border-radius:2px; margin:0 4px 4px 0; color:#fff;
+  }
+  .pill.ghost{background:none; border:1px solid var(--line); color:var(--slate)}
+  .detail dl{margin:14px 0 0; font-size:12px}
+  .detail dt{
+    font-family:var(--mono); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--slate-dim); margin-top:11px;
+  }
+  .detail dd{margin:2px 0 0}
+  .detail ul{margin:3px 0 0; padding-left:15px}
+  .detail li{margin:2px 0; font-size:12px}
+  .detail a{color:var(--machine); text-decoration:none; border-bottom:1px solid rgba(74,111,165,.35); cursor:pointer}
+  .detail a:hover{border-bottom-color:var(--machine)}
+  .bodytext{
+    font-family:var(--mono); font-size:11px; line-height:1.55; white-space:pre-wrap;
+    word-break:break-word; background:var(--paper); border:1px solid var(--line-soft);
+    padding:10px 11px; margin:5px 0 0; max-height:340px; overflow-y:auto; color:var(--ink);
+  }
+  .nobody{
+    margin-top:16px; padding:9px 10px; border:1px dashed var(--line); font-size:11px;
+    color:var(--slate); line-height:1.5;
+  }
+  .empty-state{padding:40px 16px; color:var(--slate-dim); font-size:12.5px; text-align:center; line-height:1.6}
+  .empty-state code{font-family:var(--mono); font-size:11px}
+  @media (max-width:1080px){
+    main{grid-template-columns:1fr; height:auto}
+    aside{border-right:none; border-bottom:1px solid var(--line)}
+    aside.detail{border-left:none; border-top:1px solid var(--line)}
+    section.stage{height:60vh}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1>OKFM</h1>
+    <span class="sub" id="meshName">mesh</span>
+    <span class="badge" id="okfmVer">okfm 0.2.1</span>
+    <span class="badge">okf 0.2</span>
+    <span class="badge" id="genAt">derived view</span>
+  </div>
+  <div class="gauges" id="gauges"></div>
+  <nav class="views" role="tablist">
+    <button role="tab" aria-selected="true"  data-view="graph">Graph</button>
+    <button role="tab" aria-selected="false" data-view="chains">Closure</button>
+    <button role="tab" aria-selected="false" data-view="stats">Health</button>
+  </nav>
+</header>
+
+<main>
+  <aside id="filters"></aside>
+  <section class="stage">
+    <svg id="graph" hidden></svg>
+    <div class="legend-note" id="legendNote" hidden>
+      <b>ring</b> solid = human-verified · dashed = machine · none = unverified<br>
+      <b>halo</b> amber = past stale_after · rust = source drifted<br>
+      <b>size</b> = inbound references
+    </div>
+    <div class="chains" id="chains" hidden></div>
+    <div class="stats" id="stats" hidden></div>
+  </section>
+  <aside class="detail" id="detail"></aside>
+</main>
+
+<script>
+/* ============================================================================
+   OKFM viewer — metadata-only projection of a mesh.
+   Generated by `okfm view`. NEVER contains concept bodies: a rendered copy of
+   a bundle is a second home for its knowledge (spec 3.14 / 20.3).
+   Trust and staleness are DERIVED here at render time, never read from stored
+   fields (spec 3.4).
+   ==========================================================================*/
+
+/* ---------- data sources, in priority order ----------------------------------
+   1. ./okfm-index.json      generated by `okfm view` from the real mesh
+   2. BOOTSTRAP              the bundled okfm-guide, baked in at ship time
+   3. empty state            no mesh, no guide -> instructions
+
+   Fetch only works over http(s). Opened straight from disk (file://) browsers
+   block it, so the baked guide is what you see. Run `okfm view --serve` for a
+   live view of your own mesh.
+-----------------------------------------------------------------------------*/
+const INDEX_URL = (window.OKFM_INDEX_URL) || "./okfm-index.json";
+const BOOTSTRAP = {
+ "name": "OKFM guide (bundled)",
+ "generated_at": "2026-07-31",
+ "bundles": [
+  {
+   "id": "okfm-guide",
+   "title": "OKFM guide",
+   "owner": "process:okfm-scaffold"
+  }
+ ],
+ "concepts": [
+  {
+   "p": "/okfm-guide/admission-test.md",
+   "b": "okfm-guide",
+   "t": "Concept",
+   "title": "The admission test",
+   "d": "Write down what the code cannot say \u2014 and nothing else.",
+   "v": null,
+   "sa": null,
+   "src": 1,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-guide/index.md"
+    ]
+   ],
+   "scope": "guide"
+  },
+  {
+   "p": "/okfm-guide/attested-computation.md",
+   "b": "okfm-guide",
+   "t": "Concept",
+   "title": "Attested computation",
+   "d": "A number that proves it was produced the sanctioned way.",
+   "v": null,
+   "sa": null,
+   "src": 0,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-guide/index.md"
+    ]
+   ],
+   "scope": "guide"
+  },
+  {
+   "p": "/okfm-guide/deleting-this-guide.md",
+   "b": "okfm-guide",
+   "t": "Runbook",
+   "title": "Deleting this guide",
+   "d": "How to remove the guide bundle, and what it affects.",
+   "v": null,
+   "sa": null,
+   "src": 0,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-guide/index.md"
+    ]
+   ],
+   "scope": "guide"
+  },
+  {
+   "p": "/okfm-guide/drift-and-staleness.md",
+   "b": "okfm-guide",
+   "t": "Concept",
+   "title": "Drift and staleness",
+   "d": "Two independent ways knowledge goes wrong, and why both are computed.",
+   "v": null,
+   "sa": null,
+   "src": 0,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-guide/index.md"
+    ]
+   ],
+   "scope": "guide"
+  },
+  {
+   "p": "/okfm-guide/federation.md",
+   "b": "okfm-guide",
+   "t": "Concept",
+   "title": "Federation",
+   "d": "Many bundles, many owners, feedback instead of writes.",
+   "v": null,
+   "sa": null,
+   "src": 0,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-guide/index.md"
+    ]
+   ],
+   "scope": "guide"
+  },
+  {
+   "p": "/okfm-guide/first-concept.md",
+   "b": "okfm-guide",
+   "t": "Runbook",
+   "title": "Your first concept",
+   "d": "The smallest useful concept, and where to put it.",
+   "v": null,
+   "sa": null,
+   "src": 0,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-guide/index.md"
+    ]
+   ],
+   "scope": "guide"
+  },
+  {
+   "p": "/okfm-guide/index.md",
+   "b": "okfm-guide",
+   "t": "Index",
+   "title": "OKFM guide",
+   "d": "A working OKF bundle that documents OKFM. Delete this folder any time.",
+   "v": null,
+   "sa": null,
+   "src": 0,
+   "drift": 0,
+   "r": [],
+   "scope": "guide"
+  },
+  {
+   "p": "/okfm-guide/log.md",
+   "b": "okfm-guide",
+   "t": "Log",
+   "title": "Guide changelog",
+   "d": "Append-only history of this guide bundle.",
+   "v": null,
+   "sa": null,
+   "src": 0,
+   "drift": 0,
+   "r": [],
+   "scope": "guide"
+  },
+  {
+   "p": "/okfm-guide/loop-family.md",
+   "b": "okfm-guide",
+   "t": "Concept",
+   "title": "The loop family",
+   "d": "Concept types that record how a decision was reached, not just what is true.",
+   "v": null,
+   "sa": null,
+   "src": 0,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-guide/index.md"
+    ],
+    [
+     "depends_on",
+     "/okfm-guide/what-is-okfm.md"
+    ]
+   ],
+   "scope": "guide"
+  },
+  {
+   "p": "/okfm-guide/what-is-okfm.md",
+   "b": "okfm-guide",
+   "t": "Concept",
+   "title": "What OKFM is",
+   "d": "A profile and scaffolding that turns OKF bundles into a self-evolving mesh.",
+   "v": null,
+   "sa": null,
+   "src": 1,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-guide/index.md"
+    ]
+   ],
+   "scope": "guide"
+  }
+ ]
+};
+const EMPTY = { name:"no mesh found", generated_at:"—", bundles:[], concepts:[] };
+
+let MESH = EMPTY, SOURCE = "empty", BUNDLE_ROOT = ".";
+
+async function loadMesh(){
+  try{
+    const res = await fetch(INDEX_URL, {cache:"no-store"});
+    if(res.ok){
+      const j = await res.json();
+      if(j && Array.isArray(j.concepts)){
+        MESH = j; SOURCE = "live";
+        BUNDLE_ROOT = j.bundle_root || ".";
+        return;
+      }
+    }
+  }catch(e){ /* file:// or no index — fall through */ }
+  if(BOOTSTRAP.concepts.length){ MESH = BOOTSTRAP; SOURCE = "guide"; BUNDLE_ROOT = "."; }
+}
+
+/* ---------- type palette (cool instrument set) ---------- */
+const TYPE_COLOR = {
+  "Goal":"#3f6ea8","Evidence":"#6d8ba8","Evaluation":"#7a6aa0","Decision":"#1f6f5c",
+  "Experiment":"#c08a1e","Outcome":"#a83e2b","Feedback":"#8b6f9e","Answer":"#2f7d8c",
+  "Concept":"#3d5a45","Perspective":"#5d8a70","Rule":"#2b6b4f","Attested Computation":"#14544a",
+  "Metric":"#4f7f70","Source System":"#6b7480","OKF Member":"#6b5b95"
+};
+const LOOP_TYPES = ["Goal","Evidence","Evaluation","Decision","Experiment","Outcome","Feedback","Answer"];
+const color = t => TYPE_COLOR[t] || "#6b7480";
+
+/* ---------- derivations (never stored) ---------- */
+const today = MESH.today || new Date().toISOString().slice(0,10);
+function trustOf(c){ return c.v === "human" ? "human" : c.v === "machine" ? "machine" : "unverified"; }
+function freshOf(c){
+  if (c.drift) return "drifted";
+  if (c.sa && c.sa <= today) return "stale";
+  return "fresh";
+}
+const TRUST_COLOR = {human:"var(--verified)", machine:"var(--machine)", unverified:"var(--unverified)"};
+const TRUST_HEX   = {human:"#1f6f5c", machine:"#4a6fa5", unverified:"#98a0aa"};
+const TRUST_LABEL = {human:"human-reviewed", machine:"machine-confirmed", unverified:"unverified"};
+const FRESH_HEX   = {fresh:"#1f6f5c", stale:"#c08a1e", drifted:"#a83e2b"};
+
+let byPath = new Map(), types = [];
+function derive(){
+  MESH.concepts.forEach(c => { c.r = c.r || []; c.trust = trustOf(c); c.fresh = freshOf(c); });
+  byPath = new Map(MESH.concepts.map(c => [c.p, c]));
+  const inbound = new Map();
+  MESH.concepts.forEach(c => c.r.forEach(([,tgt]) => inbound.set(tgt, (inbound.get(tgt)||0)+1)));
+  MESH.concepts.forEach(c => c.inb = inbound.get(c.p) || 0);
+  types = [...new Set(MESH.concepts.map(c=>c.t))].sort();
+}
+
+/* ---------- filter state ---------- */
+const state = {
+  view:"graph", types:new Set(), trust:new Set(["human","machine","unverified"]),
+  fresh:new Set(["fresh","stale","drifted"]), bundles:new Set(), selected:null, body:null
+};
+function resetFilters(){
+  state.types = new Set(types);
+  state.trust = new Set(["human","machine","unverified"]);
+  state.fresh = new Set(["fresh","stale","drifted"]);
+  state.bundles = new Set(MESH.bundles.map(b=>b.id));
+}
+const visible = () => MESH.concepts.filter(c =>
+  state.types.has(c.t) && state.trust.has(c.trust) && state.fresh.has(c.fresh) && state.bundles.has(c.b));
+
+/* ---------- gauges ---------- */
+const isGuide = c => c.scope === "guide";
+const meshOnly = () => MESH.concepts.filter(c => !isGuide(c));
+
+function gauges(){
+  // Guide concepts are documentation, not knowledge: excluded from every number
+  // unless the guide is all there is.
+  const real = meshOnly();
+  const all = real.length ? real : MESH.concepts, n = all.length;
+  const humanV = all.filter(c=>c.trust==="human").length;
+  const stale  = all.filter(c=>c.fresh!=="fresh").length;
+  // outcome closure: decisions that commit (trial/adopt) reachable to an Outcome
+  const commits = all.filter(c=>c.t==="Decision" && (c.act==="trial"||c.act==="adopt"));
+  const closed = commits.filter(d => reachesOutcome(d.p)).length;
+  // attestation coverage: Rules with an implemented_by to an Attested Computation
+  const rules = all.filter(c=>c.t==="Rule");
+  const attested = rules.filter(r => r.r.some(([p,t]) => p==="implemented_by" && byPath.get(t)?.t==="Attested Computation")).length;
+  const orphans = all.filter(c => c.r.length===0 && c.inb===0).length;
+
+  const g = [
+    {k:"concepts", v:n, sub:` / ${MESH.bundles.length} bundles`},
+    {k:"human-verified", v:pct(humanV,n), sub:`${humanV}/${n}`, bar:humanV/n, cls:"good"},
+    {k:"needs review", v:stale, sub:" stale or drifted", bar:stale/n, cls:stale?"warn":"good"},
+    {k:"outcome closure", v:pct(closed,commits.length), sub:`${closed}/${commits.length}`, bar:commits.length?closed/commits.length:1, cls:closed===commits.length?"good":"warn"},
+    {k:"rules attested", v:pct(attested,rules.length), sub:`${attested}/${rules.length}`, bar:rules.length?attested/rules.length:1, cls:attested===rules.length?"good":"warn"},
+    {k:"orphans", v:orphans, sub:" unlinked", bar:orphans/n, cls:orphans?"warn":"good"}
+  ];
+  document.getElementById("gauges").innerHTML = g.map(x=>`
+    <div class="gauge">
+      <span class="k">${x.k}</span>
+      <span class="v">${x.v}<small>${x.sub||""}</small></span>
+      ${x.bar!==undefined?`<span class="bar ${x.cls||""}"><i style="width:${Math.round(x.bar*100)}%"></i></span>`:""}
+    </div>`).join("");
+}
+const pct = (a,b) => b ? Math.round(a/b*100)+"%" : "—";
+
+function reachesOutcome(start){
+  // walk outward through relations in both directions, depth-limited
+  const seen = new Set([start]); let frontier = [start];
+  for (let d=0; d<3; d++){
+    const next = [];
+    for (const p of frontier){
+      const c = byPath.get(p); if(!c) continue;
+      const nbrs = [...c.r.map(([,t])=>t), ...MESH.concepts.filter(x=>x.r.some(([,t])=>t===p)).map(x=>x.p)];
+      for (const nb of nbrs){
+        if (seen.has(nb)) continue;
+        if (byPath.get(nb)?.t === "Outcome") return true;
+        seen.add(nb); next.push(nb);
+      }
+    }
+    frontier = next;
+  }
+  return false;
+}
+
+/* ---------- filter panel ---------- */
+function filters(){
+  const counts = t => MESH.concepts.filter(c=>c.t===t).length;
+  const grp = (title, items) => `<h2 class="grp">${title}</h2>${items}`;
+  const chk = (set,val,label,sw,n) =>
+    `<label class="chk"><input type="checkbox" data-set="${set}" value="${val}" ${state[set].has(val)?"checked":""}>
+      ${sw?`<span class="swatch" style="background:${sw}"></span>`:""}<span>${label}</span>
+      ${n!==undefined?`<span class="n">${n}</span>`:""}</label>`;
+  document.getElementById("filters").innerHTML =
+    grp("Type", types.map(t=>chk("types",t,t,color(t),counts(t))).join("")) +
+    grp("Trust", ["human","machine","unverified"].map(v=>chk("trust",v,TRUST_LABEL[v],TRUST_HEX[v],
+        MESH.concepts.filter(c=>c.trust===v).length)).join("")) +
+    grp("Freshness", ["fresh","stale","drifted"].map(v=>chk("fresh",v,v,FRESH_HEX[v],
+        MESH.concepts.filter(c=>c.fresh===v).length)).join("")) +
+    grp("Bundle", MESH.bundles.map(b=>chk("bundles",b.id,b.id,null,
+        MESH.concepts.filter(c=>c.b===b.id).length)).join("")) +
+    `<div class="filter-actions"><button id="resetF">reset filters</button></div>`;
+
+  document.querySelectorAll('#filters input').forEach(el=>{
+    el.addEventListener("change", ()=>{
+      const s = state[el.dataset.set];
+      el.checked ? s.add(el.value) : s.delete(el.value);
+      render();
+    });
+  });
+  document.getElementById("resetF").onclick = ()=>{ resetFilters(); filters(); render(); };
+}
+
+/* ---------- graph ---------- */
+const svg = document.getElementById("graph");
+let nodes = [], links = [], simTimer = null;
+
+function buildGraph(){
+  const vis = visible(), vset = new Set(vis.map(c=>c.p));
+  const prev = new Map(nodes.map(n=>[n.p,n]));
+  const W = svg.clientWidth || 800, H = svg.clientHeight || 500;
+  nodes = vis.map((c,i)=>{
+    const o = prev.get(c.p);
+    return { p:c.p, c, x:o?o.x:W/2 + Math.cos(i)*160 + (Math.random()-.5)*40,
+             y:o?o.y:H/2 + Math.sin(i*1.7)*140 + (Math.random()-.5)*40, vx:0, vy:0 };
+  });
+  const idx = new Map(nodes.map(n=>[n.p,n]));
+  links = [];
+  vis.forEach(c => c.r.forEach(([pred,tgt]) => {
+    if (vset.has(tgt)) links.push({ s:idx.get(c.p), t:idx.get(tgt), pred });
+  }));
+  runSim();
+}
+
+function runSim(){
+  clearInterval(simTimer);
+  let alpha = 1;
+  simTimer = setInterval(()=>{
+    tick(alpha); alpha *= 0.96;
+    drawGraph();
+    if (alpha < 0.02) clearInterval(simTimer);
+  }, 16);
+}
+
+function tick(alpha){
+  const W = svg.clientWidth||800, H = svg.clientHeight||500;
+  for (let i=0;i<nodes.length;i++){
+    const a = nodes[i];
+    for (let j=i+1;j<nodes.length;j++){
+      const b = nodes[j];
+      let dx = b.x-a.x, dy = b.y-a.y, d2 = dx*dx+dy*dy || 0.01;
+      if (d2 > 90000) continue;
+      const f = 2600/d2, d = Math.sqrt(d2), fx = dx/d*f, fy = dy/d*f;
+      a.vx -= fx; a.vy -= fy; b.vx += fx; b.vy += fy;
+    }
+  }
+  links.forEach(l=>{
+    const dx = l.t.x-l.s.x, dy = l.t.y-l.s.y, d = Math.hypot(dx,dy)||0.01;
+    const f = (d-105)*0.012, fx = dx/d*f, fy = dy/d*f;
+    l.s.vx += fx; l.s.vy += fy; l.t.vx -= fx; l.t.vy -= fy;
+  });
+  nodes.forEach(n=>{
+    n.vx += (W/2 - n.x)*0.0016; n.vy += (H/2 - n.y)*0.0016;
+    if (n.fixed) { n.vx = n.vy = 0; return; }
+    n.x += n.vx*alpha*1.6; n.y += n.vy*alpha*1.6;
+    n.vx *= 0.72; n.vy *= 0.72;
+    n.x = Math.max(28, Math.min(W-28, n.x)); n.y = Math.max(28, Math.min(H-28, n.y));
+  });
+}
+
+const radius = n => 6 + Math.min(n.c.inb, 6) * 1.9;
+
+function drawGraph(){
+  const W = svg.clientWidth||800, H = svg.clientHeight||500;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  const edge = links.map(l=>{
+    const dashed = ["differs_from","supersedes"].includes(l.pred);
+    return `<line x1="${l.s.x}" y1="${l.s.y}" x2="${l.t.x}" y2="${l.t.y}"
+      stroke="#b6c0bb" stroke-width="1" ${dashed?'stroke-dasharray="3 3"':""}/>`;
+  }).join("");
+  const node = nodes.map(n=>{
+    const c = n.c, r = radius(n), sel = state.selected===c.p;
+    const halo = c.fresh!=="fresh"
+      ? `<circle cx="${n.x}" cy="${n.y}" r="${r+4.5}" fill="none" stroke="${FRESH_HEX[c.fresh]}" stroke-width="1.5" opacity=".85"/>` : "";
+    const ring = c.trust==="human"
+      ? `<circle cx="${n.x}" cy="${n.y}" r="${r+1.6}" fill="none" stroke="#16191d" stroke-width="1.4"/>`
+      : c.trust==="machine"
+      ? `<circle cx="${n.x}" cy="${n.y}" r="${r+1.6}" fill="none" stroke="#16191d" stroke-width="1.1" stroke-dasharray="2.5 2.5" opacity=".65"/>` : "";
+    const selRing = sel ? `<circle cx="${n.x}" cy="${n.y}" r="${r+8}" fill="none" stroke="#16191d" stroke-width="1" opacity=".45"/>` : "";
+    const lbl = (r>8 || sel) ? `<text x="${n.x}" y="${n.y+r+11}" text-anchor="middle"
+        font-family="ui-monospace,monospace" font-size="9" fill="#5c6672">${esc(c.title.slice(0,26))}</text>` : "";
+    return `<g class="nd" data-p="${esc(c.p)}" style="cursor:pointer">${halo}
+      <circle cx="${n.x}" cy="${n.y}" r="${r}" fill="${color(c.t)}" opacity=".92"/>${ring}${selRing}${lbl}
+      <title>${esc(c.title)} — ${c.t}</title></g>`;
+  }).join("");
+  svg.innerHTML = edge + node;
+  svg.querySelectorAll(".nd").forEach(g=>{
+    g.addEventListener("click", ()=> select(g.dataset.p));
+  });
+}
+const esc = s => String(s).replace(/[&<>"]/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+
+/* drag */
+let drag = null;
+svg.addEventListener("mousedown", e=>{
+  const pt = mouse(e); let best=null, bd=1e9;
+  nodes.forEach(n=>{ const d=Math.hypot(n.x-pt.x,n.y-pt.y); if(d<bd && d<radius(n)+6){bd=d;best=n;} });
+  if(best){ drag=best; best.fixed=true; svg.classList.add("dragging"); }
+});
+window.addEventListener("mousemove", e=>{
+  if(!drag) return;
+  const pt = mouse(e); drag.x = pt.x; drag.y = pt.y; drawGraph();
+});
+window.addEventListener("mouseup", ()=>{
+  if(drag){ drag.fixed=false; drag=null; svg.classList.remove("dragging"); runSim(); }
+});
+function mouse(e){
+  const r = svg.getBoundingClientRect();
+  return { x:(e.clientX-r.left) * ((svg.clientWidth||800)/r.width),
+           y:(e.clientY-r.top)  * ((svg.clientHeight||500)/r.height) };
+}
+
+/* ---------- closure view ---------- */
+const SLOTS = ["Goal","Evaluation","Decision","Experiment","Outcome"];
+function buildChains(){
+  const vis = new Set(visible().map(c=>c.p));
+  const goals = MESH.concepts.filter(c=>c.t==="Goal" && vis.has(c.p));
+  const el = document.getElementById("chains");
+  if(!goals.length){ el.innerHTML = `<div class="empty-state">No goals in the current filter.<br>Closure tracks start from a <code>Goal</code>.</div>`; return; }
+
+  el.innerHTML = goals.map(g=>{
+    const serving = MESH.concepts.filter(c => c.r.some(([p,t]) => t===g.p && (p==="serves"||p==="derived_from")));
+    const pick = t => serving.filter(c=>c.t===t);
+    const evals = pick("Evaluation"), decs = pick("Decision");
+    // experiments/outcomes hang off decisions
+    const exps = MESH.concepts.filter(c=>c.t==="Experiment" && c.r.some(([,t])=>decs.some(d=>d.p===t)));
+    const outs = MESH.concepts.filter(c=>c.t==="Outcome" &&
+        MESH.concepts.some(x=>x.t==="Experiment" && exps.some(e=>e.p===x.p) && x.r.some(([p,t])=>p==="resulted_in"&&t===c.p)));
+    const row = [g, evals[0]||null, decs[0]||null, exps[0]||null, outs[0]||null];
+
+    const committed = decs.some(d=>d.act==="trial"||d.act==="adopt");
+    const open = committed && !outs.length;
+    const out = outs[0];
+    const verdict = out
+      ? `<div class="verdict ${out.val==="positive"?"pos":"neg"}">outcome recorded — durable value <b>${out.val}</b>${
+          decs[0]?.act==="trial" && out.val==="negative" ? " · evaluation said promising" : ""}</div>`
+      : decs.some(d=>d.act==="reject")
+      ? `<div class="verdict">closed at decision — <b>rejected</b>, no experiment needed</div>`
+      : open
+      ? `<div class="verdict open">committed but <b>no outcome recorded</b> — open loop</div>`
+      : `<div class="verdict">no decision yet — <b>in flight</b></div>`;
+
+    const track = row.map((c,i)=> c
+      ? `<div class="slot" data-p="${esc(c.p)}">
+           <span class="dot" style="background:${TRUST_HEX[c.trust]}"></span>
+           <span class="st">${SLOTS[i]}</span><span class="sv">${esc(c.title)}</span></div>`
+      : `<div class="slot empty"><span class="st">${SLOTS[i]}</span><span class="sv">—</span></div>`).join("");
+
+    const extra = evals.length>1 ? ` · ${evals.length} evaluations` : "";
+    return `<div class="chain ${open?"open":""}">
+      <div class="ttl">${esc(g.title)}</div>
+      <div class="meta">${g.b}${extra}</div>
+      <div class="track">${track}</div>${verdict}</div>`;
+  }).join("");
+
+  el.querySelectorAll(".slot[data-p]").forEach(s=> s.addEventListener("click", ()=>select(s.dataset.p)));
+}
+
+/* ---------- health view ---------- */
+function buildStats(){
+  const all = MESH.concepts, n = all.length;
+  const bar = (label, val, total, hex) => `
+    <div class="row"><span class="lbl">${label}</span>
+      <span class="track2"><i style="width:${total?Math.round(val/total*100):0}%;background:${hex}"></i></span>
+      <span class="num">${val}</span></div>`;
+
+  const typeRows = types.map(t=>bar(t.toLowerCase(), all.filter(c=>c.t===t).length, n, color(t))).join("");
+  const trustRows = ["human","machine","unverified"].map(v=>
+    bar(TRUST_LABEL[v], all.filter(c=>c.trust===v).length, n, TRUST_HEX[v])).join("");
+  const freshRows = ["fresh","stale","drifted"].map(v=>
+    bar(v, all.filter(c=>c.fresh===v).length, n, FRESH_HEX[v])).join("");
+
+  const needs = all.filter(c=>c.fresh!=="fresh" || c.trust==="unverified" || (c.r.length===0&&c.inb===0)
+                 || c.recon==="material_mismatch" || c.recon==="unreviewed");
+  const warn = needs.map(c=>{
+    const [tag,hex] = c.fresh==="drifted" ? ["drift","#a83e2b"]
+      : c.recon==="material_mismatch" ? ["mismatch","#a83e2b"]
+      : c.fresh==="stale" ? ["stale","#c08a1e"]
+      : c.trust==="unverified" ? ["unverified","#98a0aa"]
+      : c.recon==="unreviewed" ? ["unreconciled","#c08a1e"] : ["orphan","#98a0aa"];
+    return `<li><span class="tag" style="background:${hex}">${tag}</span>
+      <span><a data-p="${esc(c.p)}" style="cursor:pointer">${esc(c.title)}</a><br><code>${esc(c.p)}</code></span></li>`;
+  }).join("");
+
+  const commits = all.filter(c=>c.t==="Decision" && (c.act==="trial"||c.act==="adopt"));
+  const closed = commits.filter(d=>reachesOutcome(d.p));
+  const outs = all.filter(c=>c.t==="Outcome");
+  const neg = outs.filter(o=>o.val==="negative").length;
+
+  document.getElementById("stats").innerHTML = `
+    <div class="card"><h3>Composition</h3>
+      <p class="hint">What this mesh is made of. A mesh that is all meaning and no loop family has no memory of its own decisions.</p>
+      ${typeRows}</div>
+    <div class="card"><h3>Trust</h3>
+      <p class="hint">Derived from whether a human actor appears in <code>verified</code> — never stored.</p>
+      ${trustRows}</div>
+    <div class="card"><h3>Freshness</h3>
+      <p class="hint">Stale is a passed <code>stale_after</code> date. Drifted means a cited source changed since capture.</p>
+      ${freshRows}</div>
+    <div class="card"><h3>Loop closure</h3>
+      <p class="hint">Committed decisions that reached a recorded outcome. An open loop is a decision nobody checked.</p>
+      ${bar("committed", commits.length, commits.length||1, "#3f6ea8")}
+      ${bar("closed", closed.length, commits.length||1, "#1f6f5c")}
+      ${bar("outcomes neg.", neg, outs.length||1, "#a83e2b")}
+      <p class="hint" style="margin:10px 0 0">${neg} of ${outs.length} recorded outcomes were negative — the reason evaluation and outcome are stored separately.</p>
+    </div>
+    <div class="card" style="grid-column:1/-1"><h3>Review queue — ${needs.length}</h3>
+      <p class="hint">Everything the mesh believes needs a human before it is relied on.</p>
+      <ul class="warnlist">${warn}</ul></div>`;
+
+  document.querySelectorAll("#stats a[data-p]").forEach(a=>a.addEventListener("click",()=>select(a.dataset.p)));
+}
+
+/* ---------- detail ---------- */
+function select(p){
+  state.selected = p; state.body = null; detail();
+  if(state.view==="graph") drawGraph();
+  loadBody(p);
+}
+
+/* Bodies are FETCHED from the bundle, never embedded in this file.
+   Served -> live body, always current. file:// -> unavailable, say so. */
+async function loadBody(p){
+  const url = BUNDLE_ROOT.replace(/\/$/,"") + p;
+  try{
+    const res = await fetch(url, {cache:"no-store"});
+    if(!res.ok) throw 0;
+    let txt = await res.text();
+    txt = txt.replace(/^---[\s\S]*?\n---\n/, "").trim();   // strip frontmatter
+    if(state.selected === p){ state.body = txt.slice(0, 6000); detail(); }
+  }catch(e){
+    if(state.selected === p){ state.body = false; detail(); }
+  }
+}
+
+function detail(){
+  const el = document.getElementById("detail");
+  const c = byPath.get(state.selected);
+  if(!c){
+    el.innerHTML = `<div class="empty-state">Select a concept.<br><br>
+      This panel shows <b>metadata only</b> — the body stays in the bundle.</div>`;
+    return;
+  }
+  const rel = c.r.map(([pred,tgt])=>{
+    const t = byPath.get(tgt);
+    return `<li><code style="font-family:var(--mono);font-size:10.5px;color:var(--slate)">${pred}</code>
+      → ${t?`<a data-p="${esc(tgt)}">${esc(t.title)}</a>`:`<span style="color:var(--slate-dim)">${esc(tgt)} (outside filter)</span>`}</li>`;
+  }).join("");
+  const back = MESH.concepts.filter(x=>x.r.some(([,t])=>t===c.p));
+  const backs = back.map(x=>`<li><a data-p="${esc(x.p)}">${esc(x.title)}</a></li>`).join("");
+
+  el.innerHTML = `
+    <h3>${esc(c.title)}</h3>
+    <div class="path">${esc(c.p)}</div>
+    <span class="pill" style="background:${color(c.t)}">${esc(c.t)}</span>
+    <span class="pill" style="background:${TRUST_HEX[c.trust]}">${TRUST_LABEL[c.trust]}</span>
+    <span class="pill" style="background:${FRESH_HEX[c.fresh]}">${c.fresh}</span>
+    ${c.recon?`<span class="pill ghost">recon: ${esc(c.recon)}</span>`:""}
+    ${c.act?`<span class="pill ghost">${esc(c.act)}</span>`:""}
+    ${c.val?`<span class="pill ghost">value ${esc(c.val)}</span>`:""}
+    <dl>
+      <dt>description</dt><dd>${esc(c.d)}</dd>
+      <dt>bundle</dt><dd>${esc(c.b)}</dd>
+      ${c.sa?`<dt>stale after</dt><dd>${c.sa}${c.sa<=today?" — passed":""}</dd>`:""}
+      <dt>sources</dt><dd>${c.src} cited${c.drift?` · <span style="color:var(--drift)">${c.drift} drifted</span>`:""}</dd>
+      ${rel?`<dt>relations out</dt><dd><ul>${rel}</ul></dd>`:""}
+      ${backs?`<dt>referenced by</dt><dd><ul>${backs}</ul></dd>`:""}
+    </dl>
+    ${bodyBlock(c)}`;
+
+  el.querySelectorAll("a[data-p]").forEach(a=>a.addEventListener("click",()=>select(a.dataset.p)));
+}
+
+function bodyBlock(c){
+  if(state.body === null)
+    return `<div class="nobody">Reading <code>${esc(c.p)}</code>…</div>`;
+  if(state.body === false)
+    return `<div class="nobody"><b>Body not available here.</b><br>
+      This page holds metadata only — it never embeds concept text, so it can never
+      go stale against the bundle or become a second copy of it.<br><br>
+      Open <code>${esc(c.p)}</code>, or run <code>okfm view --serve</code> to read
+      bodies live.</div>`;
+  return `<dt style="font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--slate-dim);margin-top:16px">body — read live from bundle</dt>
+    <pre class="bodytext">${esc(state.body)}</pre>`;
+}
+
+/* ---------- view switching ---------- */
+function render(){
+  const g = state.view==="graph", ch = state.view==="chains", st = state.view==="stats";
+  svg.hidden = !g; document.getElementById("legendNote").hidden = !g;
+  document.getElementById("chains").hidden = !ch;
+  document.getElementById("stats").hidden = !st;
+  if(g) buildGraph(); if(ch) buildChains(); if(st) buildStats();
+}
+document.querySelectorAll('nav.views button').forEach(b=>{
+  b.addEventListener("click", ()=>{
+    document.querySelectorAll('nav.views button').forEach(x=>x.setAttribute("aria-selected", x===b));
+    state.view = b.dataset.view; render();
+  });
+});
+window.addEventListener("resize", ()=>{ if(state.view==="graph") buildGraph(); });
+
+/* ---------- empty state ---------- */
+function showEmpty(){
+  document.getElementById("gauges").innerHTML =
+    `<div class="gauge"><span class="k">concepts</span><span class="v">0</span></div>`;
+  document.getElementById("filters").innerHTML = `<h2 class="grp">Filters</h2>
+    <p style="font-size:12px;color:var(--slate);line-height:1.5">Nothing to filter yet.</p>`;
+  document.querySelector("section.stage").innerHTML = `
+    <div class="empty-state" style="padding:64px 28px;max-width:560px;margin:0 auto;text-align:left">
+      <p style="font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--slate-dim);margin:0 0 14px">No mesh found</p>
+      <p style="font-size:14px;color:var(--ink);margin:0 0 18px">This project has no concepts yet, and the bundled guide has been removed.</p>
+      <p style="margin:0 0 8px"><b>Write one file:</b></p>
+      <pre style="font-family:var(--mono);font-size:11.5px;background:var(--panel);border:1px solid var(--line);padding:12px;overflow-x:auto;line-height:1.5">---
+type: Decision
+title: Use cents, not dollars
+description: Integer cents everywhere; format at the edge.
+status: stable
+generated: { by: "human:you", at: "${new Date().toISOString().slice(0,10)}" }
+---
+
+# Why
+
+Float dollars drifted a few cents per thousand rows.</pre>
+      <p style="margin:16px 0 6px">Any <code>.md</code> file with a <code>type:</code> counts, anywhere in the project.</p>
+      <p style="margin:0"><code>okfm view</code> regenerates this page · <code>okfm init --guide</code> restores the guide.</p>
+    </div>`;
+  document.getElementById("detail").innerHTML =
+    `<div class="empty-state">Nothing selected.</div>`;
+}
+
+/* ---------- boot ---------- */
+(async function boot(){
+  await loadMesh();
+  derive();
+  resetFilters();
+  document.getElementById("meshName").textContent = MESH.name;
+
+  const badge = document.getElementById("genAt");
+  if (SOURCE === "live"){
+    badge.textContent = "live · " + (MESH.generated_at || "now");
+    badge.title = "Read from " + INDEX_URL;
+  } else if (SOURCE === "guide"){
+    badge.textContent = "bundled guide";
+    badge.title = "No mesh index reachable. Showing the okfm-guide bundle. "
+                + "Run `okfm view --serve` to read your own mesh live, or delete okfm-guide/ when you are done with it.";
+    badge.style.borderColor = "var(--stale)"; badge.style.color = "var(--stale)";
+  } else {
+    badge.textContent = "empty";
+  }
+
+  if (!MESH.concepts.length){ showEmpty(); return; }
+  gauges(); filters(); detail(); render();
+})();
+</script>
+</body>
+</html>

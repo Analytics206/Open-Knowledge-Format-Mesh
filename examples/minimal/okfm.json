@@ -1,0 +1,14 @@
+{
+  "okfm": "0.2.1",
+  "pack": "warehouse",
+  "bundles": { "primary": "./okf" },
+  "index": {
+    "max_concepts": 60,
+    "priority_types": ["Attested Computation", "Rule", "Metric", "Perspective"]
+  },
+  "exclude_scopes": ["guide"],
+  "stores": {
+    "sp3d-db": { "kind": "sql", "adapter": "bigquery", "profile": "env:SP3D_DSN" }
+  },
+  "federation": { "registry": null }
+}

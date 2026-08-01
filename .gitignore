@@ -1,0 +1,26 @@
+# ---- OKFM generated artifacts -------------------------------------------
+# These are DERIVATIONS of the bundle, rebuilt on demand. They are never a
+# second home for knowledge, and they must never reach a benchmark control
+# arm or a context package. Regenerate with `okfm view` / `okfm index`.
+
+okfm-index.json
+okfm-viewer.local.html
+.okfm-cache/
+
+# The shipped viewer (okfm-viewer.html) IS committed: it contains metadata
+# for the bundled guide only, and fetches everything else at runtime.
+
+# ---- Python -------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+
+# ---- local -------------------------------------------------------------
+.env
+.DS_Store

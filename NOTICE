@@ -1,0 +1,38 @@
+OKFM — the OKF Mesh
+Copyright (c) 2026 OKFM contributors
+
+This product is licensed under the MIT License (see LICENSE).
+
+--------------------------------------------------------------------------------
+Open Knowledge Format (OKF)
+--------------------------------------------------------------------------------
+
+OKFM is a profile over the Open Knowledge Format, published by the Google Cloud
+Data Cloud team and licensed under the Apache License, Version 2.0:
+
+    https://github.com/GoogleCloudPlatform/knowledge-catalog
+
+OKFM targets OKF v0.2. It does not fork the format. Every OKFM addition is an
+optional frontmatter key prefixed `okfm_`, and a bundle produced by this project is
+simultaneously a conformant OKF v0.2 bundle and an OKFM bundle. Removing every
+`okfm_` key leaves a valid OKF bundle — a property enforced in CI as the strip test
+(spec 7.1).
+
+The names "Open Knowledge Format" and "OKF" refer to that specification. OKFM is an
+independent project and is not endorsed by or affiliated with Google.
+
+No OKF material is vendored in this repository at present. Should the specification
+later be vendored for offline validation, it will be included verbatim, retaining its
+Apache-2.0 license text and attribution, per spec 13.8.
+
+--------------------------------------------------------------------------------
+Prior art
+--------------------------------------------------------------------------------
+
+Findings, and in places tooling, from the following projects informed this design.
+They are credited in docs/prior-art.md, and no code from them is currently included:
+
+  scaccogatto/okf-skills        MIT — conformance validator, migrator, CI action,
+                                bundle visualizer, and the published benchmark whose
+                                negative results shape spec 3.13 and 7.7
+  guhcostan/claude-mega-brain   the injection measurement behind spec 8.5
