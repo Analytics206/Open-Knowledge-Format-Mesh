@@ -339,6 +339,7 @@ def _cross_checks(cfg: dict) -> list[dict]:
     root, _ = dig(cfg, "build.root")
     out_dir, _ = dig(cfg, "build.out")
     include, _ = dig(cfg, "build.include")
+    exclude, _ = dig(cfg, "build.exclude")
     bundles, has_bundles = dig(cfg, "bundles")
 
     def norm(p):
@@ -360,6 +361,26 @@ def _cross_checks(cfg: dict) -> list[dict]:
                                     f"inside `{root}`, so it is dropped",
                                     "include reaches outside the root; use exclude to "
                                     "control what is inside it"))
+
+    # `exclude` says what gets READ. `bundles` says what the mesh IS. Excluding a folder
+    # that `bundles` still names changes nothing an adopter can see, which is the most
+    # confusing possible outcome: the config now disagrees with itself and the mesh looks
+    # broken rather than misconfigured.
+    if has_bundles and isinstance(bundles, dict) and isinstance(root, str):
+        for i, entry in enumerate(exclude or []):
+            if not isinstance(entry, str):
+                continue
+            excluded_path = f"{norm(root)}/{norm(entry)}".strip("/")
+            for bid, rel in bundles.items():
+                if isinstance(rel, str) and norm(rel) == excluded_path:
+                    out.append(_finding(
+                        "warn", f"build.exclude[{i}]",
+                        f"excluded from the build, but `bundles.{bid}` still names it — "
+                        f"every reader still shows it",
+                        f"`exclude` controls what is READ; `bundles` is what the mesh IS. "
+                        f"To drop it from the mesh, remove the `bundles.{bid}` line. To keep "
+                        f"it as an in-place bundle that the build must not mirror, this is "
+                        f"already correct."))
 
     if has_bundles and isinstance(bundles, dict) and bundles:
         for bid, rel in bundles.items():

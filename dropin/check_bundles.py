@@ -78,6 +78,13 @@ def main() -> int:
         if not src.is_dir():
             errors.append(f"{bid}: configured path does not exist ({src})")
             continue
+        if not (src / "index.md").is_file():
+            # Said plainly, because the symptom otherwise surfaces somewhere else entirely:
+            # the mesh's member concept points at `/<bid>/index.md` and the failure reads as
+            # a dangling relation in a different bundle, which is two steps from the cause.
+            errors.append(f"{bid}: no index.md — a bundle's index is its directory map "
+                          f"(spec 6.1), and the mesh points every member at one")
+            continue
         root = f"/{bid}"
         n = 0
 

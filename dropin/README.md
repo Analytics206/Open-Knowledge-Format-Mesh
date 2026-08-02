@@ -72,7 +72,13 @@ not fail — it builds the wrong thing quietly. This is the step that says so:
 It runs first in the pipeline. It checks unknown keys, types, enums and ranges, whether the
 paths exist, that `build.out` does not sit inside `build.root` (the build would read its own
 output), and that a `stores` credential is a **handle** — `env:`, `vault:`, `op:` — and not
-the secret itself. Errors stop the build; warnings do not, because a folder you have not
+the secret itself.
+
+It also catches the one seam in this config that reliably surprises people: **`exclude` says
+what gets read, `bundles` says what the mesh is.** Exclude a folder that `bundles` still
+names and nothing visible changes, because the build was never going to mirror it and every
+reader still finds it by path. Same for a bundle the build has stopped writing — the folder
+stays on disk and stays listed. Both now say so, and say which line to remove. Errors stop the build; warnings do not, because a folder you have not
 created yet is the normal case during setup.
 
 **There is also a form.** Open `okfm-web-ui.html` and switch to the **Config** tab: the same

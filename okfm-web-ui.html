@@ -601,7 +601,7 @@ const CONFIG = {
  "_build": "Every folder of documents under `root` gets its own OKF in `out`, plus one for the loose files at the top and a mesh OKF over all of them. `exclude` drops a folder inside `root`; `include` adds a tree outside it. `decisions` is excluded because it is an in-place bundle — those files are the concepts, so mirroring them would be a second copy of knowledge that already exists.",
  "build": {
   "root": "docs",
-  "root_files": true,
+  "root_files": false,
   "exclude": [
    "decisions"
   ],
@@ -1190,7 +1190,7 @@ const BOOTSTRAP = {
    "v": null,
    "sa": null,
    "src": 3,
-   "drift": 0,
+   "drift": 1,
    "r": [
     [
      "part_of",
@@ -2419,6 +2419,7 @@ function cCross(cfg){
   const out=[];
   const [root] = cdig(cfg,"build.root"), [outDir] = cdig(cfg,"build.out");
   const [include] = cdig(cfg,"build.include");
+  const [exclude] = cdig(cfg,"build.exclude");
   const [bundles, hasBundles] = cdig(cfg,"bundles");
 
   if(typeof root==="string" && typeof outDir==="string"){
@@ -2434,6 +2435,23 @@ function cCross(cfg){
       out.push({level:"warn", path:"build.include["+i+"]", msg:"inside `"+root+"`, so it is dropped",
         hint:"include reaches outside the root; use exclude to control what is inside it"});
   });
+  // `exclude` says what gets READ. `bundles` says what the mesh IS. Excluding a folder that
+  // `bundles` still names changes nothing anyone can see, which is the most confusing
+  // possible outcome — the config disagrees with itself and the mesh looks broken.
+  if(hasBundles && bundles && typeof bundles==="object" && typeof root==="string"){
+    (exclude||[]).forEach((entry,i)=>{
+      if(typeof entry!=="string") return;
+      const excluded = (cnorm(root)+"/"+cnorm(entry)).replace(/^\/+|\/+$/g,"");
+      for(const [bid, rel] of Object.entries(bundles)){
+        if(typeof rel==="string" && cnorm(rel)===excluded)
+          out.push({level:"warn", path:"build.exclude["+i+"]",
+            msg:"excluded from the build, but `bundles."+bid+"` still names it — every reader still shows it",
+            hint:"`exclude` controls what is READ; `bundles` is what the mesh IS. To drop it "
+                +"from the mesh, remove the `bundles."+bid+"` line. To keep it as an in-place "
+                +"bundle that the build must not mirror, this is already correct."});
+      }
+    });
+  }
   if(hasBundles && bundles && typeof bundles==="object"){
     for(const [bid, rel] of Object.entries(bundles)){
       if(typeof rel!=="string") continue;

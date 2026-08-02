@@ -43,6 +43,25 @@ The help text is the same string in all three places, which means writing it wel
 | `build.out` inside `build.root` | the build would read its own output next run |
 | `build.include` inside `build.root` | it will be dropped; `exclude` is what controls the inside |
 | A bundle id that is not its folder name | two names for one bundle |
+| `build.exclude` naming a folder `bundles` still lists | excluded from the build, still in the mesh |
+| A bundle the build no longer writes | leftover output that every reader still shows |
+
+# The two keys that look like the same key
+
+`exclude` says what gets **read**. `bundles` says what the mesh **is**. Nothing connects
+them, and the failure that follows is the most confusing kind available: you exclude a
+folder, re-run, and nothing changes — so the tool looks broken rather than misconfigured.
+
+That is a real design seam, not a mistake an adopter should have to learn about. The build
+never had any business mirroring an in-place bundle, so excluding it was always correct and
+always a no-op for readers. The last two rows above exist so the config says this out loud
+instead of leaving somebody to work it out from a diff.
+
+The second of them needs the build's own view of what it would write, so it lives in
+`check_config.py` rather than the shared table — a browser cannot answer it. It judges by
+the `generated.by` stamp rather than by location, because `.okfm/` holds hand-authored
+bundles too and calling the guide *leftover output* on every correct config would be worse
+than saying nothing.
 
 Two levels, and the distinction is load-bearing. **Error** means the build would do the wrong
 thing. **Warning** means it will do what you asked and you may not have meant it — a path that
