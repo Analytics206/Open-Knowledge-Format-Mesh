@@ -28,8 +28,8 @@ and the questions it answers. Nothing else lives here: membership is all this bu
 | How to use **my own key and provider** | [okfm-level-3](members/level-3-enrich.md) | [providers and keys](../level-3-enrich/providers-and-keys.md) |
 | Whether a CLI exists yet, and what it will be | [okfm-level-3](members/level-3-enrich.md) | [the console app](../level-3-enrich/the-console-app.md) |
 | Whether curated knowledge actually helps, and how that gets measured | [okfm-level-3](members/level-3-enrich.md) | [the benchmark](../level-3-enrich/the-benchmark.md) |
-| Why the project is shaped this way, and what would reverse a call | [okfm-decisions](members/decisions.md) | [`docs/decisions/`](../../docs/decisions/index.md) |
 | Phases, open questions, success measures, prior art | [okfm-docs](members/docs.md) | [`docs/roadmap.md`](../../docs/roadmap.md) |
+| Why the project is shaped this way, and what would reverse a call | not a bundle | [`docs/decisions/`](../../docs/decisions/index.md) |
 
 Every member carries its own share of this table as `okfm_member.answers`, so an agent can
 route on frontmatter instead of parsing prose.
@@ -42,7 +42,6 @@ route on frontmatter instead of parsing prose.
 | [okfm-level-2](members/level-2-build.md) | the deterministic build |
 | [okfm-level-3](members/level-3-enrich.md) | the enrichment loop, and its credentialed variant |
 | [okfm-guide](members/guide.md) | the format, and a bundle that demonstrates it |
-| [okfm-decisions](members/decisions.md) | why this project is shaped the way it is |
 | [okfm-docs](members/docs.md) | rationale, roadmap, prior art |
 
 # What this does not do
@@ -60,12 +59,17 @@ here; everything else lives in the member. Index-*over*, not authority-*over*.
 
 # Where the members live
 
-Five are under [`.okfm/`](..), one subfolder each. The sixth,
-[`docs/decisions/`](../../docs/decisions/index.md), is **in place** — those files are the
-decision records *and* the concepts, so they stay where a person would look for them.
+All of them are under [`.okfm/`](..), one subfolder each.
 
-That is the general rule, not an exception for this repository: mirrored bundles live in
-`.okfm/`, in-place bundles live with their sources, and the mesh registers both by path.
+The general rule has two halves, and only one of them is in use here: mirrored bundles live
+in `.okfm/`, and **in-place** bundles — where the documents *are* the concepts — live with
+their sources, registered by path. [`docs/decisions/`](../../docs/decisions/index.md) is the
+in-place case, and it is deliberately **not** a member: the records are readable where they
+sit, and putting them in the mesh adds a second way to reach the same files without adding a
+second thing to know.
+
+Reinstating it is one line in `bundles`. Removing it took one, plus deleting the member
+concept the build refused to throw away on its behalf.
 
 # Why the split is legitimate
 

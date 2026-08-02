@@ -20,8 +20,7 @@
     "level-2-build": "./.okfm/level-2-build",
     "level-3-enrich": "./.okfm/level-3-enrich",
     "docs": "./.okfm/docs",
-    "guide": "./.okfm/guide",
-    "decisions": "./docs/decisions"
+    "guide": "./.okfm/guide"
   },
   "read": {
     "web_ui": {

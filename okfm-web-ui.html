@@ -617,8 +617,7 @@ const CONFIG = {
   "level-2-build": "./.okfm/level-2-build",
   "level-3-enrich": "./.okfm/level-3-enrich",
   "docs": "./.okfm/docs",
-  "guide": "./.okfm/guide",
-  "decisions": "./docs/decisions"
+  "guide": "./.okfm/guide"
  },
  "read": {
   "web_ui": {
@@ -678,188 +677,9 @@ const BOOTSTRAP = {
    "id": "guide",
    "title": "guide",
    "owner": "human:analytics206"
-  },
-  {
-   "id": "decisions",
-   "title": "decisions",
-   "owner": "human:analytics206"
   }
  ],
  "concepts": [
-  {
-   "p": "/decisions/0001-runtime-and-packaging.md",
-   "b": "decisions",
-   "t": "Decision",
-   "title": "DR-0001 — Runtime and packaging for the reference implementation",
-   "d": "Python 3.13 at every level rather than a floor that rises, with the drop-in standard-library-only — the line worth holding is not \"OKFM installs nothing\" but \"the level you start at installs nothing.\"",
-   "v": "human",
-   "sa": null,
-   "src": 1,
-   "drift": 1,
-   "r": [],
-   "scope": "project"
-  },
-  {
-   "p": "/decisions/0002-version-scheme.md",
-   "b": "decisions",
-   "t": "Decision",
-   "title": "DR-0002 — Version scheme",
-   "d": "The **release number on OKFM itself** — the `0.2.1` in `\"okfm\": \"0.2.1\"` — in the same sense a library is at `v1.4.2`.",
-   "v": null,
-   "sa": null,
-   "src": 1,
-   "drift": 0,
-   "r": [],
-   "scope": "project"
-  },
-  {
-   "p": "/decisions/0003-phase-ordering.md",
-   "b": "decisions",
-   "t": "Decision",
-   "title": "DR-0003 — Where federation sits in the delivery order",
-   "d": "Federation's negotiation half lands after the credentialed phase while its addressing half moved into Phase 1, because the repository is already a mesh; amended to take the proving-ground projects out of the phase plan entirely — they are the feedback loop, not steps this repository performs.",
-   "v": "human",
-   "sa": null,
-   "src": 1,
-   "drift": 1,
-   "r": [],
-   "scope": "project"
-  },
-  {
-   "p": "/decisions/0004-split-the-spec-preserve-numbers.md",
-   "b": "decisions",
-   "t": "Decision",
-   "title": "DR-0004 — Split the spec, preserve section numbers",
-   "d": "The unified `okfm-spec-v0.2.1.md` was 1,535 lines carrying four jobs at once: a normative specification, a rationale, a roadmap, and a lab notebook. For a project whose primary constraint is that a…",
-   "v": null,
-   "sa": null,
-   "src": 1,
-   "drift": 0,
-   "r": [],
-   "scope": "project"
-  },
-  {
-   "p": "/decisions/0005-path-resolution.md",
-   "b": "decisions",
-   "t": "Decision",
-   "title": "DR-0005 — Bundle-relative in files, mesh-relative in the index",
-   "d": "Bundle-relative inside a concept, plain relative in body links, and mesh-relative only in the generated index — the transformation is one-way and lives entirely in the index builder, so nothing inside a bundle ever stores a path that names its own bundle.",
-   "v": "human",
-   "sa": null,
-   "src": 1,
-   "drift": 1,
-   "r": [],
-   "scope": "project"
-  },
-  {
-   "p": "/decisions/0006-drift-cost-and-caching.md",
-   "b": "decisions",
-   "t": "Decision",
-   "title": "DR-0006 — Drift is observed at build time, never resolved at read time",
-   "d": "Trust and staleness are pure functions of data already in hand; drift needs the outside world, and the outside world does not belong on the read path.",
-   "v": "human",
-   "sa": null,
-   "src": 1,
-   "drift": 1,
-   "r": [],
-   "scope": "project"
-  },
-  {
-   "p": "/decisions/0007-two-layers.md",
-   "b": "decisions",
-   "t": "Decision",
-   "title": "DR-0007 — Two layers: a portable base, and an optional implementation",
-   "d": "OKFM is two layers — a base that is a specification, a guide and a web UI, and an optional reference implementation — and CI proves the base stands alone by deleting the implementation and validating anyway.",
-   "v": "human",
-   "sa": null,
-   "src": 1,
-   "drift": 1,
-   "r": [],
-   "scope": "project"
-  },
-  {
-   "p": "/decisions/0008-build-pipeline.md",
-   "b": "decisions",
-   "t": "Decision",
-   "title": "DR-0008 — What each component requires, and what the rebuild actually does",
-   "d": "Workflows are classified by what they expose — nothing, a human, a model, secrets — and a composite inherits the union of its steps, which is what puts the model-dependent half of the refresh loop at level 3 and keeps the rest runnable on a pull request from a fork.",
-   "v": "human",
-   "sa": null,
-   "src": 1,
-   "drift": 1,
-   "r": [],
-   "scope": "project"
-  },
-  {
-   "p": "/decisions/0009-adoption-levels.md",
-   "b": "decisions",
-   "t": "Decision",
-   "title": "DR-0009 — Four adoption levels",
-   "d": "Three adoption levels, each usable on its own — a browser, then Python, then a model — with the credentialed case a variant of level 3 rather than a fourth level, because who holds the key is a change of direction and not another step up.",
-   "v": "human",
-   "sa": null,
-   "src": 1,
-   "drift": 1,
-   "r": [],
-   "scope": "project"
-  },
-  {
-   "p": "/decisions/0010-okfm-self-hosts-as-a-mesh.md",
-   "b": "decisions",
-   "t": "Decision",
-   "title": "DR-0010 — OKFM's own repository is the first mesh",
-   "d": "OKFM's own repository is the first mesh — one OKF per folder of documents under .okfm/, a generated mesh OKF over them, and federation's addressing half proven on real content. It maps the members and deliberately does not run them.",
-   "v": "human",
-   "sa": null,
-   "src": 1,
-   "drift": 1,
-   "r": [],
-   "scope": "project"
-  },
-  {
-   "p": "/decisions/0011-viewer-and-console.md",
-   "b": "decisions",
-   "t": "Decision",
-   "title": "DR-0011 — The web UI stays read-only; a console is a separate artifact",
-   "d": "The read-only viewer stays one file that opens from disk and configuration editing goes to a separate served console, because write access would turn a browser-openable file into an install — and the CLI falls out of building the console rather than being designed against an imagined user.",
-   "v": "human",
-   "sa": null,
-   "src": 1,
-   "drift": 1,
-   "r": [],
-   "scope": "project"
-  },
-  {
-   "p": "/decisions/0012-reach-is-configured.md",
-   "b": "decisions",
-   "t": "Decision",
-   "title": "DR-0012 — Reach is configured, not discovered",
-   "d": "A concept is recognised anywhere but read only where the config says — `exclude` drops a folder inside a scan root, `include` adds a tree outside one — because a sweep wide enough to be convenient is wide enough to turn an adopter's templates and vendored docs into concepts on the first run.",
-   "v": null,
-   "sa": null,
-   "src": 1,
-   "drift": 0,
-   "r": [],
-   "scope": "project"
-  },
-  {
-   "p": "/decisions/index.md",
-   "b": "decisions",
-   "t": "Index",
-   "title": "Decision records",
-   "d": "What was decided about OKFM, why, and what would reverse it.",
-   "v": null,
-   "sa": null,
-   "src": 0,
-   "drift": 0,
-   "r": [
-    [
-     "registered_by",
-     "/mesh/index.md"
-    ]
-   ],
-   "scope": "project"
-  },
   {
    "p": "/docs/index.md",
    "b": "docs",
@@ -1627,28 +1447,6 @@ const BOOTSTRAP = {
    "src": 0,
    "drift": 0,
    "r": [],
-   "scope": "project"
-  },
-  {
-   "p": "/mesh/members/decisions.md",
-   "b": "mesh",
-   "t": "OKF Member",
-   "title": "OKFM decision records",
-   "d": "Why this project is shaped the way it is — the rationale no source file can state.",
-   "v": null,
-   "sa": null,
-   "src": 0,
-   "drift": 0,
-   "r": [
-    [
-     "part_of",
-     "/mesh/index.md"
-    ],
-    [
-     "registers",
-     "/decisions/index.md"
-    ]
-   ],
    "scope": "project"
   },
   {

@@ -31,8 +31,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from okfm_core import (
-    HERE, PROJECT, RESERVED, bundle_root, frontmatter, load_or_create_config,
-    resolve_sources, scalar,
+    HERE, PROJECT, RESERVED, bundle_root, configured_bundles, frontmatter,
+    load_or_create_config, resolve_sources, scalar,
 )
 from bootstrap import _extract_description, _title, _yaml_str
 
@@ -148,6 +148,43 @@ def _bundle_id(cfg: dict, out_dir: Path, fallback: str) -> str:
     return fallback
 
 
+def prune_members(cfg: dict, mesh_dir: Path, built: list[tuple[str, str, int]],
+                  apply: bool) -> int:
+    """Drop member concepts for bundles that are no longer part of the mesh.
+
+    Removing a bundle from `bundles` used to leave its `OKF Member` concept behind, still
+    carrying `registers -> /<gone>/index.md`. The mesh then advertised a member nobody could
+    read, and the failure surfaced two steps away as a dangling relation in a different
+    bundle -- so the config change looked like it had broken something rather than like it
+    had left something behind.
+
+    This is the only place the build deletes anything, and it is deliberately narrow: `.md`
+    files, in the mesh's own `members/` folder, that this process wrote. A member somebody
+    edited is reported and left alone -- if a person put content there, a config edit is not
+    grounds for a tool to throw it away.
+    """
+    members = mesh_dir / "members"
+    if not members.is_dir():
+        return 0
+
+    known = set(configured_bundles(cfg)) | {name for name, _, _ in built} | {mesh_dir.name}
+    removed = 0
+    for f in sorted(members.glob("*.md")):
+        if f.stem in known:
+            continue
+        if not _owned(f):
+            print(f"  stale    {f.relative_to(mesh_dir.parent)} — registers `{f.stem}`, "
+                  f"which is not a bundle any more. Not mine to delete; remove it yourself.",
+                  file=sys.stderr)
+            continue
+        print(f"  {'removed ' if apply else 'would rm '} {f.relative_to(mesh_dir.parent)}"
+              f"  — `{f.stem}` is not a bundle any more")
+        if apply:
+            f.unlink()
+        removed += 1
+    return removed
+
+
 def write_mesh(cfg: dict, out_root: Path, mesh_name: str, built: list[tuple[str, str, int]],
                stamp: str, apply: bool) -> int:
     """Write the mesh OKF: one `OKF Member` concept per bundle, plus the map.
@@ -160,7 +197,7 @@ def write_mesh(cfg: dict, out_root: Path, mesh_name: str, built: list[tuple[str,
     It owns the map and never member content -- index-*over*, not authority-*over*.
     """
     mesh_dir = out_root / mesh_name
-    written = 0
+    written = prune_members(cfg, mesh_dir, built, apply)
 
     for name, path, count in built:
         dest = mesh_dir / "members" / f"{name}.md"
