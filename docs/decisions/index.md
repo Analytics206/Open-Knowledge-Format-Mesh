@@ -6,7 +6,7 @@ status: stable
 generated: { by: "human:analytics206", at: 2026-08-01T00:00:00Z }
 okfm_scope: project
 okfm_relations:
-  - { predicate: registered_by, target: /okfm-mesh/index.md }
+  - { predicate: registered_by, target: /mesh/index.md }
 ---
 
 # Decision records

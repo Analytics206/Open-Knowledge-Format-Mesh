@@ -207,15 +207,12 @@ Conformant if every non-reserved `.md` file has parseable frontmatter with a non
 3. OKFM keys may appear inside official structures (e.g. `okfm_role`, `okfm_captured` within a `sources` entry). Official consumers preserve them.
 4. **Every OKFM concept is readable without OKFM tooling.** The body carries the human-readable content; `okfm_` keys carry machine structure. Strip every `okfm_` key and the bundle is still a useful OKF bundle.
 
-> **Two profile keys arrived with the level model and are not described anywhere below.**
-> `okfm_needs` — a component's exposure set, drawn from `[] < human < model < secrets` — and
-> `okfm_level`, the adoption level it claims. Together they are what makes *"level 2 never
-> needs a model"* a build failure rather than a promise; `dev/check_levels.py` enforces that a
-> component's needs fit its level, and CI gates on the set rather than the number.
->
-> Both are `okfm_`-prefixed and survive the strip test, so nothing here is broken by them.
->
-> No code action: this note records the divergence, the implementation stands.
+5. **A profile key must be useful to more than one adopter.** Anything that describes *this*
+   project — how its own guide is organised, which of its components need a model — is not a
+   profile key. It is a `tag`, an official field every consumer already reads, checked by a
+   script in the project that cares. Two keys were removed under this rule: an adoption level
+   and an exposure set, both of which described OKFM's own documentation ladder and would have
+   shipped in every adopter's frontmatter for no reason.
 5. High-volume machine records are **not** `.md` concepts. Telemetry, edge indexes, and vocabularies are YAML/JSONL under `references/`, invisible to conformance (which governs `.md` files) and absent from the concept graph.
 
 ### 7.2 Identity
@@ -260,28 +257,16 @@ okfm_relations:
     target: /goals/spec-decode-latency.md
 ```
 
-...alongside ordinary markdown links in the body. An official consumer sees links; an OKFM consumer sees predicates. Predicates come from `references/vocab/predicates.yaml`, grouped into families with defined domain and range:
+...alongside ordinary markdown links in the body. An official consumer sees links; an OKFM consumer sees predicates. Predicates come from the tooling's `vocab/predicates.yaml`, grouped into families with defined domain and range. **Vocabularies are tool configuration, not bundle content** — putting them inside a bundle would make a validator's rules depend on which bundle it was pointed at. A pack contributes more by naming overlay files in config; they merge by family, and a pack may add a predicate but never redefine one:
 
 - **Evidential:** `supports`, `contradicts`, `evaluates`, `derived_from`
 - **Structural:** `serves`, `part_of`, `depends_on`, `implements`, `implemented_by`
 - **Semantic:** `perspective_on`, `defines`, `measures`, `differs_from`
 - **Lifecycle:** `supersedes`, `superseded_by`, `resulted_in`
+- **Federation:** `registers`, `registered_by` — an `OKF Member` concept registers the bundle it names (§12.2). Without this edge a mesh knows its members and its *graph* does not, which is the one relationship a mesh exists to show.
 
 Freeform predicates are rejected by the validator. High-volume or line-level edges go to `references/edges/edges.jsonl` rather than frontmatter.
 
-> **The implementation has moved ahead of this list.** It carries a fifth family —
-> **Federation:** `registers`, `registered_by` — because an `OKF Member` concept names a
-> bundle and nothing here said what that edge *is*. Without it the mesh knew its members and
-> the graph did not: filter a web UI to the registry and one member and nothing connected
-> them, which is the single relationship a mesh exists to show.
->
-> The vocabulary also lives at `dropin/vocab/predicates.yaml`, not
-> `references/vocab/predicates.yaml`. Vocabularies are tool configuration read on every
-> validation run, not bundle content, and putting them inside a bundle made the validator
-> depend on which bundle it happened to be pointed at. Pack overlays are named in config and
-> merged by family.
->
-> No code action: this note records the divergence, the implementation stands.
 
 ### 7.4 Progressive disclosure: sidecars reconsidered
 
@@ -740,17 +725,19 @@ The member's `description` plus the registry's generated `index.md` give progres
 
 The registry owns **only the map**: membership, scopes, aliases, cross-member concept links. It never owns member content. It is index-over, not authority-over — calling it a "master" bundle would smuggle central authority back into a design that exists to prevent it.
 
-> **The implementation adds `okfm_member.answers`** — a list of the questions a member's
-> bundle can answer, in the words somebody would actually ask them. It is what turns the
-> registry from a list of names into something an agent can route on: point it at the mesh's
-> `index.md` and it resolves *"where do I read about using my own key?"* to a path, without
-> being told in advance which bundles exist.
->
-> This is progressive disclosure at the mesh level doing the job this section describes, and
-> it needed one more field than the section provides. Scatter-gather below stays unbuilt: the
-> mesh is read by an agent, it does not dispatch.
->
-> No code action: this note records the divergence, the implementation stands.
+**`okfm_member.answers` is what makes the registry routable.** A list of the questions a
+member's bundle can answer, in the words somebody would actually ask them:
+
+```yaml
+okfm_member:
+  answers:
+    - how do I use my own key and provider
+    - what may an agent write, and what may it not
+```
+
+Without it a registry is a list of names and a reader still has to know which name to pick.
+With it, *"where do I read about X?"* resolves to a path from the registry alone — progressive
+disclosure at the mesh level actually doing its job, rather than describing one.
 
 **Cross-mesh routing** is scatter-gather: question → registry resolves relevant members → those members' agents answer from their own bundles → the asking workflow assembles, citations resolving into each contributing bundle. No global index over everything, ever (§12.7).
 
@@ -993,23 +980,22 @@ One file, small enough to read in full:
 - **`federation: null` is a valid mesh.** A single bundle is the common case; the
   registry appears only when a second owner does (§12).
 
-> **The implemented config surface is larger than this.** Keys the tooling reads today and
-> this section does not describe:
+> **The implemented config has four groups, not a flat list.** A dozen sibling keys stops
+> being a file you take in at a glance and starts being one you search, so:
 >
-> | Key | Does |
+> | Group | Holds |
 > |---|---|
-> | `discover.root` / `.exclude` / `.root_files` | where to scan, what subtree to drop, whether the loose files at the top count |
-> | `bundle` | where generated concepts are written — `.okfm` by default |
-> | `mesh` | the subfolder holding the mesh OKF, or null to skip generating one |
-> | `mode` | `mirror` or `in-place` |
-> | `levels` | bundle id → adoption level, for the level/needs check |
-> | `vocab_overlays` | extra predicate, type and reason-code files a pack contributes |
-> | `web_ui` | path to the level 1 web UI and the index it reads |
-> | `exclude_scopes` | scopes excluded from statistics, injection and benchmark corpora |
+> | `build` | `root`, `root_files`, `exclude` — what to scan; `out`, `mesh`, `mode`, `vocab_overlays` — what to write and how |
+> | `bundles` | explicit id → path map. Its **presence turns discovery off**; the id is the folder name unless you say otherwise |
+> | `read` | `web_ui`, `index`, `exclude_scopes` — everything about consuming a mesh rather than producing one |
+> | `stores`, `federation` | unchanged from above |
 >
-> `bundles` also changed meaning. Here it *narrows a scan*; in the implementation it is an
-> explicit id → path map, and its presence turns discovery off. Both behaviours are useful
-> and the implementation supports both, but the default is discovery rather than enumeration.
+> One name per bundle, and it is the folder name. An id that differs from its directory is
+> two names for one thing, and the second one exists only to be got wrong — which it was, in
+> a relation target, by a search-and-replace that could not tell an id from a path.
+>
+> `bundles` also changed meaning: here it *narrows a scan*, in the implementation it replaces
+> discovery entirely.
 >
 > No code action: this note records the divergence, the implementation stands.
 
@@ -1094,7 +1080,7 @@ okfm index                      # see what an agent would be handed
 
 This was a fourth level and collapsed into a variant of the third. The ladder asks for a
 browser, then Python, then a model; who holds the key after that is a change of direction
-rather than another step up, and `okfm_needs` records it either way.
+rather than another step up, and a `needs-*` tag records it either way.
 
 #### The distribution test, one per level
 

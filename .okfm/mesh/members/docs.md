@@ -16,7 +16,7 @@ okfm_member:
   sync_policy: pull
 okfm_relations:
   - { predicate: part_of, target: /index.md }
-  - { predicate: registers, target: /okfm-docs/index.md }
+  - { predicate: registers, target: /docs/index.md }
 ---
 
 # docs

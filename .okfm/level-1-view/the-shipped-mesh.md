@@ -3,6 +3,7 @@ type: Document
 title: The shipped mesh
 description: "Seven real bundles you can read, validate and copy — a working mesh split on change cadence, not a demonstration built to be looked at."
 status: draft
+tags: [needs-nothing]
 generated: { by: "agent:claude-opus-5", at: 2026-08-02T03:09:28Z }
 sources:
   - id: doc
@@ -14,8 +15,6 @@ sources:
     okfm_role: subject
     okfm_captured: { hash: "sha256:79b750a38ae303b68cbeb9ac70aaefda081ec3e2d376f59903119681a57f9d09", at: 2026-08-01 }
 okfm_scope: project
-okfm_level: 1
-okfm_needs: []
 okfm_relations:
   - { predicate: part_of, target: /index.md }
 ---

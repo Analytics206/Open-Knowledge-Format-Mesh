@@ -1,24 +1,46 @@
 {
   "okfm": "0.2.1",
   "pack": "warehouse",
-
-  "_discover": "Every folder of documents under `root` gets its own OKF in `bundle`, plus one for the loose files at the top and a mesh OKF over all of them. This is the default with no config at all; the first run writes it out so the first thing you edit is a file the tool made for you.",
-  "discover": {
+  "_build": "Every folder of documents under `root` gets its own OKF in `out`, plus one for the loose files at the top and a mesh OKF over all of them. This is the default with no config at all; the first run writes it out so the first thing you edit is a file the tool made for you.",
+  "build": {
     "root": "docs",
     "root_files": true,
-    "exclude": ["archive", "vendor"]
+    "exclude": [
+      "archive",
+      "vendor"
+    ],
+    "out": ".okfm",
+    "mesh": "mesh",
+    "mode": "mirror",
+    "vocab_overlays": [
+      "packs/warehouse/vocab/predicates.yaml"
+    ]
   },
-  "bundle": ".okfm",
-  "mesh": "mesh",
-  "mode": "mirror",
-
-  "index": {
-    "max_concepts": 60,
-    "priority_types": ["Attested Computation", "Rule", "Metric", "Perspective"]
+  "read": {
+    "web_ui": {
+      "path": "./okfm-web-ui.html"
+    },
+    "index": {
+      "max_concepts": 60,
+      "priority_types": [
+        "Attested Computation",
+        "Rule",
+        "Metric",
+        "Perspective"
+      ]
+    },
+    "exclude_scopes": [
+      "guide"
+    ]
   },
-  "exclude_scopes": ["guide"],
   "stores": {
-    "warehouse-db": { "kind": "sql", "adapter": "bigquery", "profile": "env:WAREHOUSE_DSN" }
+    "warehouse-db": {
+      "kind": "sql",
+      "adapter": "bigquery",
+      "profile": "env:WAREHOUSE_DSN"
+    }
   },
-  "federation": { "registry": "./.okfm/mesh" }
+  "federation": {
+    "registry": "./.okfm/mesh"
+  }
 }

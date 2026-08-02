@@ -3,6 +3,7 @@ type: Document
 title: The work list
 description: What needs enriching, why, and what a good result looks like — computed, so nobody has to keep a queue by hand.
 status: draft
+tags: [needs-nothing]
 generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
 sources:
   - id: doc
@@ -14,8 +15,6 @@ sources:
     okfm_role: subject
     okfm_captured: { hash: "sha256:f33f5b1c4edf6a121e226cf000016b648d78622c2bbd25dc4096e4fe9824752e", at: 2026-08-01 }
 okfm_scope: project
-okfm_level: 3
-okfm_needs: []
 okfm_relations:
   - { predicate: part_of, target: /index.md }
   - { predicate: serves, target: /the-enrichment-loop.md }

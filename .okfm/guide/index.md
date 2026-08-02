@@ -6,7 +6,7 @@ status: stable
 generated: { by: "process:okfm-scaffold", at: 2026-07-31T00:00:00Z }
 okfm_scope: guide
 okfm_relations:
-  - { predicate: registered_by, target: /okfm-mesh/index.md }
+  - { predicate: registered_by, target: /mesh/index.md }
 ---
 
 # What this is

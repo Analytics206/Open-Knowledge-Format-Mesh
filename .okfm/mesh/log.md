@@ -11,7 +11,7 @@ okfm_scope: project
 
 Membership went from two to six. `okfm-level-1` through `okfm-level-4` were authored as
 component inventories: one concept per thing the level actually ships, each carrying
-`okfm_needs` and `okfm_level`, each pinning a hash of both the document that explains it and
+the `needs-*` tag and the bundle it sits in, each pinning a hash of both the document that explains it and
 the code that implements it.
 
 The bundles moved out of the repository root into `.okfm/`, one subfolder each, and the

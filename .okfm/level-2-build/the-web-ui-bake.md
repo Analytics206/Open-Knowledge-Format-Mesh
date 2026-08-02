@@ -3,6 +3,7 @@ type: Document
 title: The web UI bake
 description: "Regenerates the index the level 1 web UI reads, so disagreement between the web UI and the mesh is a state that cannot exist rather than a bug you can have."
 status: draft
+tags: [needs-nothing]
 generated: { by: "agent:claude-opus-5", at: 2026-08-02T03:09:28Z }
 sources:
   - id: doc
@@ -14,8 +15,6 @@ sources:
     okfm_role: subject
     okfm_captured: { hash: "sha256:d90ed39dc8b87df9e70ad7857cf21c5a93a1ad59dd9e28aa742d963037908d2b", at: 2026-08-01 }
 okfm_scope: project
-okfm_level: 2
-okfm_needs: []
 okfm_relations:
   - { predicate: part_of, target: /index.md }
   - { predicate: depends_on, target: /drift-observation.md }

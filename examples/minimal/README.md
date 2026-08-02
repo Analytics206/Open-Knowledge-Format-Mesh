@@ -8,7 +8,7 @@ Three differences worth noticing:
 | | Root `okfm.json` | This one |
 |---|---|---|
 | `pack` | `null` — OKFM itself has no domain | `"warehouse"` — schema/query/metric shaped |
-| `discover.exclude` | the in-place decision records | an archive and a vendored tree |
+| `build.exclude` | the in-place decision records | an archive and a vendored tree |
 | `stores` | none | a SQL store, credentials **by reference** |
 
 The credential line is the one to copy:
@@ -24,20 +24,21 @@ a secret-manager handle and never the secret itself.
 
 Running the build with no configuration produces the same result and writes this file for
 you. `docs/` is found, every folder of documents under it becomes its own OKF in `.okfm/`,
-the loose files at the top become one more, and a master OKF is written over all of them.
+the loose files at the top become one more, and a mesh OKF is written over all of them.
 
-The three keys under `discover` are the ones worth knowing:
+The config has four groups — `build`, `bundles`, `read`, and the two pointer-resolution
+keys. Three keys inside `build` are the ones worth knowing:
 
-- **`root`** — scan somewhere other than `docs/`.
-- **`exclude`** — drop a subtree. Paths are relative to `root`, and an `archive/` full of
+- **`build.root`** — scan somewhere other than `docs/`.
+- **`build.exclude`** — drop a subtree. Paths are relative to `root`, and an `archive/` full of
   superseded documents is the usual first entry.
-- **`root_files`** — set to `false` when the loose documents at the top of `docs/` are a
+- **`build.root_files`** — set to `false` when the loose documents at the top of `docs/` are a
   landing page and two stubs rather than knowledge.
 
 Discovery runs on every build, not just the first, so a folder added next month gets an OKF
-without anyone remembering to declare it. Writing an explicit `sources` list turns discovery
-off entirely — someone who wrote one meant it.
+without anyone remembering to declare it. Naming bundles explicitly under `bundles` turns
+discovery off entirely — someone who wrote that list meant it.
 
-`exclude_scopes: ["guide"]` keeps the bundled guide out of your health statistics, your
+`read.exclude_scopes: ["guide"]` keeps the bundled guide out of your health statistics, your
 injected index, and any context assembled for an agent. Leave it in place unless you have
 deleted the guide.

@@ -11,7 +11,7 @@ list.
 
 # Why this does not make it level 3
 
-`okfm_needs` records what **OKFM** requires to deliver a component, not what you brought with
+the `needs-*` tag records what **OKFM** requires to deliver a component, not what you brought with
 you. Here OKFM supplies files; your agent reads them; the model is yours, running in a tool
 you were already paying for.
 

@@ -3,13 +3,12 @@ type: Index
 title: "Level 2 — build"
 description: Paste one folder into your project and run one command. A real bundle, with no model anywhere in it.
 status: stable
+tags: [needs-nothing]
 generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
 okfm_scope: project
-okfm_level: 2
-okfm_needs: []
 okfm_relations:
-  - { predicate: registered_by, target: /okfm-mesh/index.md }
-  - { predicate: depends_on, target: /okfm-level-1/index.md }
+  - { predicate: registered_by, target: /mesh/index.md }
+  - { predicate: depends_on, target: /level-1-view/index.md }
 ---
 
 # What this level is
@@ -40,7 +39,7 @@ Python 3.13, standard library only, no install step.
 
 # Where the line is
 
-Every component here is `okfm_needs: []`. No network, no secrets, no model — which is what
+Every component here is tagged `needs-nothing`. No network, no secrets, no model — which is what
 lets the whole pipeline run on a pull request from a fork, and it is checked rather than
 promised.
 

@@ -69,7 +69,7 @@ OKFM. That is a change of direction rather than a fourth level — the ladder as
 browser, then Python, then a model, and there is nothing further to ask for.
 
 Levels 1 and 2 never need a model or a key. That is enforced in CI by
-[`dev/check_levels.py`](dev/check_levels.py), which reads the `okfm_needs` field on every
+[`dev/check_levels.py`](dev/check_levels.py), which reads the `needs-*` tag on every
 component and fails when one exceeds what its level allows.
 
 You can also just point your coding agent at this repository and ask it for whatever you want.

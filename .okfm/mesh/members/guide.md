@@ -19,7 +19,7 @@ okfm_member:
 okfm_scope: project
 okfm_relations:
   - { predicate: part_of, target: /index.md }
-  - { predicate: registers, target: /okfm-guide/index.md }
+  - { predicate: registers, target: /guide/index.md }
 ---
 
 # Scope

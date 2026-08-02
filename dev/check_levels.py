@@ -1,30 +1,38 @@
 #!/usr/bin/env python3
-"""Check that every component sits at a level its needs actually allow.
+"""Check that every component sits at a level its exposure actually allows.
 
     python dev/check_levels.py
 
-The three adoption levels are only meaningful if they are made of something checkable. They
-are: each component concept carries `okfm_needs`, drawn from the exposure ladder in
-decisions/0008 — `[]` < `human` < `model` < `secrets` — and each level admits a prefix of it.
+## This is a project-local check, and the data it reads is project-local too
 
-    level 1   nothing.        A download. No component runs at all.
-    level 2   + human.        Deterministic; a person may have to decide something.
-    level 3   + model, secrets. Something in the workflow has to reason.
+The adoption levels are OKFM's own documentation ladder. They are not part of the format,
+they are not something an adopter inherits, and nothing about them belongs in the OKFM
+profile — a bundle describing somebody's warehouse should not carry a field about how OKFM's
+own guide is organised.
 
-Level 3 admits `secrets` because its credentialed variant is where OKFM drives a provider
-rather than an agent driving OKFM. That was a fourth level for a while and collapsed: the
-ladder asks for a browser, then Python, then a model, and there is nothing further to ask
-for. Who holds the key is a change of direction, not another step up — and `okfm_needs`
-records it either way, which is where the distinction actually does work.
+So there is no `okfm_level` and no `okfm_needs`. A concept's level is the level of the
+bundle it sits in, which `LEVELS` below records. Its exposure is an ordinary `tag` —
+`needs-nothing`, `needs-human`, `needs-model`, `needs-secrets` — using an official OKF field
+that every consumer already understands and no profile has to define.
 
-A component's needs set is a **floor**, not an equality. `guard.py` needs nothing
-mechanically and still belongs to level 3, because there is nothing to guard until something
-has drafted. So the rule is `needs ⊆ allowed(level)`, which catches the failure that matters —
-a level 2 component that quietly acquired a model dependency — without forcing every
-deterministic tool down to level 2.
+That is the whole reason this file exists rather than a spec section: a project-specific rule
+enforced by a project-specific script, reading data that costs an adopter nothing.
 
-This is project-specific: an adopter's mesh has no levels. That is why it lives in dev/ rather
-than in the drop-in.
+## The rule
+
+Exposure comes from decisions/0008 — `[] < human < model < secrets` — and each level admits
+a prefix of it:
+
+    level 1   nothing.          A download. No component runs at all.
+    level 2   + human.          Deterministic; a person may have to decide something.
+    level 3   + model, secrets. Something has to reason, and its credentialed variant is
+                                where OKFM holds the key rather than your agent.
+
+A component's exposure is a **floor**, not an equality. `guard.py` needs nothing mechanically
+and still belongs to level 3, because there is nothing to guard until something has drafted.
+So the rule is `needs ⊆ allowed(level)`, which catches the failure that matters — a level 2
+component that quietly acquired a model dependency — without forcing every deterministic tool
+down to level 2.
 
 `needs: []` — no network, no secrets, no model.
 """
@@ -36,9 +44,13 @@ from pathlib import Path
 PROJECT = Path(__file__).resolve().parent.parent
 
 FM = re.compile(r"\A---\r?\n(.*?)\r?\n---\r?\n", re.S)
-NEEDS = re.compile(r"^okfm_needs:[ \t]*(\[.*?\]|\n(?:[ \t]*-.*\n?)+)", re.M)
+TAGS = re.compile(r"^tags:[ \t]*\[(.*?)\][ \t]*$", re.M)
 
-LADDER = ["human", "model", "secrets"]
+# Which bundle is which level. Project-local, so it lives here and not in okfm.json —
+# an adopter's config has no business carrying OKFM's documentation structure.
+LEVELS = {"level-1-view": 1, "level-2-build": 2, "level-3-enrich": 3}
+
+LADDER = ["nothing", "human", "model", "secrets"]
 ALLOWED = {1: set(), 2: {"human"}, 3: {"human", "model", "secrets"}}
 
 
@@ -48,37 +60,30 @@ def utf8_stdout() -> None:
             s.reconfigure(encoding="utf-8", errors="replace")
 
 
-def scalar(block: str, key: str):
-    m = re.search(rf"^{key}:[ \t]*(.*)$", block, re.M)
-    return m.group(1).strip().strip("\"'") if m else None
-
-
 def needs_of(block: str) -> set[str] | None:
-    """The declared needs set, or None if the concept does not declare one."""
-    m = NEEDS.search(block)
+    """Exposure read from tags. None when the concept declares none."""
+    m = TAGS.search(block)
     if not m:
         return None
-    raw = m.group(1)
-    if raw.strip().startswith("["):
-        return set(re.findall(r"[\w]+", raw))
-    return set(re.findall(r"^\s*-\s*([\w]+)", raw, re.M))
+    found = {t.strip()[6:] for t in m.group(1).split(",")
+             if t.strip().startswith("needs-")}
+    return found or None
 
 
 def main() -> int:
     utf8_stdout()
     cfg = json.loads((PROJECT / "okfm.json").read_text(encoding="utf-8"))
-    levels = {k: int(v) for k, v in cfg.get("levels", {}).items()}
     bundles = cfg.get("bundles", {})
-    if not levels:
-        print("no `levels` in okfm.json — nothing to check")
-        return 0
 
     errors, notes = [], []
     checked = 0
 
-    for bid, level in sorted(levels.items(), key=lambda kv: kv[1]):
-        # removeprefix, not lstrip -- lstrip takes a character SET, so "./.okfm/level-1"
-        # loses its dot-folder and silently resolves to "okfm/level-1".
+    for bid, level in sorted(LEVELS.items(), key=lambda kv: kv[1]):
+        if bid not in bundles:
+            errors.append(f"{bid}: no such bundle in okfm.json")
+            continue
+        # removeprefix, not lstrip -- lstrip takes a character SET, so "./.okfm/level-1-view"
+        # would lose its dot-folder and silently resolve somewhere else.
         path = (PROJECT / bundles[bid].removeprefix("./")).resolve()
         if not path.is_dir():
             errors.append(f"{bid}: configured path does not exist ({path})")
@@ -93,44 +98,38 @@ def main() -> int:
             rid = f"{bid}/{f.relative_to(path).as_posix()}"
             checked += 1
 
-            claimed = scalar(block, "okfm_level")
-            if claimed is None:
-                errors.append(f"{rid}: no `okfm_level` — a concept in a level bundle has to "
-                              f"say which level it claims")
-            elif int(claimed) != level:
-                errors.append(f"{rid}: claims level {claimed}, but sits in {bid} (level {level})")
-
             n = needs_of(block)
             if n is None:
                 if f.name != "log.md":
-                    errors.append(f"{rid}: no `okfm_needs` — the level boundary is made of "
-                                  f"this field, so an absent one is an unchecked claim")
+                    errors.append(f"{rid}: no `needs-*` tag — the level boundary is made of "
+                                  f"this, so an absent one is an unchecked claim")
                 continue
 
             unknown = n - set(LADDER)
             if unknown:
-                errors.append(f"{rid}: unknown need(s) {sorted(unknown)} — the ladder is "
+                errors.append(f"{rid}: unknown exposure {sorted(unknown)} — the ladder is "
                               f"{LADDER}")
-            over = n - ALLOWED[level] - unknown
+            real = n - {"nothing"}
+            over = real - ALLOWED[level] - unknown
             if over:
                 errors.append(f"{rid}: needs {sorted(over)}, which level {level} does not "
-                              f"allow (level {level} admits {sorted(ALLOWED[level]) or 'nothing'})")
+                              f"allow (level {level} admits "
+                              f"{sorted(ALLOWED[level]) or 'nothing'})")
 
             if f.name == "index.md":
-                declared = n
+                declared = real
             else:
-                seen |= n
+                seen |= real
 
         if declared is not None and declared - seen:
-            # Not an error. A level whose index declares a need no component has yet is a
-            # level that is designed and unbuilt, which is a legitimate state as long as the
-            # bundle says so out loud.
+            # Not an error. A level whose index declares an exposure no component has yet is
+            # designed and unbuilt, which is legitimate as long as the bundle says so.
             notes.append(f"{bid}: index declares {sorted(declared - seen)}, which no component "
                          f"needs yet — unbuilt, or the index is ahead of itself")
 
         print(f"  level {level}  {bid}")
 
-    print(f"\n{checked} concepts across {len(levels)} level bundles")
+    print(f"\n{checked} concepts across {len(LEVELS)} level bundles")
     for n in notes:
         print(f"  note  {n}")
     for e in errors:

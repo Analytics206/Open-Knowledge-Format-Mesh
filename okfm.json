@@ -1,50 +1,37 @@
 {
   "okfm": "0.2.1",
   "pack": null,
-  "_discover": "Every folder of documents under `root` gets its own OKF in `bundle`, plus one for the loose files at the top and a mesh OKF over all of them. `decisions` is excluded because it is an in-place bundle \u2014 those files are the concepts, so mirroring them would be a second copy of knowledge that already exists.",
-  "discover": {
+
+  "_build": "Every folder of documents under `root` gets its own OKF in `out`, plus one for the loose files at the top and a mesh OKF over all of them. `decisions` is excluded because it is an in-place bundle — those files are the concepts, so mirroring them would be a second copy of knowledge that already exists.",
+  "build": {
     "root": "docs",
     "root_files": true,
-    "exclude": [
-      "decisions"
-    ]
+    "exclude": ["decisions"],
+    "out": ".okfm",
+    "mesh": "mesh",
+    "mode": "mirror",
+    "vocab_overlays": []
   },
-  "bundle": ".okfm",
-  "mesh": "mesh",
-  "mode": "mirror",
+
   "bundles": {
-    "okfm-mesh": "./.okfm/mesh",
-    "okfm-level-1": "./.okfm/level-1-view",
-    "okfm-level-2": "./.okfm/level-2-build",
-    "okfm-level-3": "./.okfm/level-3-enrich",
-    "okfm-docs": "./.okfm/docs",
-    "okfm-guide": "./.okfm/guide",
-    "okfm-decisions": "./docs/decisions"
+    "mesh": "./.okfm/mesh",
+    "level-1-view": "./.okfm/level-1-view",
+    "level-2-build": "./.okfm/level-2-build",
+    "level-3-enrich": "./.okfm/level-3-enrich",
+    "docs": "./.okfm/docs",
+    "guide": "./.okfm/guide",
+    "decisions": "./docs/decisions"
   },
-  "levels": {
-    "okfm-level-1": 1,
-    "okfm-level-2": 2,
-    "okfm-level-3": 3
+
+  "read": {
+    "web_ui": { "path": "./okfm-web-ui.html", "index": "./okfm-index.json", "serve_port": 7345 },
+    "index": {
+      "max_concepts": 60,
+      "priority_types": ["Attested Computation", "Rule", "Metric", "Perspective"]
+    },
+    "exclude_scopes": ["guide"]
   },
-  "web_ui": {
-    "path": "./okfm-web-ui.html",
-    "index": "./okfm-index.json",
-    "serve_port": 7345
-  },
-  "index": {
-    "max_concepts": 60,
-    "priority_types": [
-      "Attested Computation",
-      "Rule",
-      "Metric",
-      "Perspective"
-    ]
-  },
-  "exclude_scopes": [
-    "guide"
-  ],
+
   "stores": {},
-  "federation": {
-    "registry": "./.okfm/mesh"
-  }
+  "federation": { "registry": "./.okfm/mesh" }
 }

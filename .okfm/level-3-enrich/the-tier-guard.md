@@ -3,6 +3,7 @@ type: Document
 title: The tier guard
 description: "Reads the diff after an edit pass and fails on any field the editor does not own, naming the field and the reason. Scope it to the paths the pass touched, or it reports everything else in flight."
 status: draft
+tags: [needs-nothing]
 generated: { by: "agent:claude-opus-5", at: 2026-08-02T03:28:25Z }
 sources:
   - id: doc
@@ -14,8 +15,6 @@ sources:
     okfm_role: subject
     okfm_captured: { hash: "sha256:047b8565796a4fa7ab9e0e06fb0bed62693107cad4a52e227a137386f8a7121a", at: 2026-08-01 }
 okfm_scope: project
-okfm_level: 3
-okfm_needs: []
 okfm_relations:
   - { predicate: part_of, target: /index.md }
   - { predicate: implements, target: /the-agent-contract.md }

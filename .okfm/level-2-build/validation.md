@@ -3,6 +3,7 @@ type: Document
 title: Validation
 description: Conformance, the profile rules, and the strip test — three passes, no dependencies.
 status: draft
+tags: [needs-nothing]
 generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
 sources:
   - id: doc
@@ -14,8 +15,6 @@ sources:
     okfm_role: subject
     okfm_captured: { hash: "sha256:2138d06820cea37e9e302147e25a627bffa05cc9a9b0eaaa50f1f9f165f01853", at: 2026-08-01 }
 okfm_scope: project
-okfm_level: 2
-okfm_needs: []
 okfm_relations:
   - { predicate: part_of, target: /index.md }
 ---

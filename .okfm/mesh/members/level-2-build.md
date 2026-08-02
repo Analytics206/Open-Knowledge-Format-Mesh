@@ -18,10 +18,9 @@ okfm_member:
   agent: null
   sync_policy: pull
 okfm_scope: project
-okfm_level: 2
 okfm_relations:
   - { predicate: part_of, target: /index.md }
-  - { predicate: registers, target: /okfm-level-2/index.md }
+  - { predicate: registers, target: /level-2-build/index.md }
 ---
 
 # Scope
@@ -38,7 +37,7 @@ a library release.
 
 # Why the split from level 3 is real
 
-Every component here is `okfm_needs: []` — no network, no secrets, no model — which is what
+Every component here is tagged `needs-nothing` — no network, no secrets, no model — which is what
 lets the whole pipeline run on a pull request from a fork. That is not a naming convention:
 it is the property CI depends on, and one model-dependent step would take it away.
 

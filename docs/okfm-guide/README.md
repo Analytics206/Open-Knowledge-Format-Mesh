@@ -35,7 +35,7 @@ need a server, which would turn a browser-openable file into an install.
 
 Each document here explains one component. The concept beside it in `.okfm/` records three
 things the document never states about itself: which level it belongs to, what it needs to run
-(`okfm_needs`), and a hash of the document as it stood when the concept was written.
+(a `needs-*` tag), and a hash of the document as it stood when the concept was written.
 
 The first two are what the level ladder is actually made of.
 [`dev/check_levels.py`](../../dev/check_levels.py) fails the build when a component's needs

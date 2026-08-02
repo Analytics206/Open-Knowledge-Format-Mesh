@@ -3,6 +3,7 @@ type: Document
 title: Extraction
 description: Descriptions are copied from prose the file already contained, never written. That is the property that makes level 2 possible with no model.
 status: draft
+tags: [needs-nothing]
 generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
 sources:
   - id: doc
@@ -14,8 +15,6 @@ sources:
     okfm_role: subject
     okfm_captured: { hash: "sha256:1653b17852cc7bb695e67f93cd55d72516fb61bdf5202e19f239e3bf32fe4c4e", at: 2026-08-01 }
 okfm_scope: project
-okfm_level: 2
-okfm_needs: []
 okfm_relations:
   - { predicate: part_of, target: /index.md }
 ---

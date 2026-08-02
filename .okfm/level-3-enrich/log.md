@@ -5,7 +5,6 @@ description: Append-only history of the enrichment loop.
 status: stable
 generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
 okfm_scope: project
-okfm_level: 3
 ---
 
 # 2026-08-01 — the loop closed end to end
@@ -43,6 +42,6 @@ for — OKFM holding the key instead of your agent holding it reverses the *dire
 than adding a step, and a fourth level read as a gate where none existed. It came up in
 review three times, which is the signal that a distinction is not carrying its weight.
 
-`okfm_needs` still records `secrets` per component, and CI still gates on the set rather than
+the `needs-*` tags still record `secrets` per component, and CI still gates on the set rather than
 the level number, so nothing checkable was lost. `check_levels` now admits `secrets` at
 level 3.

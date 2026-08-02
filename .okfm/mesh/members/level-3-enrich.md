@@ -19,10 +19,9 @@ okfm_member:
   agent: null
   sync_policy: pull
 okfm_scope: project
-okfm_level: 3
 okfm_relations:
   - { predicate: part_of, target: /index.md }
-  - { predicate: registers, target: /okfm-level-3/index.md }
+  - { predicate: registers, target: /level-3-enrich/index.md }
 ---
 
 # Scope
@@ -55,5 +54,5 @@ negotiation half, the console app, and the benchmark.
 
 That was a fourth level until it kept needing re-explaining. The ladder asks for a browser,
 then Python, then a model, and there is nothing further to ask for; who holds the key is a
-change of direction rather than another step up. `okfm_needs` still records `secrets` per
+change of direction rather than another step up. the `needs-*` tags still record `secrets` per
 component, which is where the distinction does work.

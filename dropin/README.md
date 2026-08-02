@@ -28,10 +28,11 @@ my-project/
 ```
 
 Then it writes the config it used, so the first thing you edit is a file it made for you.
-Three keys control the scan:
+Config is grouped — `build`, `bundles`, `read`, `stores`, `federation`. Three keys inside
+`build` control the scan:
 
 ```json
-"discover": { "root": "docs", "root_files": true, "exclude": ["archive", "vendor"] }
+"build": { "root": "docs", "root_files": true, "exclude": ["archive", "vendor"], "out": ".okfm" }
 ```
 
 `root` points somewhere other than `docs/`. `exclude` drops a subtree — paths are relative to

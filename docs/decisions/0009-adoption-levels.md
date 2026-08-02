@@ -379,7 +379,7 @@ what an adopter does with it.
 
 **What is not lost.** The credentialed/uncredentialed distinction is real and load-bearing —
 it decides whether OKFM holds a secret. It survives where it always did the work:
-`okfm_needs` records `secrets` per component, and CI gates on the set rather than on the level
+a `needs-secrets` tag records it per component, and CI gates on the set rather than on the level
 number. [`dev/check_levels.py`](../../dev/check_levels.py) now admits `secrets` at level 3,
 and levels 1 and 2 still admit nothing beyond a human — which is the only boundary the model
 needs to enforce.

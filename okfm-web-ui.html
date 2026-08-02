@@ -250,45 +250,45 @@ const BOOTSTRAP = {
  "generated_at": "2026-08-01",
  "bundles": [
   {
-   "id": "okfm-mesh",
-   "title": "okfm-mesh",
+   "id": "mesh",
+   "title": "mesh",
    "owner": "human:analytics206"
   },
   {
-   "id": "okfm-level-1",
-   "title": "okfm-level-1",
+   "id": "level-1-view",
+   "title": "level-1-view",
    "owner": "human:analytics206"
   },
   {
-   "id": "okfm-level-2",
-   "title": "okfm-level-2",
+   "id": "level-2-build",
+   "title": "level-2-build",
    "owner": "human:analytics206"
   },
   {
-   "id": "okfm-level-3",
-   "title": "okfm-level-3",
+   "id": "level-3-enrich",
+   "title": "level-3-enrich",
    "owner": "human:analytics206"
   },
   {
-   "id": "okfm-docs",
-   "title": "okfm-docs",
+   "id": "docs",
+   "title": "docs",
    "owner": "human:analytics206"
   },
   {
-   "id": "okfm-guide",
-   "title": "okfm-guide",
+   "id": "guide",
+   "title": "guide",
    "owner": "human:analytics206"
   },
   {
-   "id": "okfm-decisions",
-   "title": "okfm-decisions",
+   "id": "decisions",
+   "title": "decisions",
    "owner": "human:analytics206"
   }
  ],
  "concepts": [
   {
-   "p": "/okfm-decisions/0001-runtime-and-packaging.md",
-   "b": "okfm-decisions",
+   "p": "/decisions/0001-runtime-and-packaging.md",
+   "b": "decisions",
    "t": "Decision",
    "title": "DR-0001 — Runtime and packaging for the reference implementation",
    "d": "Python 3.13 at every level rather than a floor that rises, with the drop-in standard-library-only — the line worth holding is not \"OKFM installs nothing\" but \"the level you start at installs nothing.\"",
@@ -300,8 +300,8 @@ const BOOTSTRAP = {
    "scope": "project"
   },
   {
-   "p": "/okfm-decisions/0002-version-scheme.md",
-   "b": "okfm-decisions",
+   "p": "/decisions/0002-version-scheme.md",
+   "b": "decisions",
    "t": "Decision",
    "title": "DR-0002 — Version scheme",
    "d": "The **release number on OKFM itself** — the `0.2.1` in `\"okfm\": \"0.2.1\"` — in the same sense a library is at `v1.4.2`.",
@@ -313,8 +313,8 @@ const BOOTSTRAP = {
    "scope": "project"
   },
   {
-   "p": "/okfm-decisions/0003-phase-ordering.md",
-   "b": "okfm-decisions",
+   "p": "/decisions/0003-phase-ordering.md",
+   "b": "decisions",
    "t": "Decision",
    "title": "DR-0003 — Where federation sits in the delivery order",
    "d": "Federation's negotiation half lands after the credentialed phase while its addressing half moved into Phase 1, because the repository is already a mesh; amended to take the proving-ground projects out of the phase plan entirely — they are the feedback loop, not steps this repository performs.",
@@ -326,8 +326,8 @@ const BOOTSTRAP = {
    "scope": "project"
   },
   {
-   "p": "/okfm-decisions/0004-split-the-spec-preserve-numbers.md",
-   "b": "okfm-decisions",
+   "p": "/decisions/0004-split-the-spec-preserve-numbers.md",
+   "b": "decisions",
    "t": "Decision",
    "title": "DR-0004 — Split the spec, preserve section numbers",
    "d": "The unified `okfm-spec-v0.2.1.md` was 1,535 lines carrying four jobs at once: a normative specification, a rationale, a roadmap, and a lab notebook. For a project whose primary constraint is that a…",
@@ -339,8 +339,8 @@ const BOOTSTRAP = {
    "scope": "project"
   },
   {
-   "p": "/okfm-decisions/0005-path-resolution.md",
-   "b": "okfm-decisions",
+   "p": "/decisions/0005-path-resolution.md",
+   "b": "decisions",
    "t": "Decision",
    "title": "DR-0005 — Bundle-relative in files, mesh-relative in the index",
    "d": "Bundle-relative inside a concept, plain relative in body links, and mesh-relative only in the generated index — the transformation is one-way and lives entirely in the index builder, so nothing inside a bundle ever stores a path that names its own bundle.",
@@ -352,8 +352,8 @@ const BOOTSTRAP = {
    "scope": "project"
   },
   {
-   "p": "/okfm-decisions/0006-drift-cost-and-caching.md",
-   "b": "okfm-decisions",
+   "p": "/decisions/0006-drift-cost-and-caching.md",
+   "b": "decisions",
    "t": "Decision",
    "title": "DR-0006 — Drift is observed at build time, never resolved at read time",
    "d": "Trust and staleness are pure functions of data already in hand; drift needs the outside world, and the outside world does not belong on the read path.",
@@ -365,8 +365,8 @@ const BOOTSTRAP = {
    "scope": "project"
   },
   {
-   "p": "/okfm-decisions/0007-two-layers.md",
-   "b": "okfm-decisions",
+   "p": "/decisions/0007-two-layers.md",
+   "b": "decisions",
    "t": "Decision",
    "title": "DR-0007 — Two layers: a portable base, and an optional implementation",
    "d": "OKFM is two layers — a base that is a specification, a guide and a web UI, and an optional reference implementation — and CI proves the base stands alone by deleting the implementation and validating anyway.",
@@ -378,8 +378,8 @@ const BOOTSTRAP = {
    "scope": "project"
   },
   {
-   "p": "/okfm-decisions/0008-build-pipeline.md",
-   "b": "okfm-decisions",
+   "p": "/decisions/0008-build-pipeline.md",
+   "b": "decisions",
    "t": "Decision",
    "title": "DR-0008 — What each component requires, and what the rebuild actually does",
    "d": "Workflows are classified by what they expose — nothing, a human, a model, secrets — and a composite inherits the union of its steps, which is what puts the model-dependent half of the refresh loop at level 3 and keeps the rest runnable on a pull request from a fork.",
@@ -391,21 +391,21 @@ const BOOTSTRAP = {
    "scope": "project"
   },
   {
-   "p": "/okfm-decisions/0009-adoption-levels.md",
-   "b": "okfm-decisions",
+   "p": "/decisions/0009-adoption-levels.md",
+   "b": "decisions",
    "t": "Decision",
    "title": "DR-0009 — Four adoption levels",
    "d": "Three adoption levels, each usable on its own — a browser, then Python, then a model — with the credentialed case a variant of level 3 rather than a fourth level, because who holds the key is a change of direction and not another step up.",
    "v": "human",
    "sa": null,
    "src": 1,
-   "drift": 0,
+   "drift": 1,
    "r": [],
    "scope": "project"
   },
   {
-   "p": "/okfm-decisions/0010-okfm-self-hosts-as-a-mesh.md",
-   "b": "okfm-decisions",
+   "p": "/decisions/0010-okfm-self-hosts-as-a-mesh.md",
+   "b": "decisions",
    "t": "Decision",
    "title": "DR-0010 — OKFM's own repository is the first mesh",
    "d": "OKFM's own repository is the first mesh — one OKF per folder of documents under .okfm/, a generated mesh OKF over them, and federation's addressing half proven on real content. It maps the members and deliberately does not run them.",
@@ -417,8 +417,8 @@ const BOOTSTRAP = {
    "scope": "project"
   },
   {
-   "p": "/okfm-decisions/0011-viewer-and-console.md",
-   "b": "okfm-decisions",
+   "p": "/decisions/0011-viewer-and-console.md",
+   "b": "decisions",
    "t": "Decision",
    "title": "DR-0011 — The web UI stays read-only; a console is a separate artifact",
    "d": "The read-only viewer stays one file that opens from disk and configuration editing goes to a separate served console, because write access would turn a browser-openable file into an install — and the CLI falls out of building the console rather than being designed against an imagined user.",
@@ -430,8 +430,8 @@ const BOOTSTRAP = {
    "scope": "project"
   },
   {
-   "p": "/okfm-decisions/index.md",
-   "b": "okfm-decisions",
+   "p": "/decisions/index.md",
+   "b": "decisions",
    "t": "Index",
    "title": "Decision records",
    "d": "What was decided about OKFM, why, and what would reverse it.",
@@ -442,14 +442,14 @@ const BOOTSTRAP = {
    "r": [
     [
      "registered_by",
-     "/okfm-mesh/index.md"
+     "/mesh/index.md"
     ]
    ],
    "scope": "project"
   },
   {
-   "p": "/okfm-docs/index.md",
-   "b": "okfm-docs",
+   "p": "/docs/index.md",
+   "b": "docs",
    "t": "Index",
    "title": "docs",
    "d": "Concepts derived from docs.",
@@ -460,14 +460,14 @@ const BOOTSTRAP = {
    "r": [
     [
      "registered_by",
-     "/okfm-mesh/index.md"
+     "/mesh/index.md"
     ]
    ],
    "scope": null
   },
   {
-   "p": "/okfm-docs/prior-art.md",
-   "b": "okfm-docs",
+   "p": "/docs/prior-art.md",
+   "b": "docs",
    "t": "Document",
    "title": "OKFM — Ecosystem and Prior Art",
    "d": "What else exists, what was adopted, and what was learned -- including the measurements that went against the premise. Non-normative.",
@@ -479,8 +479,8 @@ const BOOTSTRAP = {
    "scope": null
   },
   {
-   "p": "/okfm-docs/rationale.md",
-   "b": "okfm-docs",
+   "p": "/docs/rationale.md",
+   "b": "docs",
    "t": "Document",
    "title": "OKFM — Rationale",
    "d": "Why the system is shaped this way: what changed against earlier drafts, what the baseline already solved, and what this release is for. Non-normative.",
@@ -492,8 +492,8 @@ const BOOTSTRAP = {
    "scope": null
   },
   {
-   "p": "/okfm-docs/roadmap.md",
-   "b": "okfm-docs",
+   "p": "/docs/roadmap.md",
+   "b": "docs",
    "t": "Document",
    "title": "OKFM — Roadmap",
    "d": "The assets in hand, the two proving grounds, the delivery phases, what is deliberately deferred, what is still open, and how success is measured. Non-normative and expected to change.",
@@ -505,8 +505,8 @@ const BOOTSTRAP = {
    "scope": null
   },
   {
-   "p": "/okfm-guide/admission-test.md",
-   "b": "okfm-guide",
+   "p": "/guide/admission-test.md",
+   "b": "guide",
    "t": "Concept",
    "title": "The admission test",
    "d": "Write down what the code cannot say — and nothing else.",
@@ -517,14 +517,14 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-guide/index.md"
+     "/guide/index.md"
     ]
    ],
    "scope": "guide"
   },
   {
-   "p": "/okfm-guide/attested-computation.md",
-   "b": "okfm-guide",
+   "p": "/guide/attested-computation.md",
+   "b": "guide",
    "t": "Concept",
    "title": "Attested computation",
    "d": "A number that proves it was produced the sanctioned way.",
@@ -535,14 +535,14 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-guide/index.md"
+     "/guide/index.md"
     ]
    ],
    "scope": "guide"
   },
   {
-   "p": "/okfm-guide/deleting-this-guide.md",
-   "b": "okfm-guide",
+   "p": "/guide/deleting-this-guide.md",
+   "b": "guide",
    "t": "Runbook",
    "title": "Deleting this guide",
    "d": "How to remove the guide bundle, and what it affects.",
@@ -553,14 +553,14 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-guide/index.md"
+     "/guide/index.md"
     ]
    ],
    "scope": "guide"
   },
   {
-   "p": "/okfm-guide/drift-and-staleness.md",
-   "b": "okfm-guide",
+   "p": "/guide/drift-and-staleness.md",
+   "b": "guide",
    "t": "Concept",
    "title": "Drift and staleness",
    "d": "Two independent ways knowledge goes wrong, and why both are computed.",
@@ -571,14 +571,14 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-guide/index.md"
+     "/guide/index.md"
     ]
    ],
    "scope": "guide"
   },
   {
-   "p": "/okfm-guide/federation.md",
-   "b": "okfm-guide",
+   "p": "/guide/federation.md",
+   "b": "guide",
    "t": "Concept",
    "title": "Federation",
    "d": "Many bundles, many owners, feedback instead of writes.",
@@ -589,14 +589,14 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-guide/index.md"
+     "/guide/index.md"
     ]
    ],
    "scope": "guide"
   },
   {
-   "p": "/okfm-guide/first-concept.md",
-   "b": "okfm-guide",
+   "p": "/guide/first-concept.md",
+   "b": "guide",
    "t": "Runbook",
    "title": "Your first concept",
    "d": "The smallest useful concept, and where to put it.",
@@ -607,14 +607,14 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-guide/index.md"
+     "/guide/index.md"
     ]
    ],
    "scope": "guide"
   },
   {
-   "p": "/okfm-guide/index.md",
-   "b": "okfm-guide",
+   "p": "/guide/index.md",
+   "b": "guide",
    "t": "Index",
    "title": "OKFM guide",
    "d": "A working OKF bundle that documents OKFM. Delete this folder any time.",
@@ -625,14 +625,14 @@ const BOOTSTRAP = {
    "r": [
     [
      "registered_by",
-     "/okfm-mesh/index.md"
+     "/mesh/index.md"
     ]
    ],
    "scope": "guide"
   },
   {
-   "p": "/okfm-guide/log.md",
-   "b": "okfm-guide",
+   "p": "/guide/log.md",
+   "b": "guide",
    "t": "Log",
    "title": "Guide changelog",
    "d": "Append-only history of this guide bundle.",
@@ -644,8 +644,8 @@ const BOOTSTRAP = {
    "scope": "guide"
   },
   {
-   "p": "/okfm-guide/loop-family.md",
-   "b": "okfm-guide",
+   "p": "/guide/loop-family.md",
+   "b": "guide",
    "t": "Concept",
    "title": "The loop family",
    "d": "Concept types that record how a decision was reached, not just what is true.",
@@ -656,18 +656,18 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-guide/index.md"
+     "/guide/index.md"
     ],
     [
      "depends_on",
-     "/okfm-guide/what-is-okfm.md"
+     "/guide/what-is-okfm.md"
     ]
    ],
    "scope": "guide"
   },
   {
-   "p": "/okfm-guide/what-is-okfm.md",
-   "b": "okfm-guide",
+   "p": "/guide/what-is-okfm.md",
+   "b": "guide",
    "t": "Concept",
    "title": "What OKFM is",
    "d": "A profile and scaffolding that turns OKF bundles into a self-evolving mesh.",
@@ -678,14 +678,14 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-guide/index.md"
+     "/guide/index.md"
     ]
    ],
    "scope": "guide"
   },
   {
-   "p": "/okfm-level-1/index.md",
-   "b": "okfm-level-1",
+   "p": "/level-1-view/index.md",
+   "b": "level-1-view",
    "t": "Index",
    "title": "Level 1 — view",
    "d": "Download the repository and open the web UI. Nothing to install, nothing to run.",
@@ -696,14 +696,14 @@ const BOOTSTRAP = {
    "r": [
     [
      "registered_by",
-     "/okfm-mesh/index.md"
+     "/mesh/index.md"
     ]
    ],
    "scope": "project"
   },
   {
-   "p": "/okfm-level-1/log.md",
-   "b": "okfm-level-1",
+   "p": "/level-1-view/log.md",
+   "b": "level-1-view",
    "t": "Log",
    "title": "Level 1 changelog",
    "d": "Append-only history of what level 1 ships.",
@@ -715,8 +715,8 @@ const BOOTSTRAP = {
    "scope": "project"
   },
   {
-   "p": "/okfm-level-1/the-shipped-mesh.md",
-   "b": "okfm-level-1",
+   "p": "/level-1-view/the-shipped-mesh.md",
+   "b": "level-1-view",
    "t": "Document",
    "title": "The shipped mesh",
    "d": "Seven real bundles you can read, validate and copy — a working mesh split on change cadence, not a demonstration built to be looked at.",
@@ -727,14 +727,14 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-level-1/index.md"
+     "/level-1-view/index.md"
     ]
    ],
    "scope": "project"
   },
   {
-   "p": "/okfm-level-1/the-web-ui.md",
-   "b": "okfm-level-1",
+   "p": "/level-1-view/the-web-ui.md",
+   "b": "level-1-view",
    "t": "Document",
    "title": "The web UI",
    "d": "One HTML file that renders the whole mesh from disk — graph, health panel, closure ledger, drift in three states. Read-only, and that is what makes it the whole of level 1.",
@@ -745,32 +745,32 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-level-1/index.md"
+     "/level-1-view/index.md"
     ]
    ],
    "scope": "project"
   },
   {
-   "p": "/okfm-level-1/your-own-agent.md",
-   "b": "okfm-level-1",
+   "p": "/level-1-view/your-own-agent.md",
+   "b": "level-1-view",
    "t": "Document",
    "title": "Your own agent",
    "d": "Point a coding agent at the repository and ask it for whatever you want. This works from level 1 and needs nothing from OKFM.",
    "v": null,
    "sa": null,
    "src": 1,
-   "drift": 0,
+   "drift": 1,
    "r": [
     [
      "part_of",
-     "/okfm-level-1/index.md"
+     "/level-1-view/index.md"
     ]
    ],
    "scope": "project"
   },
   {
-   "p": "/okfm-level-2/drift-observation.md",
-   "b": "okfm-level-2",
+   "p": "/level-2-build/drift-observation.md",
+   "b": "level-2-build",
    "t": "Document",
    "title": "Drift observation",
    "d": "Reads every source, compares it to the hash the concept captured, and caches the observation. Three states, never two — and only a person clears drift, for the reason this document had to learn the hard way.",
@@ -781,14 +781,14 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-level-2/index.md"
+     "/level-2-build/index.md"
     ]
    ],
    "scope": "project"
   },
   {
-   "p": "/okfm-level-2/extraction.md",
-   "b": "okfm-level-2",
+   "p": "/level-2-build/extraction.md",
+   "b": "level-2-build",
    "t": "Document",
    "title": "Extraction",
    "d": "Descriptions are copied from prose the file already contained, never written. That is the property that makes level 2 possible with no model.",
@@ -799,14 +799,14 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-level-2/index.md"
+     "/level-2-build/index.md"
     ]
    ],
    "scope": "project"
   },
   {
-   "p": "/okfm-level-2/index.md",
-   "b": "okfm-level-2",
+   "p": "/level-2-build/index.md",
+   "b": "level-2-build",
    "t": "Index",
    "title": "Level 2 — build",
    "d": "Paste one folder into your project and run one command. A real bundle, with no model anywhere in it.",
@@ -817,18 +817,18 @@ const BOOTSTRAP = {
    "r": [
     [
      "registered_by",
-     "/okfm-mesh/index.md"
+     "/mesh/index.md"
     ],
     [
      "depends_on",
-     "/okfm-level-1/index.md"
+     "/level-1-view/index.md"
     ]
    ],
    "scope": "project"
   },
   {
-   "p": "/okfm-level-2/log.md",
-   "b": "okfm-level-2",
+   "p": "/level-2-build/log.md",
+   "b": "level-2-build",
    "t": "Log",
    "title": "Level 2 changelog",
    "d": "Append-only history of the deterministic build.",
@@ -840,8 +840,8 @@ const BOOTSTRAP = {
    "scope": "project"
   },
   {
-   "p": "/okfm-level-2/mirror-mode.md",
-   "b": "okfm-level-2",
+   "p": "/level-2-build/mirror-mode.md",
+   "b": "level-2-build",
    "t": "Document",
    "title": "Mirror mode",
    "d": "Concepts land in `.okfm/` and point back at your files, which are never opened for writing — the reversible default, with in-place as a flag you pass once you have seen what it produces.",
@@ -852,14 +852,14 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-level-2/index.md"
+     "/level-2-build/index.md"
     ]
    ],
    "scope": "project"
   },
   {
-   "p": "/okfm-level-2/telemetry.md",
-   "b": "okfm-level-2",
+   "p": "/level-2-build/telemetry.md",
+   "b": "level-2-build",
    "t": "Document",
    "title": "Telemetry",
    "d": "One versioned record per run — what ran, in what order, how long, and whether it worked.",
@@ -870,14 +870,14 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-level-2/index.md"
+     "/level-2-build/index.md"
     ]
    ],
    "scope": "project"
   },
   {
-   "p": "/okfm-level-2/the-pipeline.md",
-   "b": "okfm-level-2",
+   "p": "/level-2-build/the-pipeline.md",
+   "b": "level-2-build",
    "t": "Runbook",
    "title": "The pipeline",
    "d": "One command that runs build, refresh, bake and validate in order and stops at the first failure, so the second, misleading error never appears.",
@@ -888,14 +888,14 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-level-2/index.md"
+     "/level-2-build/index.md"
     ]
    ],
    "scope": "project"
   },
   {
-   "p": "/okfm-level-2/the-web-ui-bake.md",
-   "b": "okfm-level-2",
+   "p": "/level-2-build/the-web-ui-bake.md",
+   "b": "level-2-build",
    "t": "Document",
    "title": "The web UI bake",
    "d": "Regenerates the index the level 1 web UI reads, so disagreement between the web UI and the mesh is a state that cannot exist rather than a bug you can have.",
@@ -906,18 +906,18 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-level-2/index.md"
+     "/level-2-build/index.md"
     ],
     [
      "depends_on",
-     "/okfm-level-2/drift-observation.md"
+     "/level-2-build/drift-observation.md"
     ]
    ],
    "scope": "project"
   },
   {
-   "p": "/okfm-level-2/validation.md",
-   "b": "okfm-level-2",
+   "p": "/level-2-build/validation.md",
+   "b": "level-2-build",
    "t": "Document",
    "title": "Validation",
    "d": "Conformance, the profile rules, and the strip test — three passes, no dependencies.",
@@ -928,14 +928,14 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-level-2/index.md"
+     "/level-2-build/index.md"
     ]
    ],
    "scope": "project"
   },
   {
-   "p": "/okfm-level-3/federation-negotiation.md",
-   "b": "okfm-level-3",
+   "p": "/level-3-enrich/federation-negotiation.md",
+   "b": "level-3-enrich",
    "t": "Document",
    "title": "Federation, the negotiation half",
    "d": "Transport, agent interfaces and the feedback ledger — the half of federation that co-located bundles cannot prove, because what is missing is a member that can refuse.",
@@ -946,14 +946,14 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-level-3/index.md"
+     "/level-3-enrich/index.md"
     ]
    ],
    "scope": "project"
   },
   {
-   "p": "/okfm-level-3/index.md",
-   "b": "okfm-level-3",
+   "p": "/level-3-enrich/index.md",
+   "b": "level-3-enrich",
    "t": "Index",
    "title": "Level 3 — enrichment",
    "d": "Your agent writes what extraction cannot, a guard checks it, and you approve. Its credentialed variant is where OKFM holds the key instead of your agent.",
@@ -964,18 +964,18 @@ const BOOTSTRAP = {
    "r": [
     [
      "registered_by",
-     "/okfm-mesh/index.md"
+     "/mesh/index.md"
     ],
     [
      "depends_on",
-     "/okfm-level-2/index.md"
+     "/level-2-build/index.md"
     ]
    ],
    "scope": "project"
   },
   {
-   "p": "/okfm-level-3/log.md",
-   "b": "okfm-level-3",
+   "p": "/level-3-enrich/log.md",
+   "b": "level-3-enrich",
    "t": "Log",
    "title": "Level 3 changelog",
    "d": "Append-only history of the enrichment loop.",
@@ -987,8 +987,8 @@ const BOOTSTRAP = {
    "scope": "project"
   },
   {
-   "p": "/okfm-level-3/packs.md",
-   "b": "okfm-level-3",
+   "p": "/level-3-enrich/packs.md",
+   "b": "level-3-enrich",
    "t": "Document",
    "title": "Packs",
    "d": "Domain vocabulary and workflows as an overlay, so core carries no domain words. Partly built: the overlay mechanism works today, which makes this the one credentialed-variant component usable three levels down.",
@@ -999,14 +999,14 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-level-3/index.md"
+     "/level-3-enrich/index.md"
     ]
    ],
    "scope": "project"
   },
   {
-   "p": "/okfm-level-3/providers-and-keys.md",
-   "b": "okfm-level-3",
+   "p": "/level-3-enrich/providers-and-keys.md",
+   "b": "level-3-enrich",
    "t": "Document",
    "title": "Providers and keys",
    "d": "Two adapters, not four — OpenAI-compatible reaches local models and most hosted ones, Anthropic needs its own — with the key appearing here because this is where OKFM drives the provider rather than the reverse.",
@@ -1017,14 +1017,14 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-level-3/index.md"
+     "/level-3-enrich/index.md"
     ]
    ],
    "scope": "project"
   },
   {
-   "p": "/okfm-level-3/the-agent-contract.md",
-   "b": "okfm-level-3",
+   "p": "/level-3-enrich/the-agent-contract.md",
+   "b": "level-3-enrich",
    "t": "Document",
    "title": "The agent contract",
    "d": "One file that tells an agent what it may write, what it may not, and how to tell the difference. No install, no key.",
@@ -1035,18 +1035,18 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-level-3/index.md"
+     "/level-3-enrich/index.md"
     ],
     [
      "implements",
-     "/okfm-level-3/the-enrichment-loop.md"
+     "/level-3-enrich/the-enrichment-loop.md"
     ]
    ],
    "scope": "project"
   },
   {
-   "p": "/okfm-level-3/the-benchmark.md",
-   "b": "okfm-level-3",
+   "p": "/level-3-enrich/the-benchmark.md",
+   "b": "level-3-enrich",
    "t": "Document",
    "title": "The benchmark",
    "d": "Two arms over one corpus, blind grading, and a harness that reports what it found about this repository rather than producing a flattering number. The deterministic half runs today.",
@@ -1057,18 +1057,18 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-level-3/index.md"
+     "/level-3-enrich/index.md"
     ],
     [
      "evaluates",
-     "/okfm-mesh/index.md"
+     "/mesh/index.md"
     ]
    ],
    "scope": "project"
   },
   {
-   "p": "/okfm-level-3/the-console-app.md",
-   "b": "okfm-level-3",
+   "p": "/level-3-enrich/the-console-app.md",
+   "b": "level-3-enrich",
    "t": "Document",
    "title": "The console app",
    "d": "A served web UI that edits configuration and drives the loop — deliberately a second artifact, because giving the level 1 web UI write access would turn a browser-openable file into an install.",
@@ -1079,18 +1079,18 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-level-3/index.md"
+     "/level-3-enrich/index.md"
     ],
     [
      "differs_from",
-     "/okfm-level-1/the-web-ui.md"
+     "/level-1-view/the-web-ui.md"
     ]
    ],
    "scope": "project"
   },
   {
-   "p": "/okfm-level-3/the-enrichment-loop.md",
-   "b": "okfm-level-3",
+   "p": "/level-3-enrich/the-enrichment-loop.md",
+   "b": "level-3-enrich",
    "t": "Runbook",
    "title": "The enrichment loop",
    "d": "Build, list, draft, guard, review. Three of the five steps need nothing; the union of the other two is what makes the whole loop `[model, human]` and keeps it out of CI.",
@@ -1101,14 +1101,14 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-level-3/index.md"
+     "/level-3-enrich/index.md"
     ]
    ],
    "scope": "project"
   },
   {
-   "p": "/okfm-level-3/the-human-exit.md",
-   "b": "okfm-level-3",
+   "p": "/level-3-enrich/the-human-exit.md",
+   "b": "level-3-enrich",
    "t": "Document",
    "title": "The human exit",
    "d": "Review clears drift. Nothing else does, and the command refuses to pretend a process is a person.",
@@ -1119,18 +1119,18 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-level-3/index.md"
+     "/level-3-enrich/index.md"
     ],
     [
      "serves",
-     "/okfm-level-3/the-enrichment-loop.md"
+     "/level-3-enrich/the-enrichment-loop.md"
     ]
    ],
    "scope": "project"
   },
   {
-   "p": "/okfm-level-3/the-tier-guard.md",
-   "b": "okfm-level-3",
+   "p": "/level-3-enrich/the-tier-guard.md",
+   "b": "level-3-enrich",
    "t": "Document",
    "title": "The tier guard",
    "d": "Reads the diff after an edit pass and fails on any field the editor does not own, naming the field and the reason. Scope it to the paths the pass touched, or it reports everything else in flight.",
@@ -1141,18 +1141,18 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-level-3/index.md"
+     "/level-3-enrich/index.md"
     ],
     [
      "implements",
-     "/okfm-level-3/the-agent-contract.md"
+     "/level-3-enrich/the-agent-contract.md"
     ]
    ],
    "scope": "project"
   },
   {
-   "p": "/okfm-level-3/the-work-list.md",
-   "b": "okfm-level-3",
+   "p": "/level-3-enrich/the-work-list.md",
+   "b": "level-3-enrich",
    "t": "Document",
    "title": "The work list",
    "d": "What needs enriching, why, and what a good result looks like — computed, so nobody has to keep a queue by hand.",
@@ -1163,18 +1163,18 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-level-3/index.md"
+     "/level-3-enrich/index.md"
     ],
     [
      "serves",
-     "/okfm-level-3/the-enrichment-loop.md"
+     "/level-3-enrich/the-enrichment-loop.md"
     ]
    ],
    "scope": "project"
   },
   {
-   "p": "/okfm-mesh/index.md",
-   "b": "okfm-mesh",
+   "p": "/mesh/index.md",
+   "b": "mesh",
    "t": "Index",
    "title": "The OKFM mesh",
    "d": "Read this first. An OKF whose concepts are the other OKFs — it answers \"which one should I open?\" and owns nothing else.",
@@ -1186,8 +1186,8 @@ const BOOTSTRAP = {
    "scope": "project"
   },
   {
-   "p": "/okfm-mesh/log.md",
-   "b": "okfm-mesh",
+   "p": "/mesh/log.md",
+   "b": "mesh",
    "t": "Log",
    "title": "Mesh changelog",
    "d": "Append-only history of mesh membership.",
@@ -1199,8 +1199,8 @@ const BOOTSTRAP = {
    "scope": "project"
   },
   {
-   "p": "/okfm-mesh/members/decisions.md",
-   "b": "okfm-mesh",
+   "p": "/mesh/members/decisions.md",
+   "b": "mesh",
    "t": "OKF Member",
    "title": "OKFM decision records",
    "d": "Why this project is shaped the way it is — the rationale no source file can state.",
@@ -1211,18 +1211,18 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-mesh/index.md"
+     "/mesh/index.md"
     ],
     [
      "registers",
-     "/okfm-decisions/index.md"
+     "/decisions/index.md"
     ]
    ],
    "scope": "project"
   },
   {
-   "p": "/okfm-mesh/members/docs.md",
-   "b": "okfm-mesh",
+   "p": "/mesh/members/docs.md",
+   "b": "mesh",
    "t": "OKF Member",
    "title": "docs",
    "d": "Rationale, roadmap and prior art — the loose documents at the top of docs/, and the only member whose concepts the build wrote.",
@@ -1233,18 +1233,18 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-mesh/index.md"
+     "/mesh/index.md"
     ],
     [
      "registers",
-     "/okfm-docs/index.md"
+     "/docs/index.md"
     ]
    ],
    "scope": null
   },
   {
-   "p": "/okfm-mesh/members/guide.md",
-   "b": "okfm-mesh",
+   "p": "/mesh/members/guide.md",
+   "b": "mesh",
    "t": "OKF Member",
    "title": "OKFM guide",
    "d": "The format, and a working bundle that demonstrates it by being one.",
@@ -1255,18 +1255,18 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-mesh/index.md"
+     "/mesh/index.md"
     ],
     [
      "registers",
-     "/okfm-guide/index.md"
+     "/guide/index.md"
     ]
    ],
    "scope": "project"
   },
   {
-   "p": "/okfm-mesh/members/level-1-view.md",
-   "b": "okfm-mesh",
+   "p": "/mesh/members/level-1-view.md",
+   "b": "mesh",
    "t": "OKF Member",
    "title": "Level 1 — view",
    "d": "The download. The web UI, the shipped bundles, and pointing your own agent at the repository.",
@@ -1277,18 +1277,18 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-mesh/index.md"
+     "/mesh/index.md"
     ],
     [
      "registers",
-     "/okfm-level-1/index.md"
+     "/level-1-view/index.md"
     ]
    ],
    "scope": "project"
   },
   {
-   "p": "/okfm-mesh/members/level-2-build.md",
-   "b": "okfm-mesh",
+   "p": "/mesh/members/level-2-build.md",
+   "b": "mesh",
    "t": "OKF Member",
    "title": "Level 2 — build",
    "d": "The deterministic pipeline — extraction, mirror mode, drift, validation, the web UI bake, telemetry. No model anywhere in it.",
@@ -1299,18 +1299,18 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-mesh/index.md"
+     "/mesh/index.md"
     ],
     [
      "registers",
-     "/okfm-level-2/index.md"
+     "/level-2-build/index.md"
     ]
    ],
    "scope": "project"
   },
   {
-   "p": "/okfm-mesh/members/level-3-enrich.md",
-   "b": "okfm-mesh",
+   "p": "/mesh/members/level-3-enrich.md",
+   "b": "mesh",
    "t": "OKF Member",
    "title": "Level 3 — enrichment",
    "d": "The loop that turns extracted quotations into written descriptions, using an agent you already have.",
@@ -1321,11 +1321,11 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-mesh/index.md"
+     "/mesh/index.md"
     ],
     [
      "registers",
-     "/okfm-level-3/index.md"
+     "/level-3-enrich/index.md"
     ]
    ],
    "scope": "project"

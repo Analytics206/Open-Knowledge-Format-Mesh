@@ -76,10 +76,41 @@ def is_concept(path: Path) -> bool:
 CONFIG_NAME = "okfm.json"
 
 
+def normalize(cfg: dict) -> dict:
+    """Grouped for a person to read; flat for the code that reads it.
+
+    The config file has four groups — `build`, `read`, `stores`, `federation` — because a
+    dozen sibling keys at the top level stops being a file you can take in at a glance and
+    starts being one you search. The tooling wants them flat, so the lifting happens once,
+    here, instead of every reader learning the grouping.
+
+    Flat keys still win when present. Nobody is running an old config yet, but a normalizer
+    that silently overrides what someone wrote is a worse failure than one that does not.
+    """
+    out = dict(cfg)
+    b = cfg.get("build") or {}
+    r = cfg.get("read") or {}
+    for key, src, name, default in (
+        ("bundle", b, "out", ".okfm"),
+        ("mesh", b, "mesh", "mesh"),
+        ("mode", b, "mode", "mirror"),
+        ("sources", b, "sources", None),
+        ("vocab_overlays", b, "vocab_overlays", None),
+        ("web_ui", r, "web_ui", None),
+        ("index", r, "index", None),
+        ("exclude_scopes", r, "exclude_scopes", None),
+    ):
+        if key not in out and (name in src or default is not None):
+            out[key] = src.get(name, default)
+    if "discover" not in out and b:
+        out["discover"] = {k: b[k] for k in ("root", "root_files", "exclude") if k in b}
+    return out
+
+
 def find_config() -> tuple[Path | None, dict]:
     for candidate in (PROJECT / CONFIG_NAME, HERE / CONFIG_NAME):
         if candidate.is_file():
-            return candidate, json.loads(candidate.read_text(encoding="utf-8"))
+            return candidate, normalize(json.loads(candidate.read_text(encoding="utf-8")))
     return None, {}
 
 
@@ -183,22 +214,27 @@ def synthesize_config(root: Path) -> dict:
         "pack": None,
         "_generated": (
             "Written by the OKFM drop-in build on its first run. Every folder of documents "
-            "under `discover.root` gets its own OKF in `bundle`, plus one for the loose "
-            "files at the top and a mesh OKF over all of them. Add a path to "
-            "`discover.exclude` to drop a subtree, or set `root_files` to false to skip the "
-            "loose files. Everything else is a sensible default you can ignore."
+            "under `build.root` gets its own OKF in `build.out`, plus one for the loose files "
+            "at the top and a mesh OKF over all of them. Add a path to `build.exclude` to "
+            "drop a subtree, or set `root_files` to false to skip the loose files. Everything "
+            "else is a sensible default you can ignore."
         ),
-        "discover": {
+        "build": {
             "root": scan.relative_to(root).as_posix() or ".",
             "root_files": True,
             "exclude": [],
+            "out": ".okfm",
+            "mesh": "mesh",
+            "mode": "mirror",
+            "vocab_overlays": [],
         },
-        "bundle": ".okfm",
-        "mesh": "mesh",
-        "mode": "mirror",
-        "web_ui": {"path": "../okfm-web-ui.html"},
-        "index": {"max_concepts": 60, "priority_types": []},
-        "exclude_scopes": ["guide"],
+        "read": {
+            "web_ui": {"path": "../okfm-web-ui.html"},
+            "index": {"max_concepts": 60, "priority_types": []},
+            "exclude_scopes": ["guide"],
+        },
+        "stores": {},
+        "federation": {"registry": None},
     }
 
 

@@ -3,12 +3,11 @@ type: Index
 title: "Level 1 — view"
 description: Download the repository and open the web UI. Nothing to install, nothing to run.
 status: stable
+tags: [needs-nothing]
 generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
 okfm_scope: project
-okfm_level: 1
-okfm_needs: []
 okfm_relations:
-  - { predicate: registered_by, target: /okfm-mesh/index.md }
+  - { predicate: registered_by, target: /mesh/index.md }
 ---
 
 # What this level is
@@ -27,12 +26,12 @@ whether a knowledge format is worth anything is to look at one.
 
 # Where the line is
 
-Every component here is `okfm_needs: []`. OKFM asks nothing of you at this level — no
+Every component here is tagged `needs-nothing`. OKFM asks nothing of you at this level — no
 runtime, no key, no network.
 
 [Your own agent](your-own-agent.md) is the one that looks like an exception and is not. The
 model is yours, running in a tool you already pay for; OKFM is supplying files it reads.
-`okfm_needs` records what **OKFM** requires to deliver a component, not what you happen to
+the `needs-*` tag records what **OKFM** requires to deliver a component, not what you happen to
 bring. The distinction is what stops the levels collapsing into "you could always use an
 agent" — which is true, and which would make the whole ladder meaningless.
 

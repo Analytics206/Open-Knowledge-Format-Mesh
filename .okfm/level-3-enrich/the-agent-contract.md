@@ -3,6 +3,7 @@ type: Document
 title: The agent contract
 description: One file that tells an agent what it may write, what it may not, and how to tell the difference. No install, no key.
 status: draft
+tags: [needs-model]
 generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
 sources:
   - id: doc
@@ -14,8 +15,6 @@ sources:
     okfm_role: subject
     okfm_captured: { hash: "sha256:ae6680b5f4086eb71db02fc04800751008c7fdc849cc0999659c5806a2304e88", at: 2026-08-01 }
 okfm_scope: project
-okfm_level: 3
-okfm_needs: [model]
 okfm_relations:
   - { predicate: part_of, target: /index.md }
   - { predicate: implements, target: /the-enrichment-loop.md }

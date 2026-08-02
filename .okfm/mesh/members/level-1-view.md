@@ -17,10 +17,9 @@ okfm_member:
   agent: null
   sync_policy: pull
 okfm_scope: project
-okfm_level: 1
 okfm_relations:
   - { predicate: part_of, target: /index.md }
-  - { predicate: registers, target: /okfm-level-1/index.md }
+  - { predicate: registers, target: /level-1-view/index.md }
 ---
 
 # Scope
@@ -37,6 +36,6 @@ who has ever opened the project.
 
 # Why it is a member and not a README section
 
-Because the level ladder needs to be data. `okfm_needs: []` on every concept in this bundle
+Because the level ladder needs to be data. A `needs-nothing` tag on every concept here
 is checked by [`dev/check_levels.py`](../../../dev/check_levels.py), so *"level 1 asks nothing of
 you"* fails the build when it stops being true rather than quietly becoming marketing.

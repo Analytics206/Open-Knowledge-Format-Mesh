@@ -3,13 +3,12 @@ type: Index
 title: "Level 3 — enrichment"
 description: Your agent writes what extraction cannot, a guard checks it, and you approve. Its credentialed variant is where OKFM holds the key instead of your agent.
 status: stable
+tags: [needs-model, needs-human, needs-secrets]
 generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
 okfm_scope: project
-okfm_level: 3
-okfm_needs: [model, human, secrets]
 okfm_relations:
-  - { predicate: registered_by, target: /okfm-mesh/index.md }
-  - { predicate: depends_on, target: /okfm-level-2/index.md }
+  - { predicate: registered_by, target: /mesh/index.md }
+  - { predicate: depends_on, target: /level-2-build/index.md }
 ---
 
 # What this level is
@@ -68,7 +67,7 @@ instead of your agent holding it is a change of *direction*, not another step up
 anyone can point an agent at any level and do as they like, a fourth level read as a gate
 where none existed.
 
-Nothing is lost by collapsing it. `okfm_needs` still records `secrets` per component, and CI
+Nothing is lost by collapsing it. the `needs-*` tags still record `secrets` per component, and CI
 still gates on the set rather than the number, so the distinction survives exactly where it
 does work. What went away is a level nobody could place from memory.
 

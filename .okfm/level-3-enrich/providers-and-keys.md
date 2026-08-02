@@ -3,6 +3,7 @@ type: Document
 title: Providers and keys
 description: "Two adapters, not four — OpenAI-compatible reaches local models and most hosted ones, Anthropic needs its own — with the key appearing here because this is where OKFM drives the provider rather than the reverse."
 status: draft
+tags: [needs-nothing]
 generated: { by: "agent:claude-opus-5", at: 2026-08-02T03:28:25Z }
 sources:
   - id: doc
@@ -10,8 +11,6 @@ sources:
     okfm_role: subject
     okfm_captured: { hash: "sha256:140ddd6f5b7c50862172ecfa31860c81501f016368f668f5c95faa4d09879994", at: 2026-08-01 }
 okfm_scope: project
-okfm_level: 3
-okfm_needs: []
 okfm_relations:
   - { predicate: part_of, target: /index.md }
 ---

@@ -5,7 +5,6 @@ description: Append-only history of the deterministic build.
 status: stable
 generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
 okfm_scope: project
-okfm_level: 2
 ---
 
 # 2026-08-01 — bundle created
