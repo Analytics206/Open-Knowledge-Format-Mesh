@@ -8,7 +8,7 @@ sources:
   - id: source
     resource: ../../docs/roadmap.md
     okfm_role: subject
-    okfm_captured: { hash: "sha256:7cbae518c6bc9b8a3f2c515404109af7b7ded8010fb6db302bc8b27366416151", at: 2026-08-02 }
+    okfm_captured: { hash: "sha256:cce06f21df17a5d2df569cbaef44a23c67be0bdff12335b0b483b1fedea5afe0", at: 2026-08-02 }
 ---
 
 # OKFM — Roadmap

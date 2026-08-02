@@ -110,7 +110,7 @@ runs, and there is no CLI yet.
 | Config validation — one rule table, terminal and browser | ✅ |
 | `templates/AGENTS.md`, enrich / guard / revalidate | ✅ level 3 |
 | `enrich-local` — the loop on Ollama, no key, no bill | ✅ level 2+, proof of concept |
-| Benchmark harness | ✅ prototype — deterministic half, placeholder questions |
+| Benchmark harness | ✅ first run recorded — 8 real questions, no measurable gap |
 | `okfm` CLI, live resolvers, console app | ⬜ Phase 2 |
 | Providers, packs, federation's negotiation half | ⬜ Phase 3+ |
 

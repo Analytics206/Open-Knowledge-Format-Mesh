@@ -1,0 +1,86 @@
+{
+  "_arms": {
+    "treatment": "eeefc555041a",
+    "control": "e09e3ae41a09"
+  },
+  "a8df4ee284cf": {
+    "question": "q-exclude-still-shows",
+    "arm": "treatment",
+    "dir": "eeefc555041a"
+  },
+  "14a0a4f854fa": {
+    "question": "q-exclude-still-shows",
+    "arm": "control",
+    "dir": "e09e3ae41a09"
+  },
+  "ca86a3ec7663": {
+    "question": "q-why-build-wont-refresh-captured",
+    "arm": "treatment",
+    "dir": "eeefc555041a"
+  },
+  "4897b1dfae21": {
+    "question": "q-why-build-wont-refresh-captured",
+    "arm": "control",
+    "dir": "e09e3ae41a09"
+  },
+  "73158f2d04af": {
+    "question": "q-unknown-not-fresh",
+    "arm": "treatment",
+    "dir": "eeefc555041a"
+  },
+  "ce9491141ab5": {
+    "question": "q-unknown-not-fresh",
+    "arm": "control",
+    "dir": "e09e3ae41a09"
+  },
+  "4f6a5ff7439d": {
+    "question": "q-why-local-model-is-not-level-2",
+    "arm": "treatment",
+    "dir": "eeefc555041a"
+  },
+  "94c99148dabe": {
+    "question": "q-why-local-model-is-not-level-2",
+    "arm": "control",
+    "dir": "e09e3ae41a09"
+  },
+  "39553ae0f883": {
+    "question": "q-change-site-remove-a-bundle",
+    "arm": "treatment",
+    "dir": "eeefc555041a"
+  },
+  "44a65d8fca17": {
+    "question": "q-change-site-remove-a-bundle",
+    "arm": "control",
+    "dir": "e09e3ae41a09"
+  },
+  "ebd0ecab2c5a": {
+    "question": "q-why-relations-never-inferred",
+    "arm": "treatment",
+    "dir": "eeefc555041a"
+  },
+  "f3e80f90763a": {
+    "question": "q-why-relations-never-inferred",
+    "arm": "control",
+    "dir": "e09e3ae41a09"
+  },
+  "9decc24965a9": {
+    "question": "q-lookup-runtime",
+    "arm": "treatment",
+    "dir": "eeefc555041a"
+  },
+  "ff9b4c948cf8": {
+    "question": "q-lookup-runtime",
+    "arm": "control",
+    "dir": "e09e3ae41a09"
+  },
+  "6a55f6c7fc7b": {
+    "question": "q-why-stop-first-failure",
+    "arm": "treatment",
+    "dir": "eeefc555041a"
+  },
+  "f31c0ace5e2d": {
+    "question": "q-why-stop-first-failure",
+    "arm": "control",
+    "dir": "e09e3ae41a09"
+  }
+}

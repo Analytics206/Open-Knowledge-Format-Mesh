@@ -132,8 +132,51 @@ is deliberately no single combined score to hide it in.
 Answers, the key and the report are committed, so any run can be regraded later under a
 different rubric.
 
+# The first recorded run: no measurable difference
+
+Eight questions, both arms, sixteen fresh agents with real file access, four blind graders none
+of whom saw both arms of any question.
+
+| arm | claims hit | false statements |
+|---|---|---|
+| with the bundle | 29/30 (97%) | 0 |
+| without it | 28/30 (93%) | 0 |
+
+A gap of three points on eight questions is not a result, and the harness says so itself rather
+than leaving the reader to be careful. One question separated the arms at all: *why relations
+are never inferred*, where the bundle arm got the compound claim about predicates being rejected
+while types only warn, and the other arm got half of it.
+
+**Zero false statements in either arm is the finding worth keeping.** The specific risk of
+curation is a summary that is confidently wrong — a bundle losing a question by paraphrasing a
+source the agent would otherwise have read. That is the failure this whole apparatus exists to
+detect, and on this corpus it did not happen.
+
+# Why a null result was close to guaranteed here, and what that costs
+
+Two rules combine to cap what this can measure.
+
+**Every fact must be answerable in both arms** (§18.1 rule 1) — otherwise the test measures
+whether a file was deleted. **And this corpus is 70 files of prose written to be read**, with
+fourteen decision records carrying the reasoning in full.
+
+Put together: a capable agent finds the answer either way, so the bundle saves *effort* rather
+than *correctness*, and claims-hit measures correctness. The gap can only open where **finding
+the fact is hard** — a corpus large enough that search fails, or sources disorganised enough
+that the reasoning is scattered. This repository is neither, by design and by taste.
+
+So the honest reading is not "curation does not help." It is **this instrument cannot resolve
+the difference at this scale**, and a number produced anyway would be noise presented as
+evidence. What the run does establish is that the harness works end to end, and that the mesh
+did not mislead anybody.
+
+Measuring effort rather than correctness — files opened, tokens spent, wrong turns taken before
+the answer — is the change that would make this instrument sensitive on a corpus like this one.
+Not built.
+
 # An honest negative result is the valuable one
 
 It tells you which knowledge is worth writing down before you have written down the wrong
 things at scale. A rising claims-hit gap is evidence that curation is working; a flat one is a
-signal to apply the admission test harder.
+signal to apply the admission test harder — or, as here, a signal that the question set is not
+hard enough to separate anything.

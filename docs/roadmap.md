@@ -249,6 +249,8 @@ no `secrets`. It is worth having early because it makes the enrichment loop comp
 adopter with no agent to spare, which is the case the level model otherwise leaves stranded.
 **Exit:** "Why did we decide X?" answered from the mesh alone; one run fully reconstructable from telemetry; every bundle passes official conformance in CI with every `okfm_` key stripped; a first benchmark run recorded, whatever it says.
 
+The benchmark half of that exit is met, and what it says is *nothing measurable*: 29/30 claims with the bundle against 28/30 without, zero false statements in either arm. Recorded as run_seed1 rather than rerun until it produced a better number. The instrument cannot resolve a difference on 70 files of prose written to be read — see [the benchmark](okfm-guide/level-3-enrich/the-benchmark.md) for why that was close to guaranteed by §18.1's own rule that every fact must be answerable in both arms.
+
 ### Phase 2 — Extraction into a distributable project
 
 Scope: §13 in full — split core / packs / config / bundle; move the loop into

@@ -1,0 +1,128 @@
+{
+  "arms": {
+    "treatment": {
+      "claims_hit": 29,
+      "claims_total": 30,
+      "false": 0
+    },
+    "control": {
+      "claims_hit": 28,
+      "claims_total": 30,
+      "false": 0
+    }
+  },
+  "questions": [
+    {
+      "question": "q-exclude-still-shows",
+      "arm": "control",
+      "hit": 4,
+      "total": 4,
+      "false": []
+    },
+    {
+      "question": "q-change-site-remove-a-bundle",
+      "arm": "treatment",
+      "hit": 4,
+      "total": 4,
+      "false": []
+    },
+    {
+      "question": "q-change-site-remove-a-bundle",
+      "arm": "control",
+      "hit": 4,
+      "total": 4,
+      "false": []
+    },
+    {
+      "question": "q-why-build-wont-refresh-captured",
+      "arm": "control",
+      "hit": 4,
+      "total": 4,
+      "false": []
+    },
+    {
+      "question": "q-why-local-model-is-not-level-2",
+      "arm": "treatment",
+      "hit": 4,
+      "total": 4,
+      "false": []
+    },
+    {
+      "question": "q-why-stop-first-failure",
+      "arm": "treatment",
+      "hit": 3,
+      "total": 3,
+      "false": []
+    },
+    {
+      "question": "q-unknown-not-fresh",
+      "arm": "treatment",
+      "hit": 3,
+      "total": 4,
+      "false": []
+    },
+    {
+      "question": "q-why-local-model-is-not-level-2",
+      "arm": "control",
+      "hit": 4,
+      "total": 4,
+      "false": []
+    },
+    {
+      "question": "q-lookup-runtime",
+      "arm": "treatment",
+      "hit": 3,
+      "total": 3,
+      "false": []
+    },
+    {
+      "question": "q-exclude-still-shows",
+      "arm": "treatment",
+      "hit": 4,
+      "total": 4,
+      "false": []
+    },
+    {
+      "question": "q-why-build-wont-refresh-captured",
+      "arm": "treatment",
+      "hit": 4,
+      "total": 4,
+      "false": []
+    },
+    {
+      "question": "q-unknown-not-fresh",
+      "arm": "control",
+      "hit": 3,
+      "total": 4,
+      "false": []
+    },
+    {
+      "question": "q-why-relations-never-inferred",
+      "arm": "treatment",
+      "hit": 4,
+      "total": 4,
+      "false": []
+    },
+    {
+      "question": "q-why-stop-first-failure",
+      "arm": "control",
+      "hit": 3,
+      "total": 3,
+      "false": []
+    },
+    {
+      "question": "q-why-relations-never-inferred",
+      "arm": "control",
+      "hit": 3,
+      "total": 4,
+      "false": []
+    },
+    {
+      "question": "q-lookup-runtime",
+      "arm": "control",
+      "hit": 3,
+      "total": 3,
+      "false": []
+    }
+  ]
+}
