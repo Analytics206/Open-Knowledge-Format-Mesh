@@ -75,8 +75,20 @@ def corpus() -> list[Path]:
 
 
 def bundle_dirs() -> dict[str, Path]:
+    """Bundle roots, project-relative.
+
+    `removeprefix`, not `lstrip`. `lstrip` takes a character SET, so `"./.okfm/mesh"` loses
+    its dot-folder as well as its prefix and comes back as `"okfm/mesh"` — a directory that
+    does not exist. Every `is_relative_to` against it then answered False, no concept was
+    ever dropped, and the control arm was byte-identical to the treatment arm while the run
+    printed `0 concepts removed` and exited 0.
+
+    This is the second time this exact mistake has been made in this repository;
+    `dev/check_levels.py` carries the same comment. Fixing it twice is not the fix — the
+    fix is `arms_differ()` below, which fails whatever the cause.
+    """
     cfg = json.loads((PROJECT / "okfm.json").read_text(encoding="utf-8"))
-    return {bid: Path(p.lstrip("./")) for bid, p in cfg.get("bundles", {}).items()}
+    return {bid: Path(p.removeprefix("./")) for bid, p in cfg.get("bundles", {}).items()}
 
 
 def is_concept(path: Path) -> bool:
@@ -147,6 +159,24 @@ def main() -> int:
     print(f"control     {len(control)}  ({len(treatment) - len(control)} concepts removed)")
 
     errors, notes = [], []
+
+    # --- the arms must actually differ ---------------------------------------
+    # Everything else here checks whether the comparison is *fair*. This checks whether there
+    # is a comparison at all, and it is first because nothing below it means anything if the
+    # two directories hold the same files. A benchmark that silently measures a corpus against
+    # itself reports a clean run forever and a difference of zero, which reads as "the bundle
+    # does not help" rather than "the harness is broken" — the most expensive way to be wrong.
+    removed = len(treatment) - len(control)
+    if removed == 0:
+        errors.append("control arm is identical to the treatment arm — no concept was "
+                      "removed, so the two arms measure the same corpus. Check that "
+                      "`bundles` in okfm.json names directories that exist.")
+    elif removed < len([b for b in bundles]):
+        # Fewer concepts dropped than there are bundles means at least one root matched
+        # nothing. Not fatal — a bundle can legitimately be empty — but it is the shape the
+        # path bug took, so it is said out loud.
+        notes.append(f"only {removed} concept(s) removed across {len(bundles)} bundles — "
+                     f"verify every `bundles` path resolves")
 
     # --- §18.1 rule 1: every fact must be present in BOTH arms ---------------
     # The bundle is a shortcut, never the only source. A question whose evidence lives only

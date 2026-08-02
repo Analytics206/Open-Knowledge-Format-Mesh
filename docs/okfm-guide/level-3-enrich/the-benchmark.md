@@ -20,26 +20,51 @@ python benchmark/run.py           # materialise both arms, emit prompts and the 
 
 It builds the two arms as real directories, blinds the prompts behind opaque ids, emits a
 grading sheet with the arm labels absent, and writes the key. What it does not do is ask a
-model anything — that step needs one, and who holds the key decides whether it is level 3 or
-level 4.
+model anything.
 
-# The question set is a placeholder
+That step used to be blocked on a key. It is not any more — [a local model](a-local-model.md)
+runs a model on your own hardware for nothing, which is what makes a first recorded run
+reachable at all. What it is blocked on now is a design question rather than a credential:
+**a chat model cannot browse a directory**, so something has to choose which files it sees —
+and that chooser is not a detail, it is most of the experiment. Pick it badly in favour of the
+bundle and the result is arithmetic dressed as evidence.
 
-Three questions, one per shape, chosen to exercise the harness rather than to measure
-anything. Real ones get backfilled.
+# The questions are real now
 
-When they are written, the provenance rule applies: draw them from real behaviour, real
-business questions, and real past confusion — never from a bundle's own table of contents,
-which flatters the bundle by construction. Every question must be answerable from source in
-**both** arms, because the bundle is meant to be a shortcut and not the only copy of a fact.
+Eight, drawn from things that actually confused somebody working on this project. Each records
+its own provenance in a `from` field, so a reader can check the set was not reverse-engineered
+from the answers it wanted.
 
-That last requirement is mechanical here rather than aspirational. Each question names the
-files its answer lives in, and the harness fails if any of them is missing from the control
-arm.
+Two are verbatim: *"I excluded a folder and re-ran the build and it still shows"*, and *"if it
+costs nothing and needs no key, why isn't it level 2?"* The rest come from design notes written
+after something went wrong, and from the objection each rule keeps attracting.
+
+The provenance rule is the point: never draw a question from a bundle's own table of contents,
+which flatters the bundle by construction. A question the bundle was written to answer proves
+only that somebody wrote an index.
+
+Every question must be answerable from source in **both** arms, because the bundle is meant to
+be a shortcut and not the only copy of a fact. That requirement is mechanical rather than
+aspirational — each question names the files its answer lives in, and the harness fails if any
+of them is missing from the control arm.
 
 # What the harness found about this repository
 
-Two things, on its first run, both worth keeping:
+Three things, all worth keeping:
+
+**The two arms were the same directory.** Bundle paths were resolved with `lstrip("./")`, and
+`lstrip` takes a character *set* — so `./.okfm/mesh` came back as `okfm/mesh`, a folder that
+does not exist. Nothing matched, no concept was ever removed, and the harness reported
+`0 concepts removed` and exited 0. It had been measuring a corpus against itself.
+
+The fix that matters is not the one-character correction. It is that **`--check` now fails when
+the control arm is not smaller than the treatment arm** — because a benchmark whose arms are
+identical produces a difference of zero, and a difference of zero reads as *curation does not
+help* rather than *the harness is broken*. That is the most expensive way to be wrong here, and
+nothing was watching for it.
+
+Worth recording that this was the second appearance of the same `lstrip` mistake in this
+repository. Fixing it twice is not a fix; asserting the property it was supposed to produce is.
 
 **The decision records cannot be benchmarked.** They are in-place concepts — the record *is*
 the concept — so removing the bundle removes the facts, and the control arm would be missing
