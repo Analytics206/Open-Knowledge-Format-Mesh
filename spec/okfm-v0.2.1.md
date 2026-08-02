@@ -1024,18 +1024,21 @@ adding one frontmatter line at a time, with no migration project and nothing to 
 It is also why **zero-overhead-when-absent** (§8.5, rule 4) matters — a project with
 no concepts must pay nothing for having OKFM installed.
 
-> **What is implemented is discovery by *folder*, not by frontmatter.** The build finds
-> `docs/`, gives every folder of documents under it its own OKF, adds one for the loose files
-> at the top, and writes a mesh OKF over all of them. It does not sweep a project looking for
-> files that already carry a `type:`.
+> **The rule holds; the project-wide sweep it implies is not built.** Every concept the
+> implementation produces has frontmatter, and a `.md` carrying a non-empty `type:` **is**
+> treated as a concept wherever the tool encounters one — that is exactly how the in-place
+> bundles work, and why `build.py` refuses to mirror a file that is already a concept.
 >
-> The two are complements rather than rivals: convention-scanning finds concepts that already
-> exist, folder-scanning *creates* them from documents that do not. Only the second is built,
-> because an adopter with no concepts yet is the common case and the one this has to serve.
+> What does not exist is the *scan*. This section describes finding concepts that already
+> carry a `type:` anywhere in a project. The build instead reads the folders named by
+> `discover` — `docs/` by default — and **creates** concepts from the documents it finds
+> there. Two different jobs: one collects concepts that exist, the other makes them from
+> documents that are not concepts yet.
 >
-> The rule this section states still holds where it matters — a `.md` with a `type:` **is** a
-> concept wherever it sits, which is exactly how the in-place bundles work and why the build
-> refuses to mirror a file that is already one.
+> Only the second is built, because an adopter with no concepts is the common case and the
+> one adoption has to serve. The consequence to know about: a concept sitting outside the
+> configured folders is invisible to the build until its folder is listed or its bundle is
+> named in `bundles`.
 >
 > No code action: this note records the divergence, the implementation stands.
 
