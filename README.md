@@ -52,6 +52,11 @@ Point an agent at that one file and it finds the rest itself, instead of you nam
 bundles up front and hoping you picked the right ones. Ask *"where do I read about using my
 own key?"* and the mesh answers with a path.
 
+**`answers` is the one thing you write yourself.** The build creates every member and leaves
+the list empty, because what a bundle is *for* is a judgement no process can make — and a
+guessed entry sends an agent to the wrong bundle with confidence. Three or four questions per
+bundle, in the words somebody would actually ask them, is the whole job.
+
 It is a **directory, not an orchestrator**. Nothing in it dispatches a question, calls a
 member, or merges an answer — your agent does that, reading the map. A registry that
 orchestrated would have to decide on behalf of bundles it does not own, which is the central

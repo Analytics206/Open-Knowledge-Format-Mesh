@@ -68,10 +68,23 @@ def _owned(dest: Path) -> bool:
 
 
 def mirror(src_dir: Path, out_dir: Path, ctype: str, stamp: str, apply: bool) -> list[str]:
-    """Write one concept per source document, pointing back at the source."""
-    written = []
+    """Write one concept per source document, pointing back at the source.
+
+    Reserved filenames are skipped and **said out loud**. `README.md` is the one that hurts:
+    in most projects it is the orientation document — the file you would most want an agent to
+    read first — and it was the file guaranteed to be missing from the bundle, silently, while
+    the documentation promised that every folder of documents becomes an OKF.
+
+    Still skipped rather than mirrored: `index.md` is regenerated here, and a README is
+    conventionally *about the folder* rather than knowledge in it, so mirroring it would put a
+    table of contents in the graph. But an adopter who wants it as a concept needs to know it
+    was dropped before they can decide, so the build names what it left behind.
+    """
+    written, skipped = [], []
     for f in sorted(src_dir.glob("*.md")):
         if f.name in RESERVED:
+            if f.name not in ("index.md", "log.md"):
+                skipped.append(f.name)
             continue
         block, _ = frontmatter(f)
         if block and scalar(block, "type"):
@@ -110,6 +123,9 @@ def mirror(src_dir: Path, out_dir: Path, ctype: str, stamp: str, apply: bool) ->
             out_dir.mkdir(parents=True, exist_ok=True)
             dest.write_text(concept, encoding="utf-8", newline="\n")
         written.append(f.name)
+    if skipped:
+        print(f"  note   {src_dir.name}/: skipped {', '.join(skipped)} — reserved names are "
+              f"about the folder, not knowledge in it")
     return written
 
 
@@ -212,6 +228,16 @@ def write_mesh(cfg: dict, out_root: Path, mesh_name: str, built: list[tuple[str,
             "status: draft",
             f'generated: {{ by: "{MINE}", at: {stamp} }}',
             "okfm_member:",
+            # Empty, and PRESENT. `answers` is the reason a mesh beats a folder — it is what
+            # lets an agent route on frontmatter instead of reading every bundle — and it was
+            # the one field the build never emitted at all. So it existed only in bundles
+            # somebody had hand-written, while the documentation led with it as a feature,
+            # and an adopter's generated mesh silently lacked the capability being sold.
+            #
+            # It cannot be derived: naming the questions a bundle answers is a judgement about
+            # what it is for. But an empty key an adopter can see is a prompt to fill it, and
+            # an absent one is a gap nobody knows they have.
+            "  answers: []          # what questions does this bundle answer? yours to write",
             "  owner: null",
             "  agent: null",
             "  sync_policy: pull",
@@ -232,6 +258,21 @@ def write_mesh(cfg: dict, out_root: Path, mesh_name: str, built: list[tuple[str,
             "",
             "`owner` is null because nothing can infer it. Naming the accountable person is",
             "the one thing this file is for that a directory listing does not already do.",
+            "",
+            "`answers` is empty for the same reason, and it is the more valuable of the two.",
+            "It is what lets an agent pick a bundle by reading frontmatter instead of opening",
+            "every one — the whole difference between a mesh and a folder. Write three or four",
+            "questions this bundle actually answers, in the words somebody would ask them:",
+            "",
+            "```yaml",
+            "okfm_member:",
+            "  answers:",
+            "    - how do I run the ingest job locally",
+            "    - what happens when a payment fails",
+            "```",
+            "",
+            "Nothing will fill these in for you. A build cannot know what a bundle is *for*,",
+            "and a guess here sends an agent to the wrong bundle with confidence.",
             "",
         ])
         if apply:
@@ -288,7 +329,7 @@ def main() -> int:
         print("markdown, or list folders explicitly under `sources`.")
         return 0
 
-    total, built, targets = 0, [], {}
+    mirrored, indexes, built, targets = 0, 0, [], {}
     for entry in sources:
         rel = entry["path"] if isinstance(entry, dict) else entry
         ctype = (entry.get("type") if isinstance(entry, dict) else None) or "Document"
@@ -314,20 +355,34 @@ def main() -> int:
             write_index(out_dir, name, names, stamp, a.apply,
                         _bundle_id(cfg, out_root / cfg.get("mesh", "mesh"),
                                    cfg.get("mesh", "mesh")))
+            indexes += 1
         shown = out_dir.relative_to(PROJECT) if out_dir.is_relative_to(PROJECT) else out_dir
         print(f"  {'wrote' if a.apply else 'would'}  {len(names):>3}  {rel}  →  {shown}")
-        total += len(names)
+        mirrored += len(names)
         if out_dir.is_dir() or names:
             built.append((name, rel, len(names) or
                           sum(1 for f in out_dir.glob("*.md") if f.name not in RESERVED)))
 
     mesh_name = cfg.get("mesh", "mesh")
+    mesh_n = 0
     if mesh_name and built:
-        n = write_mesh(cfg, out_root, mesh_name, sorted(built), stamp, a.apply)
-        print(f"  {'wrote' if a.apply else 'would'}  {n:>3}  the mesh  →  "
+        mesh_n = write_mesh(cfg, out_root, mesh_name, sorted(built), stamp, a.apply)
+        print(f"  {'wrote' if a.apply else 'would'}  {mesh_n:>3}  the mesh  →  "
               f"{(out_root / mesh_name).relative_to(PROJECT)}")
 
-    print(f"\n{total} concept(s) {'written' if a.apply else 'planned'}")
+    # Every number said out loud, and they add up. The total used to exclude the mesh line
+    # printed directly above it, so the per-folder figures summed to more than the stated
+    # total, and neither counted the generated indexes — three unlabelled counts for one
+    # build, which an adopter could only reconcile by counting files.
+    #
+    # This says what THIS RUN wrote, and deliberately does not predict what the viewer will
+    # show: the viewer counts every concept on disk, which is the same number only on a first
+    # run and diverges the moment the build becomes incremental.
+    total = mirrored + mesh_n
+    verb = "written" if a.apply else "planned"
+    print(f"\n{total} concept(s) {verb} this run: {mirrored} from your documents"
+          + (f", {mesh_n} in the mesh" if mesh_n else "")
+          + (f", plus {indexes} generated index.md" if indexes else ""))
     if not a.apply:
         print("\nDry run — nothing was written, including the config.")
         print("Run again with --apply.")
