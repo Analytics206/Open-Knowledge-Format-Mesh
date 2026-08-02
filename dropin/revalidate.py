@@ -46,8 +46,10 @@ utf8_stdout()
 #
 # `\.*` tolerates the trailing ellipsis on hashes written before full digests were stored.
 # They compare as prefixes; they rewrite as whole values.
-_SOURCE = re.compile(
-    r'(resource:\s*(\S+)[\s\S]*?okfm_captured:\s*\{\s*hash:\s*")sha256:[0-9a-f]+\.*(")')
+_SOURCE = re.compile(r"(resource:\s*(\S+)[\s\S]*?okfm_captured:\s*\{)([^}]*)(\})")
+# `\.*` tolerates the trailing ellipsis on hashes written before full digests were stored.
+_HASH = re.compile(r'(hash:\s*"?)sha256:[0-9a-f]+\.*')
+_AT = re.compile(r"(at:\s*)\d{4}-\d{2}-\d{2}")
 
 
 def main() -> int:
@@ -81,7 +83,9 @@ def main() -> int:
               file=sys.stderr)
         return 2
 
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    stamp = datetime.now(timezone.utc)
+    now = stamp.strftime("%Y-%m-%dT%H:%M:%SZ")
+    today = stamp.strftime("%Y-%m-%d")
     changed = 0
 
     for raw in paths:
@@ -97,7 +101,12 @@ def main() -> int:
         missing = []
 
         def repin(m: re.Match) -> str:
-            """Each source gets the hash of the file IT points at."""
+            """Each source gets the hash of the file IT points at, and today's date.
+
+            `okfm_captured.at` is *when this hash was observed*. Rewriting the hash and
+            leaving the date is a capture that says it is older than it is, which is the
+            kind of small lie that makes the whole field untrustworthy.
+            """
             target = (p.parent / m.group(2)).resolve()
             if not target.is_file():
                 missing.append(m.group(2))
@@ -106,7 +115,9 @@ def main() -> int:
             # capture was taken before frontmatter existed, so comparing whole files would
             # report drift forever.
             sha = observe(target, body_only=(target == p.resolve()))
-            return f"{m.group(1)}sha256:{sha}{m.group(3)}"
+            inner = _HASH.sub(rf'\g<1>sha256:{sha}', m.group(3))
+            inner = _AT.sub(rf"\g<1>{today}", inner)
+            return f"{m.group(1)}{inner}{m.group(4)}"
 
         new_block, n = _SOURCE.subn(repin, block)
         if n == 0:
