@@ -42,6 +42,30 @@ def _rel(frm: Path, to: Path) -> str:
     return Path(os.path.relpath(to, frm.parent)).as_posix()
 
 
+MINE = "process:okfm-build"
+
+
+def _owned(dest: Path) -> bool:
+    """May this build overwrite an existing concept?
+
+    Only if nothing but this process has ever touched it. A concept stamped by a model, or
+    carrying a `verified` entry, is somebody's work — and regenerating it would throw away
+    the enrichment that is the entire point of level 3, silently, on a routine rebuild.
+
+    This is the rule that makes the build safe to re-run, which it has to be: an adopter runs
+    it after every documentation change, and a tool that eats your edits on the second run
+    gets deleted after the second run.
+    """
+    if not dest.exists():
+        return True
+    block, _ = frontmatter(dest)
+    if not block:
+        return True
+    if re.search(r"^verified:", block, re.M):
+        return False
+    return (scalar(block, "generated") or "").find(MINE) >= 0
+
+
 def mirror(src_dir: Path, out_dir: Path, ctype: str, stamp: str, apply: bool) -> list[str]:
     """Write one concept per source document, pointing back at the source."""
     written = []
@@ -51,6 +75,8 @@ def mirror(src_dir: Path, out_dir: Path, ctype: str, stamp: str, apply: bool) ->
         block, _ = frontmatter(f)
         if block and scalar(block, "type"):
             continue                      # already a concept in its own right
+        if not _owned(out_dir / f.name):
+            continue                      # somebody has since worked on it — leave it alone
 
         text = f.read_text(encoding="utf-8")
         # Hash the TEXT, never raw bytes — universal-newline translation normalizes CRLF
@@ -64,7 +90,7 @@ def mirror(src_dir: Path, out_dir: Path, ctype: str, stamp: str, apply: bool) ->
             f"title: {_yaml_str(_title(text, f))}",
             f"description: {_yaml_str(_extract_description(text))}",
             "status: draft",
-            f'generated: {{ by: "process:okfm-build", at: {stamp} }}',
+            f'generated: {{ by: "{MINE}", at: {stamp} }}',
             "sources:",
             "  - id: source",
             f"    resource: {_rel(dest, f)}",
@@ -134,13 +160,16 @@ def main() -> int:
             print(f"  skip  {rel} — not a directory")
             continue
 
-        name = "root" if rel == "." else rel.replace("/", "-")
+        # `bundle` names the output folder. Without it a nested source path turns into
+        # `docs-levels-level-1-view`, which is accurate and unusable as a bundle id.
+        name = (entry.get("bundle") if isinstance(entry, dict) else None) \
+            or ("root" if rel == "." else rel.replace("/", "-"))
         out_dir = out_root / name
         names = mirror(src, out_dir, ctype, stamp, a.apply)
-        if names:
+        if names and _owned(out_dir / "index.md"):
             write_index(out_dir, name, names, stamp, a.apply)
-        print(f"  {'wrote' if a.apply else 'would'}  {len(names):>3}  {rel}  →  "
-              f"{out_dir.relative_to(HERE) if a.apply or True else out_dir}")
+        shown = out_dir.relative_to(PROJECT) if out_dir.is_relative_to(PROJECT) else out_dir
+        print(f"  {'wrote' if a.apply else 'would'}  {len(names):>3}  {rel}  →  {shown}")
         total += len(names)
 
     print(f"\n{total} concept(s) {'written' if a.apply else 'planned'}")

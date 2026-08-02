@@ -89,12 +89,19 @@ def discover_sources(root: Path, limit: int = 40) -> list[str]:
     Deliberately shallow and conservative. Most projects have many folders under docs/
     and want concepts for only some, so this is a starting point to prune -- which is why
     the result is written to config rather than recomputed on every run.
+
+    `docs/` wins outright when it exists. Nearly every project keeps its documentation there,
+    and a first run that produces concepts for the documentation is obviously right, where one
+    that also sweeps up `src/`, `.changesets/` and a vendored SDK is obviously wrong and takes
+    an adopter ten minutes to undo. Scanning the whole tree is the fallback, not the default.
     """
+    scan = root / "docs" if (root / "docs").is_dir() else root
+
     found = []
-    for d in sorted(root.rglob("*")):
+    for d in sorted(scan.rglob("*")):
         if not d.is_dir():
             continue
-        rel = d.relative_to(root)
+        rel = d.relative_to(scan)
         parts = set(rel.parts)
         if parts & SKIP_DIRS or d.resolve() == HERE:
             continue
@@ -104,14 +111,14 @@ def discover_sources(root: Path, limit: int = 40) -> list[str]:
             continue
         mds = [f for f in d.glob("*.md") if f.name not in RESERVED]
         if len(mds) >= 2:                        # one stray README is not a bundle
-            found.append(rel.as_posix())
+            found.append(d.relative_to(root).as_posix())
         if len(found) >= limit:
             break
 
-    # Root-level markdown counts too, if there is enough of it.
-    root_mds = [f for f in root.glob("*.md") if f.name not in RESERVED]
-    if len(root_mds) >= 2:
-        found.insert(0, ".")
+    # The scanned directory's own markdown counts too, if there is enough of it.
+    own = [f for f in scan.glob("*.md") if f.name not in RESERVED]
+    if len(own) >= 2:
+        found.insert(0, scan.relative_to(root).as_posix() or ".")
     return found
 
 
@@ -122,11 +129,12 @@ def synthesize_config(root: Path) -> dict:
         "pack": None,
         "_generated": (
             "Written by the OKFM drop-in build on its first run. `sources` lists what it "
-            "found; delete a line to stop building concepts for it. Everything else is a "
-            "sensible default you can ignore."
+            "found under docs/; delete a line to stop building concepts for it, or add a "
+            "path to scan somewhere else. Concepts are written to `bundle`, one subfolder "
+            "per source. Everything else is a sensible default you can ignore."
         ),
         "sources": [{"path": s, "type": "Document"} for s in sources],
-        "bundle": "./bundle",
+        "bundle": ".okfm",
         "mode": "mirror",
         "viewer": {"path": "../okfm-viewer.html"},
         "index": {"max_concepts": 60, "priority_types": []},
@@ -184,9 +192,17 @@ def vocab_terms(name: str, overlays: list[Path] | None = None) -> set[str]:
 
 
 def bundle_root(cfg: dict) -> Path:
-    """Where concepts are written. Inside the dropped folder by default, so that deleting
-    the folder removes everything the tool ever created and leaves the project as it was."""
-    return (HERE / cfg.get("bundle", "./bundle")).resolve()
+    """Where concepts are written: `<project>/.okfm`, one subfolder per bundle.
+
+    One rule covers both arrangements. Paste this folder in as `.okfm/` and the bundles land
+    beside the tool, so a single hidden folder holds everything OKFM and `rm -rf .okfm` leaves
+    the project exactly as it was. Keep the tool somewhere else — as this repository does —
+    and `.okfm/` is still where the mesh lives.
+
+    Either way the adopter's own documents are never written into. That is the property worth
+    protecting: `docs/` belongs to them, `.okfm/` belongs to the tool.
+    """
+    return (PROJECT / cfg.get("bundle", ".okfm")).resolve()
 
 
 def configured_bundles(cfg: dict) -> dict[str, Path]:

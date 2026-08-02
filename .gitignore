@@ -18,6 +18,13 @@ okfm-viewer.local.html
 
 dropin/references/telemetry/runs/
 
+# ---- Benchmark arms -----------------------------------------------------
+# A materialised arm is a full copy of the corpus, rebuilt from the same seed on
+# demand. The grading sheet and the key ARE committed (spec 18.1 rule 5), so any
+# run can be regraded later under a different rubric.
+
+benchmark/runs/*/arms/
+
 # ---- Python -------------------------------------------------------------
 __pycache__/
 *.py[cod]

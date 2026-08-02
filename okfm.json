@@ -1,10 +1,28 @@
 {
   "okfm": "0.2.1",
   "pack": null,
+  "bundle": ".okfm",
+  "mode": "mirror",
+  "sources": [
+    { "path": "docs/levels/level-1-view", "bundle": "level-1", "type": "Document" },
+    { "path": "docs/levels/level-2-build", "bundle": "level-2", "type": "Document" },
+    { "path": "docs/levels/level-3-enrich", "bundle": "level-3", "type": "Document" },
+    { "path": "docs/levels/level-4-suite", "bundle": "level-4", "type": "Document" }
+  ],
   "bundles": {
-    "okfm-registry": "./okfm-registry",
-    "okfm-guide": "./okfm-guide",
+    "okfm-mesh": "./.okfm/mesh",
+    "okfm-level-1": "./.okfm/level-1",
+    "okfm-level-2": "./.okfm/level-2",
+    "okfm-level-3": "./.okfm/level-3",
+    "okfm-level-4": "./.okfm/level-4",
+    "okfm-guide": "./.okfm/guide",
     "okfm-decisions": "./docs/decisions"
+  },
+  "levels": {
+    "okfm-level-1": 1,
+    "okfm-level-2": 2,
+    "okfm-level-3": 3,
+    "okfm-level-4": 4
   },
   "viewer": {
     "path": "./okfm-viewer.html",
@@ -17,5 +35,5 @@
   },
   "exclude_scopes": ["guide"],
   "stores": {},
-  "federation": { "registry": "./okfm-registry" }
+  "federation": { "registry": "./.okfm/mesh" }
 }

@@ -21,7 +21,7 @@ okfm_relations:
 Owns the explanation of what OKFM is and how to write a first concept: the profile, the
 admission test, the loop family, attested computation, drift, federation, and removal.
 
-Does not own the specification — that is [`spec/okfm-v0.2.1.md`](../../spec/okfm-v0.2.1.md),
+Does not own the specification — that is [`spec/okfm-v0.2.1.md`](../../../spec/okfm-v0.2.1.md),
 which is a document rather than a bundle. The guide points at it and never restates it.
 
 # Cadence

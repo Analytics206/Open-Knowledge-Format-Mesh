@@ -108,7 +108,14 @@ def main() -> int:
                 ):
                     if pred not in predicates:
                         errors.append(f"{rid}: predicate `{pred}` not in the vocabulary")
-                    mesh_tgt = f"{root}{tgt}" if tgt.startswith("/") else tgt
+                    # An absolute target whose first segment names a bundle is mesh-absolute;
+                    # anything else absolute is relative to its own bundle root. Without this
+                    # a concept cannot address another bundle at all, which would make a
+                    # mesh of six bundles unable to say how they relate.
+                    mesh_tgt = tgt
+                    if tgt.startswith("/"):
+                        head = tgt.lstrip("/").split("/", 1)[0]
+                        mesh_tgt = tgt if head in bundles else f"{root}{tgt}"
                     if mesh_tgt not in mesh_paths:
                         errors.append(f"{rid}: relation target {tgt} resolves to nothing")
 

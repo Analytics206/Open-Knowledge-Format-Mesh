@@ -22,7 +22,7 @@ Owns the record of what was decided and why: the alternative rejected, the reaso
 re-entry trigger for anything deferred. Each file is a `Decision` of the loop family (§7.5).
 
 Does not own what the decisions describe. A record about the drift cache does not own drift —
-[`spec/okfm-v0.2.1.md`](../../spec/okfm-v0.2.1.md) §8 does, and the record cites it.
+[`spec/okfm-v0.2.1.md`](../../../spec/okfm-v0.2.1.md) §8 does, and the record cites it.
 
 # Why this is the mesh's best member
 

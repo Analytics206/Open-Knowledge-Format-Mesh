@@ -1,0 +1,48 @@
+{
+  "_note": [
+    "PLACEHOLDER SET. Three questions, one per shape, chosen to exercise the harness rather",
+    "than to measure anything. Real questions get backfilled.",
+    "",
+    "When they are written, §18.3 applies: draw them from real behaviour, real past",
+    "confusion, and real questions someone actually asked — never from a bundle's table of",
+    "contents, which flatters the bundle by construction. Then verify each one is answerable",
+    "from source in BOTH arms, which is what `answerable_from` records and what",
+    "`run.py --check` enforces."
+  ],
+  "questions": [
+    {
+      "id": "q-lookup-runtime",
+      "shape": "lookup",
+      "text": "What runtime does the deterministic build require, and what has to be installed before it will run?",
+      "answerable_from": ["README.md", "dropin/README.md"],
+      "claims": [
+        "Python 3.13",
+        "standard library only — no third-party packages",
+        "no install step; the folder is copied and run"
+      ]
+    },
+    {
+      "id": "q-why-stop-first-failure",
+      "shape": "why",
+      "text": "The build stops at the first failing step instead of running the remaining ones. Why was it built that way?",
+      "answerable_from": ["dropin/okfm.py"],
+      "claims": [
+        "a later step would read what the failed step did not write",
+        "that produces a second, misleading failure",
+        "the misleading one is the failure people chase"
+      ]
+    },
+    {
+      "id": "q-change-site-predicate",
+      "shape": "change-site",
+      "text": "I need a relation predicate that does not exist yet. What do I change, and what am I not allowed to do?",
+      "answerable_from": ["dropin/vocab/predicates.yaml", "dropin/check_bundles.py"],
+      "claims": [
+        "add the term to the predicate vocabulary",
+        "a pack may overlay additional predicates rather than editing core",
+        "an unknown predicate is rejected outright, unlike an unknown type",
+        "an existing predicate may never be redefined"
+      ]
+    }
+  ]
+}

@@ -249,8 +249,28 @@ const BOOTSTRAP = {
  "generated_at": "2026-08-01",
  "bundles": [
   {
-   "id": "okfm-registry",
-   "title": "okfm-registry",
+   "id": "okfm-mesh",
+   "title": "okfm-mesh",
+   "owner": "human:analytics206"
+  },
+  {
+   "id": "okfm-level-1",
+   "title": "okfm-level-1",
+   "owner": "human:analytics206"
+  },
+  {
+   "id": "okfm-level-2",
+   "title": "okfm-level-2",
+   "owner": "human:analytics206"
+  },
+  {
+   "id": "okfm-level-3",
+   "title": "okfm-level-3",
+   "owner": "human:analytics206"
+  },
+  {
+   "id": "okfm-level-4",
+   "title": "okfm-level-4",
    "owner": "human:analytics206"
   },
   {
@@ -596,11 +616,11 @@ const BOOTSTRAP = {
    "scope": "guide"
   },
   {
-   "p": "/okfm-registry/index.md",
-   "b": "okfm-registry",
+   "p": "/okfm-level-1/index.md",
+   "b": "okfm-level-1",
    "t": "Index",
-   "title": "OKFM mesh registry",
-   "d": "The map of this repository's bundles. Owns membership, never member content.",
+   "title": "Level 1 — view",
+   "d": "Download the repository and open the viewer. Nothing to install, nothing to run.",
    "v": null,
    "sa": null,
    "src": 0,
@@ -609,10 +629,502 @@ const BOOTSTRAP = {
    "scope": "project"
   },
   {
-   "p": "/okfm-registry/log.md",
-   "b": "okfm-registry",
+   "p": "/okfm-level-1/log.md",
+   "b": "okfm-level-1",
    "t": "Log",
-   "title": "Registry changelog",
+   "title": "Level 1 changelog",
+   "d": "Append-only history of what level 1 ships.",
+   "v": null,
+   "sa": null,
+   "src": 0,
+   "drift": 0,
+   "r": [],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-level-1/the-shipped-mesh.md",
+   "b": "okfm-level-1",
+   "t": "Document",
+   "title": "The shipped mesh",
+   "d": "Six real bundles you can read, validate and copy — not a worked example built to be looked at.",
+   "v": null,
+   "sa": null,
+   "src": 2,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-level-1/index.md"
+    ]
+   ],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-level-1/the-viewer.md",
+   "b": "okfm-level-1",
+   "t": "Document",
+   "title": "The viewer",
+   "d": "A single HTML file that renders the whole mesh from disk — graph, health panel, closure ledger, drift.",
+   "v": null,
+   "sa": null,
+   "src": 2,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-level-1/index.md"
+    ]
+   ],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-level-1/your-own-agent.md",
+   "b": "okfm-level-1",
+   "t": "Document",
+   "title": "Your own agent",
+   "d": "Point a coding agent at the repository and ask it for whatever you want. This works from level 1 and needs nothing from OKFM.",
+   "v": null,
+   "sa": null,
+   "src": 1,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-level-1/index.md"
+    ]
+   ],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-level-2/drift-observation.md",
+   "b": "okfm-level-2",
+   "t": "Document",
+   "title": "Drift observation",
+   "d": "Reads every source, compares it to the hash the concept captured, and caches the verdict. Three states, never two.",
+   "v": null,
+   "sa": null,
+   "src": 2,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-level-2/index.md"
+    ]
+   ],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-level-2/extraction.md",
+   "b": "okfm-level-2",
+   "t": "Document",
+   "title": "Extraction",
+   "d": "Descriptions are copied from prose the file already contained, never written. That is the property that makes level 2 possible with no model.",
+   "v": null,
+   "sa": null,
+   "src": 2,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-level-2/index.md"
+    ]
+   ],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-level-2/index.md",
+   "b": "okfm-level-2",
+   "t": "Index",
+   "title": "Level 2 — build",
+   "d": "Paste one folder into your project and run one command. A real bundle, with no model anywhere in it.",
+   "v": null,
+   "sa": null,
+   "src": 0,
+   "drift": 0,
+   "r": [],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-level-2/log.md",
+   "b": "okfm-level-2",
+   "t": "Log",
+   "title": "Level 2 changelog",
+   "d": "Append-only history of the deterministic build.",
+   "v": null,
+   "sa": null,
+   "src": 0,
+   "drift": 0,
+   "r": [],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-level-2/mirror-mode.md",
+   "b": "okfm-level-2",
+   "t": "Document",
+   "title": "Mirror mode",
+   "d": "Concepts are written beside your files and point back at them. Your markdown is not touched unless you ask.",
+   "v": null,
+   "sa": null,
+   "src": 2,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-level-2/index.md"
+    ]
+   ],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-level-2/telemetry.md",
+   "b": "okfm-level-2",
+   "t": "Document",
+   "title": "Telemetry",
+   "d": "One versioned record per run — what ran, in what order, how long, and whether it worked.",
+   "v": null,
+   "sa": null,
+   "src": 2,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-level-2/index.md"
+    ]
+   ],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-level-2/the-pipeline.md",
+   "b": "okfm-level-2",
+   "t": "Runbook",
+   "title": "The pipeline",
+   "d": "One command that runs build, refresh, bake and validate in order and stops at the first failure.",
+   "v": null,
+   "sa": null,
+   "src": 2,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-level-2/index.md"
+    ]
+   ],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-level-2/the-viewer-bake.md",
+   "b": "okfm-level-2",
+   "t": "Document",
+   "title": "The viewer bake",
+   "d": "Regenerates the index the level 1 viewer reads, so viewer-versus-mesh drift is impossible rather than merely unlikely.",
+   "v": null,
+   "sa": null,
+   "src": 2,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-level-2/index.md"
+    ],
+    [
+     "depends_on",
+     "/okfm-level-2/drift-observation.md"
+    ]
+   ],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-level-2/validation.md",
+   "b": "okfm-level-2",
+   "t": "Document",
+   "title": "Validation",
+   "d": "Conformance, the profile rules, and the strip test — three passes, no dependencies.",
+   "v": null,
+   "sa": null,
+   "src": 2,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-level-2/index.md"
+    ]
+   ],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-level-3/index.md",
+   "b": "okfm-level-3",
+   "t": "Index",
+   "title": "Level 3 — enrichment",
+   "d": "Your agent writes what extraction cannot, a guard checks what it wrote, and you approve it. OKFM holds no credential.",
+   "v": null,
+   "sa": null,
+   "src": 0,
+   "drift": 0,
+   "r": [],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-level-3/log.md",
+   "b": "okfm-level-3",
+   "t": "Log",
+   "title": "Level 3 changelog",
+   "d": "Append-only history of the enrichment loop.",
+   "v": null,
+   "sa": null,
+   "src": 0,
+   "drift": 0,
+   "r": [],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-level-3/the-agent-contract.md",
+   "b": "okfm-level-3",
+   "t": "Document",
+   "title": "The agent contract",
+   "d": "One file that tells an agent what it may write, what it may not, and how to tell the difference. No install, no key.",
+   "v": null,
+   "sa": null,
+   "src": 2,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-level-3/index.md"
+    ],
+    [
+     "implements",
+     "/okfm-level-3/the-enrichment-loop.md"
+    ]
+   ],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-level-3/the-enrichment-loop.md",
+   "b": "okfm-level-3",
+   "t": "Runbook",
+   "title": "The enrichment loop",
+   "d": "Build, list, draft, guard, review — the cycle that turns extracted quotations into written descriptions.",
+   "v": null,
+   "sa": null,
+   "src": 1,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-level-3/index.md"
+    ]
+   ],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-level-3/the-human-exit.md",
+   "b": "okfm-level-3",
+   "t": "Document",
+   "title": "The human exit",
+   "d": "Review clears drift. Nothing else does, and the command refuses to pretend a process is a person.",
+   "v": null,
+   "sa": null,
+   "src": 2,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-level-3/index.md"
+    ],
+    [
+     "serves",
+     "/okfm-level-3/the-enrichment-loop.md"
+    ]
+   ],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-level-3/the-tier-guard.md",
+   "b": "okfm-level-3",
+   "t": "Document",
+   "title": "The tier guard",
+   "d": "Reads the diff after an edit pass and fails if fields were written that the editor does not own.",
+   "v": null,
+   "sa": null,
+   "src": 2,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-level-3/index.md"
+    ],
+    [
+     "implements",
+     "/okfm-level-3/the-agent-contract.md"
+    ]
+   ],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-level-3/the-work-list.md",
+   "b": "okfm-level-3",
+   "t": "Document",
+   "title": "The work list",
+   "d": "What needs enriching, why, and what a good result looks like — computed, so nobody has to keep a queue by hand.",
+   "v": null,
+   "sa": null,
+   "src": 2,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-level-3/index.md"
+    ],
+    [
+     "serves",
+     "/okfm-level-3/the-enrichment-loop.md"
+    ]
+   ],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-level-4/federation-negotiation.md",
+   "b": "okfm-level-4",
+   "t": "Document",
+   "title": "Federation, the negotiation half",
+   "d": "Transport, agent interfaces, and the feedback ledger — the part of federation a single repository cannot prove.",
+   "v": null,
+   "sa": null,
+   "src": 1,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-level-4/index.md"
+    ]
+   ],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-level-4/index.md",
+   "b": "okfm-level-4",
+   "t": "Index",
+   "title": "Level 4 — the suite",
+   "d": "Providers, packs, the negotiation half of federation, and the benchmark. Mostly not built yet, and this bundle says which parts.",
+   "v": null,
+   "sa": null,
+   "src": 0,
+   "drift": 0,
+   "r": [],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-level-4/log.md",
+   "b": "okfm-level-4",
+   "t": "Log",
+   "title": "Level 4 changelog",
+   "d": "Append-only history of the suite.",
+   "v": null,
+   "sa": null,
+   "src": 0,
+   "drift": 0,
+   "r": [],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-level-4/packs.md",
+   "b": "okfm-level-4",
+   "t": "Document",
+   "title": "Packs",
+   "d": "Domain vocabulary and workflows as an overlay, so core carries no domain words and stays portable.",
+   "v": null,
+   "sa": null,
+   "src": 2,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-level-4/index.md"
+    ]
+   ],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-level-4/providers-and-keys.md",
+   "b": "okfm-level-4",
+   "t": "Document",
+   "title": "Providers and keys",
+   "d": "Two adapters, not four — OpenAI-compatible and Anthropic — plus a config list of endpoints, so adding a provider is a config line.",
+   "v": null,
+   "sa": null,
+   "src": 1,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-level-4/index.md"
+    ]
+   ],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-level-4/the-benchmark.md",
+   "b": "okfm-level-4",
+   "t": "Document",
+   "title": "The benchmark",
+   "d": "Two arms over one corpus, blind grading, and a harness that refuses to produce a flattering number. The deterministic half runs today.",
+   "v": null,
+   "sa": null,
+   "src": 2,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-level-4/index.md"
+    ],
+    [
+     "evaluates",
+     "/okfm-level-4/okfm-mesh/index.md"
+    ]
+   ],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-level-4/the-web-ui.md",
+   "b": "okfm-level-4",
+   "t": "Document",
+   "title": "The web UI",
+   "d": "A served console that edits configuration and drives the loop — the read-only viewer's counterpart, and the source of the CLI.",
+   "v": null,
+   "sa": null,
+   "src": 1,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-level-4/index.md"
+    ],
+    [
+     "differs_from",
+     "/okfm-level-4/okfm-level-1/the-viewer.md"
+    ]
+   ],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-mesh/index.md",
+   "b": "okfm-mesh",
+   "t": "Index",
+   "title": "The OKFM mesh",
+   "d": "The master OKF — an OKF whose concepts are the other OKFs. Owns membership, never member content.",
+   "v": null,
+   "sa": null,
+   "src": 0,
+   "drift": 0,
+   "r": [],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-mesh/log.md",
+   "b": "okfm-mesh",
+   "t": "Log",
+   "title": "Mesh changelog",
    "d": "Append-only history of mesh membership.",
    "v": null,
    "sa": null,
@@ -622,8 +1134,8 @@ const BOOTSTRAP = {
    "scope": "project"
   },
   {
-   "p": "/okfm-registry/members/okfm-decisions.md",
-   "b": "okfm-registry",
+   "p": "/okfm-mesh/members/okfm-decisions.md",
+   "b": "okfm-mesh",
    "t": "OKF Member",
    "title": "OKFM decision records",
    "d": "Why this project is shaped the way it is — the rationale no source file can state.",
@@ -634,14 +1146,14 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-registry/index.md"
+     "/okfm-mesh/index.md"
     ]
    ],
    "scope": "project"
   },
   {
-   "p": "/okfm-registry/members/okfm-guide.md",
-   "b": "okfm-registry",
+   "p": "/okfm-mesh/members/okfm-guide.md",
+   "b": "okfm-mesh",
    "t": "OKF Member",
    "title": "OKFM guide",
    "d": "The format, and a working bundle that demonstrates it by being one.",
@@ -652,7 +1164,79 @@ const BOOTSTRAP = {
    "r": [
     [
      "part_of",
-     "/okfm-registry/index.md"
+     "/okfm-mesh/index.md"
+    ]
+   ],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-mesh/members/okfm-level-1.md",
+   "b": "okfm-mesh",
+   "t": "OKF Member",
+   "title": "Level 1 — view",
+   "d": "The download. The viewer, the shipped bundles, and pointing your own agent at the repository.",
+   "v": null,
+   "sa": null,
+   "src": 0,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-mesh/index.md"
+    ]
+   ],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-mesh/members/okfm-level-2.md",
+   "b": "okfm-mesh",
+   "t": "OKF Member",
+   "title": "Level 2 — build",
+   "d": "The deterministic pipeline — extraction, mirror mode, drift, validation, the viewer bake, telemetry. No model anywhere in it.",
+   "v": null,
+   "sa": null,
+   "src": 0,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-mesh/index.md"
+    ]
+   ],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-mesh/members/okfm-level-3.md",
+   "b": "okfm-mesh",
+   "t": "OKF Member",
+   "title": "Level 3 — enrichment",
+   "d": "The loop that turns extracted quotations into written descriptions, using an agent you already have.",
+   "v": null,
+   "sa": null,
+   "src": 0,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-mesh/index.md"
+    ]
+   ],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-mesh/members/okfm-level-4.md",
+   "b": "okfm-mesh",
+   "t": "OKF Member",
+   "title": "Level 4 — the suite",
+   "d": "Providers, packs, federation's negotiation half, the web UI, and the benchmark. One component works; the bundle says which.",
+   "v": null,
+   "sa": null,
+   "src": 0,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-mesh/index.md"
     ]
    ],
    "scope": "project"

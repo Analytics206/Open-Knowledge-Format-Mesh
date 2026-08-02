@@ -34,7 +34,7 @@ restating it. That is not laziness — it is [the admission test](admission-test
 applied to the guide itself. A concept whose job is orientation should tell you where
 to look and why it matters, then get out of the way.
 
-The specification lives in [`spec/okfm-v0.2.1.md`](../spec/okfm-v0.2.1.md).
+The specification lives in [`spec/okfm-v0.2.1.md`](../../spec/okfm-v0.2.1.md).
 
 # This bundle is scoped
 

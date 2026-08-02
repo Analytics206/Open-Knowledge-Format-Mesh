@@ -41,6 +41,17 @@ jobs:
       - name: Validate the spec corpus
         run: python dev/check_docs.py
 
+      # The level ladder is only real if it is checked. Every component declares
+      # `okfm_needs`, and this fails when one exceeds what its level allows — which is
+      # how "level 2 never needs a model" stays true instead of becoming marketing.
+      - name: Every component fits its level
+        run: python dev/check_levels.py
+
+      # The benchmark's deterministic half: the two arms, the blinding, and the rule that
+      # every question must be answerable from source in BOTH arms.
+      - name: Benchmark question set and arms
+        run: python benchmark/run.py --check
+
   boundaries:
     name: boundaries
     runs-on: ubuntu-latest
