@@ -52,6 +52,16 @@ def main() -> int:
         print("No bundles found. Run build.py first, or point `bundles` at one.")
         return 0
 
+    # Which bundles the registry claims as members. Collected during the walk and checked
+    # at the end -- see `registered` below for why this is an error rather than a nicety.
+    registered: set[str] = set()
+    registry = None
+    reg_path = (cfg.get("federation") or {}).get("registry") or cfg.get("mesh")
+    if reg_path:
+        want = (PROJECT / str(reg_path).removeprefix("./")).resolve()
+        registry = next((b for b, p in bundles.items()
+                         if p.resolve() == want or b == reg_path), None)
+
     # Every concept path in the mesh, so relation targets resolve across bundles.
     mesh_paths = set()
     for bid, src in bundles.items():
@@ -116,6 +126,8 @@ def main() -> int:
                     if tgt.startswith("/"):
                         head = tgt.lstrip("/").split("/", 1)[0]
                         mesh_tgt = tgt if head in bundles else f"{root}{tgt}"
+                        if pred == "registers" and bid == registry:
+                            registered.add(head)
                     if mesh_tgt not in mesh_paths:
                         errors.append(f"{rid}: relation target {tgt} resolves to nothing")
 
@@ -154,6 +166,20 @@ def main() -> int:
                     errors.append(f"{rid}: footnote [^{ref}] referenced but never defined")
 
         print(f"  {n:>3} concepts  {bid}")
+
+    # --- the mesh must name every bundle (spec 12.2) --------------------------
+    # An unregistered bundle is the mesh lying about itself in the one place it cannot
+    # afford to: a reader asks the registry what exists and gets an incomplete answer, with
+    # nothing anywhere to say so. Checking it here is what keeps membership from depending
+    # on somebody remembering to add an edge.
+    if registry:
+        for bid in sorted(bundles):
+            if bid == registry or not (bundles[bid] / "index.md").is_file():
+                continue
+            if bid not in registered:
+                errors.append(f"{bid}: not registered — `{registry}` has no concept with "
+                              f"`registers` -> /{bid}/index.md, so the mesh does not know "
+                              f"this bundle exists")
 
     print(f"\n{total} concepts across {len(bundles)} bundles")
     for w in warnings:
