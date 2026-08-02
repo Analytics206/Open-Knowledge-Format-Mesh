@@ -270,11 +270,6 @@ const BOOTSTRAP = {
    "owner": "human:analytics206"
   },
   {
-   "id": "okfm-level-4",
-   "title": "okfm-level-4",
-   "owner": "human:analytics206"
-  },
-  {
    "id": "okfm-docs",
    "title": "okfm-docs",
    "owner": "human:analytics206"
@@ -300,7 +295,7 @@ const BOOTSTRAP = {
    "v": "human",
    "sa": null,
    "src": 1,
-   "drift": 0,
+   "drift": 1,
    "r": [],
    "scope": "project"
   },
@@ -326,7 +321,7 @@ const BOOTSTRAP = {
    "v": "human",
    "sa": null,
    "src": 1,
-   "drift": 0,
+   "drift": 1,
    "r": [],
    "scope": "project"
   },
@@ -348,11 +343,11 @@ const BOOTSTRAP = {
    "b": "okfm-decisions",
    "t": "Decision",
    "title": "DR-0005 — Bundle-relative in files, mesh-relative in the index",
-   "d": "The specification defines bundle-relative paths (`/rules/churn-billing.md`) and cross-bundle addressing (`okf://sp3d-rules/rules/churn-billing.md`), but never says how a bundle-relative path becomes…",
-   "v": null,
+   "d": "Bundle-relative inside a concept, plain relative in body links, and mesh-relative only in the generated index — the transformation is one-way and lives entirely in the index builder, so nothing inside a bundle ever stores a path that names its own bundle.",
+   "v": "human",
    "sa": null,
    "src": 1,
-   "drift": 1,
+   "drift": 0,
    "r": [],
    "scope": "project"
   },
@@ -365,7 +360,7 @@ const BOOTSTRAP = {
    "v": "human",
    "sa": null,
    "src": 1,
-   "drift": 0,
+   "drift": 1,
    "r": [],
    "scope": "project"
   },
@@ -374,11 +369,11 @@ const BOOTSTRAP = {
    "b": "okfm-decisions",
    "t": "Decision",
    "title": "DR-0007 — Two layers: a portable base, and an optional implementation",
-   "d": "OKFM is two layers — a base that is a specification, a guide and a viewer, and an optional reference implementation — and CI proves the base stands alone by deleting the implementation and validating anyway.",
+   "d": "OKFM is two layers — a base that is a specification, a guide and a web UI, and an optional reference implementation — and CI proves the base stands alone by deleting the implementation and validating anyway.",
    "v": "human",
    "sa": null,
    "src": 1,
-   "drift": 0,
+   "drift": 1,
    "r": [],
    "scope": "project"
   },
@@ -391,7 +386,7 @@ const BOOTSTRAP = {
    "v": "human",
    "sa": null,
    "src": 1,
-   "drift": 0,
+   "drift": 1,
    "r": [],
    "scope": "project"
   },
@@ -400,7 +395,7 @@ const BOOTSTRAP = {
    "b": "okfm-decisions",
    "t": "Decision",
    "title": "DR-0009 — Four adoption levels",
-   "d": "Four adoption levels, each usable on its own, with the boundary between 2 and 3 sitting exactly on the model line and credentials appearing only at 4 — because that is where the direction reverses and OKFM drives a provider instead of an agent driving OKFM.",
+   "d": "Three adoption levels, each usable on its own — a browser, then Python, then a model — with the credentialed case a variant of level 3 rather than a fourth level, because who holds the key is a change of direction and not another step up.",
    "v": "human",
    "sa": null,
    "src": 1,
@@ -413,11 +408,11 @@ const BOOTSTRAP = {
    "b": "okfm-decisions",
    "t": "Decision",
    "title": "DR-0010 — OKFM's own repository is the first mesh",
-   "d": "OKFM's own repository is the first mesh: one OKF per folder of documents under `.okfm/`, a generated master OKF over them, and federation's addressing half proven against real content rather than a demonstration built to be looked at.",
-   "v": null,
+   "d": "OKFM's own repository is the first mesh — one OKF per folder of documents under .okfm/, a generated master OKF over them, and federation's addressing half proven on real content. The master maps the mesh and deliberately does not run it.",
+   "v": "human",
    "sa": null,
    "src": 1,
-   "drift": 1,
+   "drift": 0,
    "r": [],
    "scope": "project"
   },
@@ -425,12 +420,12 @@ const BOOTSTRAP = {
    "p": "/okfm-decisions/0011-viewer-and-console.md",
    "b": "okfm-decisions",
    "t": "Decision",
-   "title": "DR-0011 — The viewer stays read-only; a console is a separate artifact",
+   "title": "DR-0011 — The web UI stays read-only; a console is a separate artifact",
    "d": "The read-only viewer stays one file that opens from disk and configuration editing goes to a separate served console, because write access would turn a browser-openable file into an install — and the CLI falls out of building the console rather than being designed against an imagined user.",
    "v": "human",
    "sa": null,
    "src": 1,
-   "drift": 0,
+   "drift": 1,
    "r": [],
    "scope": "project"
   },
@@ -693,7 +688,7 @@ const BOOTSTRAP = {
    "b": "okfm-level-1",
    "t": "Index",
    "title": "Level 1 — view",
-   "d": "Download the repository and open the viewer. Nothing to install, nothing to run.",
+   "d": "Download the repository and open the web UI. Nothing to install, nothing to run.",
    "v": null,
    "sa": null,
    "src": 0,
@@ -724,11 +719,11 @@ const BOOTSTRAP = {
    "b": "okfm-level-1",
    "t": "Document",
    "title": "The shipped mesh",
-   "d": "Six real bundles you can read, validate and copy — not a worked example built to be looked at.",
+   "d": "Seven real bundles you can read, validate and copy — a working mesh split on change cadence, not a demonstration built to be looked at.",
    "v": null,
    "sa": null,
    "src": 2,
-   "drift": 0,
+   "drift": 1,
    "r": [
     [
      "part_of",
@@ -738,15 +733,15 @@ const BOOTSTRAP = {
    "scope": "project"
   },
   {
-   "p": "/okfm-level-1/the-viewer.md",
+   "p": "/okfm-level-1/the-web-ui.md",
    "b": "okfm-level-1",
    "t": "Document",
-   "title": "The viewer",
-   "d": "A single HTML file that renders the whole mesh from disk — graph, health panel, closure ledger, drift.",
+   "title": "The web UI",
+   "d": "One HTML file that renders the whole mesh from disk — graph, health panel, closure ledger, drift in three states. Read-only, and that is what makes it the whole of level 1.",
    "v": null,
    "sa": null,
    "src": 2,
-   "drift": 0,
+   "drift": 1,
    "r": [
     [
      "part_of",
@@ -778,7 +773,7 @@ const BOOTSTRAP = {
    "b": "okfm-level-2",
    "t": "Document",
    "title": "Drift observation",
-   "d": "Reads every source, compares it to the hash the concept captured, and caches the verdict. Three states, never two.",
+   "d": "Reads every source, compares it to the hash the concept captured, and caches the observation. Three states, never two — and only a person clears drift, for the reason this document had to learn the hard way.",
    "v": "human",
    "sa": null,
    "src": 2,
@@ -885,11 +880,11 @@ const BOOTSTRAP = {
    "b": "okfm-level-2",
    "t": "Runbook",
    "title": "The pipeline",
-   "d": "One command that runs build, refresh, bake and validate in order and stops at the first failure.",
+   "d": "One command that runs build, refresh, bake and validate in order and stops at the first failure, so the second, misleading error never appears.",
    "v": null,
    "sa": null,
    "src": 2,
-   "drift": 0,
+   "drift": 1,
    "r": [
     [
      "part_of",
@@ -899,15 +894,15 @@ const BOOTSTRAP = {
    "scope": "project"
   },
   {
-   "p": "/okfm-level-2/the-viewer-bake.md",
+   "p": "/okfm-level-2/the-web-ui-bake.md",
    "b": "okfm-level-2",
    "t": "Document",
-   "title": "The viewer bake",
-   "d": "Regenerates the index the level 1 viewer reads, so viewer-versus-mesh drift is impossible rather than merely unlikely.",
+   "title": "The web UI bake",
+   "d": "Regenerates the index the level 1 web UI reads, so disagreement between the web UI and the mesh is a state that cannot exist rather than a bug you can have.",
    "v": null,
    "sa": null,
    "src": 2,
-   "drift": 0,
+   "drift": 1,
    "r": [
     [
      "part_of",
@@ -939,11 +934,29 @@ const BOOTSTRAP = {
    "scope": "project"
   },
   {
+   "p": "/okfm-level-3/federation-negotiation.md",
+   "b": "okfm-level-3",
+   "t": "Document",
+   "title": "Federation, the negotiation half",
+   "d": "Transport, agent interfaces and the feedback ledger — the half of federation that co-located bundles cannot prove, because what is missing is a member that can refuse.",
+   "v": null,
+   "sa": null,
+   "src": 1,
+   "drift": 1,
+   "r": [
+    [
+     "part_of",
+     "/okfm-level-3/index.md"
+    ]
+   ],
+   "scope": "project"
+  },
+  {
    "p": "/okfm-level-3/index.md",
    "b": "okfm-level-3",
    "t": "Index",
    "title": "Level 3 — enrichment",
-   "d": "Your agent writes what extraction cannot, a guard checks what it wrote, and you approve it. OKFM holds no credential.",
+   "d": "Your agent writes what extraction cannot, a guard checks it, and you approve. Its credentialed variant is where OKFM holds the key instead of your agent.",
    "v": null,
    "sa": null,
    "src": 0,
@@ -974,6 +987,42 @@ const BOOTSTRAP = {
    "scope": "project"
   },
   {
+   "p": "/okfm-level-3/packs.md",
+   "b": "okfm-level-3",
+   "t": "Document",
+   "title": "Packs",
+   "d": "Domain vocabulary and workflows as an overlay, so core carries no domain words and stays portable.",
+   "v": null,
+   "sa": null,
+   "src": 2,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-level-3/index.md"
+    ]
+   ],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-level-3/providers-and-keys.md",
+   "b": "okfm-level-3",
+   "t": "Document",
+   "title": "Providers and keys",
+   "d": "Two adapters, not four — OpenAI-compatible and Anthropic — plus a config list of endpoints, so adding a provider is a config line.",
+   "v": null,
+   "sa": null,
+   "src": 1,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/okfm-level-3/index.md"
+    ]
+   ],
+   "scope": "project"
+  },
+  {
    "p": "/okfm-level-3/the-agent-contract.md",
    "b": "okfm-level-3",
    "t": "Document",
@@ -991,6 +1040,50 @@ const BOOTSTRAP = {
     [
      "implements",
      "/okfm-level-3/the-enrichment-loop.md"
+    ]
+   ],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-level-3/the-benchmark.md",
+   "b": "okfm-level-3",
+   "t": "Document",
+   "title": "The benchmark",
+   "d": "Two arms over one corpus, blind grading, and a harness that reports what it found about this repository rather than producing a flattering number. The deterministic half runs today.",
+   "v": null,
+   "sa": null,
+   "src": 2,
+   "drift": 1,
+   "r": [
+    [
+     "part_of",
+     "/okfm-level-3/index.md"
+    ],
+    [
+     "evaluates",
+     "/okfm-mesh/index.md"
+    ]
+   ],
+   "scope": "project"
+  },
+  {
+   "p": "/okfm-level-3/the-console-app.md",
+   "b": "okfm-level-3",
+   "t": "Document",
+   "title": "The console app",
+   "d": "A served web UI that edits configuration and drives the loop — deliberately a second artifact, because giving the level 1 web UI write access would turn a browser-openable file into an install.",
+   "v": null,
+   "sa": null,
+   "src": 1,
+   "drift": 1,
+   "r": [
+    [
+     "part_of",
+     "/okfm-level-3/index.md"
+    ],
+    [
+     "differs_from",
+     "/okfm-level-1/the-web-ui.md"
     ]
    ],
    "scope": "project"
@@ -1044,7 +1137,7 @@ const BOOTSTRAP = {
    "v": null,
    "sa": null,
    "src": 2,
-   "drift": 0,
+   "drift": 1,
    "r": [
     [
      "part_of",
@@ -1075,139 +1168,6 @@ const BOOTSTRAP = {
     [
      "serves",
      "/okfm-level-3/the-enrichment-loop.md"
-    ]
-   ],
-   "scope": "project"
-  },
-  {
-   "p": "/okfm-level-4/federation-negotiation.md",
-   "b": "okfm-level-4",
-   "t": "Document",
-   "title": "Federation, the negotiation half",
-   "d": "Transport, agent interfaces, and the feedback ledger — the part of federation a single repository cannot prove.",
-   "v": null,
-   "sa": null,
-   "src": 1,
-   "drift": 0,
-   "r": [
-    [
-     "part_of",
-     "/okfm-level-4/index.md"
-    ]
-   ],
-   "scope": "project"
-  },
-  {
-   "p": "/okfm-level-4/index.md",
-   "b": "okfm-level-4",
-   "t": "Index",
-   "title": "Level 4 — the suite",
-   "d": "Providers, packs, the negotiation half of federation, and the benchmark. Mostly not built yet, and this bundle says which parts.",
-   "v": null,
-   "sa": null,
-   "src": 0,
-   "drift": 0,
-   "r": [
-    [
-     "registered_by",
-     "/okfm-mesh/index.md"
-    ],
-    [
-     "depends_on",
-     "/okfm-level-3/index.md"
-    ]
-   ],
-   "scope": "project"
-  },
-  {
-   "p": "/okfm-level-4/log.md",
-   "b": "okfm-level-4",
-   "t": "Log",
-   "title": "Level 4 changelog",
-   "d": "Append-only history of the suite.",
-   "v": null,
-   "sa": null,
-   "src": 0,
-   "drift": 0,
-   "r": [],
-   "scope": "project"
-  },
-  {
-   "p": "/okfm-level-4/packs.md",
-   "b": "okfm-level-4",
-   "t": "Document",
-   "title": "Packs",
-   "d": "Domain vocabulary and workflows as an overlay, so core carries no domain words and stays portable.",
-   "v": null,
-   "sa": null,
-   "src": 2,
-   "drift": 0,
-   "r": [
-    [
-     "part_of",
-     "/okfm-level-4/index.md"
-    ]
-   ],
-   "scope": "project"
-  },
-  {
-   "p": "/okfm-level-4/providers-and-keys.md",
-   "b": "okfm-level-4",
-   "t": "Document",
-   "title": "Providers and keys",
-   "d": "Two adapters, not four — OpenAI-compatible and Anthropic — plus a config list of endpoints, so adding a provider is a config line.",
-   "v": null,
-   "sa": null,
-   "src": 1,
-   "drift": 0,
-   "r": [
-    [
-     "part_of",
-     "/okfm-level-4/index.md"
-    ]
-   ],
-   "scope": "project"
-  },
-  {
-   "p": "/okfm-level-4/the-benchmark.md",
-   "b": "okfm-level-4",
-   "t": "Document",
-   "title": "The benchmark",
-   "d": "Two arms over one corpus, blind grading, and a harness that refuses to produce a flattering number. The deterministic half runs today.",
-   "v": null,
-   "sa": null,
-   "src": 2,
-   "drift": 0,
-   "r": [
-    [
-     "part_of",
-     "/okfm-level-4/index.md"
-    ],
-    [
-     "evaluates",
-     "/okfm-mesh/index.md"
-    ]
-   ],
-   "scope": "project"
-  },
-  {
-   "p": "/okfm-level-4/the-web-ui.md",
-   "b": "okfm-level-4",
-   "t": "Document",
-   "title": "The web UI",
-   "d": "A served console that edits configuration and drives the loop — the read-only viewer's counterpart, and the source of the CLI.",
-   "v": null,
-   "sa": null,
-   "src": 1,
-   "drift": 0,
-   "r": [
-    [
-     "part_of",
-     "/okfm-level-4/index.md"
-    ],
-    [
-     "differs_from",
-     "/okfm-level-1/the-viewer.md"
     ]
    ],
    "scope": "project"
@@ -1309,7 +1269,7 @@ const BOOTSTRAP = {
    "b": "okfm-mesh",
    "t": "OKF Member",
    "title": "Level 1 — view",
-   "d": "The download. The viewer, the shipped bundles, and pointing your own agent at the repository.",
+   "d": "The download. The web UI, the shipped bundles, and pointing your own agent at the repository.",
    "v": null,
    "sa": null,
    "src": 0,
@@ -1331,7 +1291,7 @@ const BOOTSTRAP = {
    "b": "okfm-mesh",
    "t": "OKF Member",
    "title": "Level 2 — build",
-   "d": "The deterministic pipeline — extraction, mirror mode, drift, validation, the viewer bake, telemetry. No model anywhere in it.",
+   "d": "The deterministic pipeline — extraction, mirror mode, drift, validation, the web UI bake, telemetry. No model anywhere in it.",
    "v": null,
    "sa": null,
    "src": 0,
@@ -1366,28 +1326,6 @@ const BOOTSTRAP = {
     [
      "registers",
      "/okfm-level-3/index.md"
-    ]
-   ],
-   "scope": "project"
-  },
-  {
-   "p": "/okfm-mesh/members/level-4-suite.md",
-   "b": "okfm-mesh",
-   "t": "OKF Member",
-   "title": "Level 4 — the suite",
-   "d": "Providers, packs, federation's negotiation half, the web UI, and the benchmark. One component works; the bundle says which.",
-   "v": null,
-   "sa": null,
-   "src": 0,
-   "drift": 0,
-   "r": [
-    [
-     "part_of",
-     "/okfm-mesh/index.md"
-    ],
-    [
-     "registers",
-     "/okfm-level-4/index.md"
     ]
    ],
    "scope": "project"

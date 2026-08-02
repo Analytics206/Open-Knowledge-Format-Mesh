@@ -1,7 +1,7 @@
 ---
 type: OKF Member
 title: Level 2 — build
-description: The deterministic pipeline — extraction, mirror mode, drift, validation, the viewer bake, telemetry. No model anywhere in it.
+description: The deterministic pipeline — extraction, mirror mode, drift, validation, the web UI bake, telemetry. No model anywhere in it.
 resource: ../../level-2-build
 status: stable
 tags: [level-2, deterministic, drop-in]

@@ -26,7 +26,7 @@ smuggle central authority back into a design that exists to prevent it.
 | [okfm-level-1](members/level-1-view.md) | the download — viewer, bundles, your own agent |
 | [okfm-level-2](members/level-2-build.md) | the deterministic build |
 | [okfm-level-3](members/level-3-enrich.md) | the enrichment loop |
-| [okfm-level-4](members/level-4-suite.md) | providers, packs, federation, the benchmark |
+| [okfm-level-4](members/level-3-enrich.md) | providers, packs, federation, the benchmark |
 | [okfm-guide](members/guide.md) | the format, and a bundle that demonstrates it |
 | [okfm-decisions](members/decisions.md) | why this project is shaped the way it is |
 
@@ -49,13 +49,13 @@ theatre; splitting it on a real seam is what makes cross-bundle pinning mean som
 # What this proves, and what it does not
 
 **Proves:** the registry pattern, `OKF Member` concepts, mesh-level progressive disclosure,
-cross-bundle references, and a viewer rendering seven bundles at once.
+cross-bundle references, and a web UI rendering seven bundles at once.
 
 **Does not prove:** transport, an agent as the access-control point, or feedback between
 separate accountable owners. These bundles are co-located under one steward and resolve
 in-process, which §12.6 permits explicitly — *"do not make them converse through chat
 completions for theater."* What is missing is a member that can **refuse**, and that needs a
-bundle somewhere else. See [level 4](members/level-4-suite.md).
+bundle somewhere else. See [level 4](members/level-3-enrich.md).
 
 See [DR-0010](../../docs/decisions/0010-okfm-self-hosts-as-a-mesh.md) for how the mesh got
 here, including the parts of that record this layout has since overtaken.

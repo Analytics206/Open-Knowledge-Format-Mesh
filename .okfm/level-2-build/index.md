@@ -35,7 +35,7 @@ Python 3.13, standard library only, no install step.
 | [Mirror mode](mirror-mode.md) | decides where concepts land and whether your files are touched |
 | [Drift observation](drift-observation.md) | notices when a source stopped matching its concept |
 | [Validation](validation.md) | conformance, the profile rules, and the strip test |
-| [The viewer bake](the-viewer-bake.md) | regenerates the index the level 1 viewer reads |
+| [The web UI bake](the-web-ui-bake.md) | regenerates the index the level 1 viewer reads |
 | [Telemetry](telemetry.md) | one record per run, so a run can be reconstructed later |
 
 # Where the line is

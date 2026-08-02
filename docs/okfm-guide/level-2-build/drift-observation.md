@@ -15,7 +15,7 @@ at this moment* — not verdicts. The verdict is still computed from them.
 `unknown` all the way through the cache, the index, the filters, and the health panel.
 
 Defaulting `unknown` to fresh is the specific failure this design exists to prevent, and it
-is easy to reintroduce by accident: the viewer once tested `if (concept.drift)`, which turned
+is easy to reintroduce by accident: the web UI once tested `if (concept.drift)`, which turned
 every `null` into a clean bill of health. A truthy check is how two states come back.
 
 # Live pointers are not resolved here

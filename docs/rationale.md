@@ -32,7 +32,7 @@ Why the system is shaped this way: what changed against earlier drafts, what the
 | 11 | Adoption Profile: an Analytics Domain | [`docs/roadmap.md`](../docs/roadmap.md) |
 | 12 | Federation — the OKF Mesh | [`spec/okfm-v0.2.1.md`](../spec/okfm-v0.2.1.md) |
 | 13 | Drop-In Instantiation and Distribution | [`spec/okfm-v0.2.1.md`](../spec/okfm-v0.2.1.md) |
-| 14 | The Mesh Viewer | [`spec/okfm-v0.2.1.md`](../spec/okfm-v0.2.1.md) |
+| 14 | The Mesh Web UI | [`spec/okfm-v0.2.1.md`](../spec/okfm-v0.2.1.md) |
 | 15 | Roadmap | [`docs/roadmap.md`](../docs/roadmap.md) |
 | 16 | Adoption Profile: retrofitting a loop that already runs | [`docs/roadmap.md`](../docs/roadmap.md) |
 | 17 | Deferred — Parking Lot with Re-entry Triggers | [`docs/roadmap.md`](../docs/roadmap.md) |
@@ -211,7 +211,7 @@ The first two work at any volume. Statistical learning from telemetry is a later
 
 > Moved to [`spec/okfm-v0.2.1.md`](../spec/okfm-v0.2.1.md).
 
-## 14. The Mesh Viewer
+## 14. The Mesh Web UI
 
 > Moved to [`spec/okfm-v0.2.1.md`](../spec/okfm-v0.2.1.md).
 

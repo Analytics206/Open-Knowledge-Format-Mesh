@@ -52,13 +52,13 @@ extraction produced them, nobody has reviewed them.
 # Two scopes, and what they mean
 
 `okfm_scope: guide` — teaching material. Excluded from health statistics, the injected index,
-and benchmark corpora everywhere, including here. It renders in the viewer and counts toward
+and benchmark corpora everywhere, including here. It renders in the web UI and counts toward
 nothing.
 
 `okfm_scope: project` — OKFM's own knowledge about itself. Counted in *this* repository's
 statistics, because the decision records genuinely are this project's mesh. An adopter who
 vendors OKFM adds `project` to their `exclude_scopes` so it stays out of theirs.
 
-A first finding from standing the mesh up: the viewer hardcodes the excluded scope to
+A first finding from standing the mesh up: the web UI hardcodes the excluded scope to
 `guide` rather than reading `exclude_scopes` from configuration. Correct today by
 coincidence rather than by construction, and worth fixing when `okfm view` is built.

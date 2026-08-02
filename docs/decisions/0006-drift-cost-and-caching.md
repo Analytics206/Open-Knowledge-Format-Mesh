@@ -29,20 +29,20 @@ Four statements in the specification could not all be true at once.
 | §3.4 | Trust tier, staleness, **drift**, and reconciliation are computed at read time, never stored |
 | §8.3 | Drift costs one resolution per pointer |
 | §8.5 | Every run opens with an index injection, and rule 4 promises zero overhead when absent |
-| §14.4 | The viewer computes drift **at render time** |
+| §14.4 | The web UI computes drift **at render time** |
 
 If drift is derived on every read, and injection is a read at the start of every run, every
 run pays one resolution per pointer. For a `file://` pointer that is a stat and a hash. For
 `sys://sp3d-db/query/monthly_churn.sql` it is a database round trip, on a credentialed
 connection, before the agent has done anything.
 
-§14.4 also requires the viewer to hold store credentials, which routes around §12.6's rule
+§14.4 also requires the web UI to hold store credentials, which routes around §12.6's rule
 that the owning agent is the access-control point.
 
 ## Decision
 
 **Drift is observed during the build. Nothing resolves it at read time — not the injected
-index, not the viewer, not an agent.**
+index, not the web UI, not an agent.**
 
 §3.4 was right about three signals and wrong about the fourth. They differ by orders of
 magnitude in cost, and the difference is not incidental:
@@ -83,7 +83,7 @@ to trust.
 
 Two states force a default, and the default is always the same lie: an unobserved pointer
 renders as fresh. That is the failure §3.4 exists to prevent, reintroduced through a default
-value. `unknown` renders as unknown — in the index, in the viewer, and in CI.
+value. `unknown` renders as unknown — in the index, in the web UI, and in CI.
 
 A mesh that has never been built reports every pointer `unknown`. That is correct, and it is
 the honest first-run state.
@@ -129,7 +129,7 @@ the cache, and reports newly-drifted concepts into the review queue.
 Runs on a schedule, on demand, or in CI as `okfm refresh --check`, which fails on drift in
 `stable` concepts. It is the only component that touches a live source.
 
-The viewer and the injected index read the cache and show observation age beside the state.
+The web UI and the injected index read the cache and show observation age beside the state.
 Neither holds a credential, and §12.6's access-control boundary holds.
 
 ## The payoff
@@ -145,7 +145,7 @@ same number, and the measurement becomes a check that builds run at the configur
 
 Six specification edits: §3.4 (separate drift from the read-time signals), §8.3 (name the
 cache), §8.4 (the build is the trigger), §8.5 (injection never resolves), §13.4 (the `drift`
-config block), §14.4 (the viewer reads the cache and holds no credentials).
+config block), §14.4 (the web UI reads the cache and holds no credentials).
 
 None changes a stored field, so no bundle migrates.
 

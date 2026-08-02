@@ -1,15 +1,16 @@
 ---
 type: Decision
 title: "DR-0010 — OKFM's own repository is the first mesh"
-description: "OKFM's own repository is the first mesh: one OKF per folder of documents under `.okfm/`, a generated master OKF over them, and federation's addressing half proven against real content rather than a demonstration built to be looked at."
+description: "OKFM's own repository is the first mesh — one OKF per folder of documents under .okfm/, a generated master OKF over them, and federation's addressing half proven on real content. The master maps the mesh and deliberately does not run it."
 status: draft
+verified: { by: "human:analytics206", at: 2026-08-02T03:08:50Z }
 tags: [mesh, federation, self-hosting]
 generated: { by: "agent:claude-opus-5", at: 2026-08-02T02:07:15Z }
 sources:
   - id: self
     resource: /0010-okfm-self-hosts-as-a-mesh.md
     okfm_role: subject
-    okfm_captured: { hash: "sha256:2b67346d647d548c...", at: 2026-08-01 }
+    okfm_captured: { hash: "sha256:66dd4977a4231d7add92f6faa87a8f47c82d3e63193deb840f14cd5a560c1a05", at: 2026-08-01 }
 okfm_scope: project
 ---
 # DR-0010 — OKFM's own repository is the first mesh
@@ -32,12 +33,12 @@ viewer and sees a single bundle, which is exactly the thing OKFM says is not eno
 ## Decision
 
 **Each adoption level is its own bundle, with a registry bundle over them.** OKFM's
-repository becomes a working mesh of five bundles, and the viewer opens on the thing the
+repository becomes a working mesh of five bundles, and the web UI opens on the thing the
 project is about.
 
 ```text
 okfm-registry/          the map — one OKF Member concept per bundle below
-okfm-guide/             level 1 — the format, the guide, the viewer
+okfm-guide/             level 1 — the format, the guide, the web UI
 okfm-process/           level 2 — the deterministic build
 okfm-enrich/            level 3 — the reasoning components
 okfm-suite/             level 4 — providers, packs, federation, workflows
@@ -53,7 +54,7 @@ about.
 
 **What it genuinely proves:** the registry bundle, `OKF Member` concepts, mesh-level
 progressive disclosure, cross-bundle references with commit pinning, cross-bundle drift, and
-a viewer rendering more than one bundle. All of that is real and none of it currently exists.
+a web UI rendering more than one bundle. All of that is real and none of it currently exists.
 
 **What it does not prove:** transport, an agent as the access-control point, or feedback
 between separate accountable owners. Co-located bundles under one steward call in-process,
@@ -91,7 +92,7 @@ But this record splits federation in two, and the cheap half is nearly free:
 
 | Half | Contains | When |
 |---|---|---|
-| **Addressing** | registry bundle, `OKF Member`, cross-bundle refs, pinning, cross-bundle drift, multi-bundle viewer | **Phase 1** — the content already exists |
+| **Addressing** | registry bundle, `OKF Member`, cross-bundle refs, pinning, cross-bundle drift, multi-bundle web UI | **Phase 1** — the content already exists |
 | **Negotiation** | agent interfaces, transport, feedback inbox/outbox, cross-owner routing | after the port, per DR-0003 |
 
 DR-0003 should be amended rather than reversed: the addressing half moves into Phase 1
@@ -131,7 +132,7 @@ Two real members with genuine content beat five with four restating a README.
 Real but small:
 
 - The guide's concepts move from `okfm-guide/` root into a bundle that is now one member
-  among five. The viewer's baked index gains a `bundles` array with five entries instead of
+  among five. The web UI's baked index gains a `bundles` array with five entries instead of
   one — it already supports this; the field exists and is unused.
 - Four new bundles need real concepts, not stubs. The content largely exists already — each
   level's design is written down in this decision record set — but it has to be authored as
@@ -172,7 +173,7 @@ a subtree, or the top-level files — are config keys.
 
 **The master OKF is generated.** `build.py` writes the mesh: one `OKF Member` concept per
 bundle plus the map. A map maintained by hand disagrees with its territory eventually, and the
-disagreement is silent — the same argument that already made the viewer index generated rather
+disagreement is silent — the same argument that already made the web UI index generated rather
 than checked.
 
 ### What this cost, and one thing it caught
@@ -206,3 +207,24 @@ decision records genuinely are this project's mesh. An adopter who vendors OKFM 
 **A hosted instance is Phase 4**, with the negotiation half of federation. The local mesh
 proves addressing; transport is the thing a hosted member adds, and transport is Phase 4
 work per [DR-0003](0003-phase-ordering.md).
+
+## Amendment 2026-08-02 — the master OKF maps the mesh; it does not run it
+
+Asked directly and answered: **no orchestrator.** The master OKF owns membership and nothing
+else.
+
+Three things "running the mesh" could have meant, and where each landed:
+
+| Reading | Verdict |
+|---|---|
+| Routes questions to member bundles and gathers answers | No. That is an agent's job, and it belongs to federation's negotiation half. |
+| Drives the build — reads the mesh to decide what to rebuild | No. The build reads configuration; the mesh is an output of the build, and a thing that is both input and output of the same process is a loop waiting to be discovered. |
+| Owns membership as data | Yes, and it already does. |
+
+The reason is the one §12.2 gives and this record has stated from the start: index-*over*,
+not authority-*over*. A registry that orchestrates has to decide, and a thing that decides on
+behalf of bundles it does not own is a central authority wearing a map's clothes — which is
+the failure mode federation exists to avoid.
+
+This closes the "registry location still open" note in the status line above. The location is
+`.okfm/mesh/`, its job is the map, and the job is not going to grow.

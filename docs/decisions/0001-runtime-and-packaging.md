@@ -25,7 +25,7 @@ okfm_scope: project
 ## Scope
 
 [DR-0007](0007-two-layers.md) splits OKFM in two: a **base** that is a specification, a
-guide, and a viewer, and a **reference implementation** that is optional. This record is
+guide, and a web UI, and a **reference implementation** that is optional. This record is
 about the implementation only.
 
 [DR-0009](0009-adoption-levels.md) then splits the implementation by level, and the levels
@@ -78,7 +78,7 @@ CI runs 3.13, so the supported version is the tested one.
 ## Why Python
 
 Attesters are Python by specification (§6.6, §9), so a Python implementation runs them
-without a bridge. The viewer is already dependency-free HTML and needs no toolchain of its
+without a bridge. The web UI is already dependency-free HTML and needs no toolchain of its
 own.
 
 Rejected: **Node/TypeScript** (attesters would need a second runtime), **Go** and **Rust**

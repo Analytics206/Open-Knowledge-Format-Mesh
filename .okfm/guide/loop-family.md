@@ -54,7 +54,7 @@ because the writer need not be the confirmer.
 
 # Closing the loop is the measurable part
 
-A `Decision` with no `Outcome` is an open loop. The viewer draws every goal as a
+A `Decision` with no `Outcome` is an open loop. The web UI draws every goal as a
 five-slot track with the missing slots as visible gaps, precisely so that a mesh full
 of decisions and empty of outcomes cannot look healthy.
 

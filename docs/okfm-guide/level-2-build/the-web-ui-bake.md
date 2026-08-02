@@ -1,6 +1,6 @@
 # Generated, not checked
 
-The index inside [`okfm-viewer.html`](../../../okfm-viewer.html) is written by this component and
+The index inside [`okfm-web-ui.html`](../../../okfm-web-ui.html) is written by this component and
 verified by `--check`, which fails if the committed copy disagrees with the mesh.
 
 That ordering matters. The obvious alternative — maintain the index by hand, add a test that
@@ -14,7 +14,7 @@ else is a derivation, never edited.
 
 In: path, bundle, title, type, status, trust inputs, relations, drift state.
 
-Out: concept bodies. The viewer sends you to the file on disk instead. A single file
+Out: concept bodies. The web UI sends you to the file on disk instead. A single file
 containing every concept's prose is a complete second copy of the bundle, and a second copy
 contaminates any control arm it is left lying around near — a trap borrowed from a published
 benchmark rather than learned here.

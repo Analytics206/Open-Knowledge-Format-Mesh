@@ -5,7 +5,7 @@ python okfm/okfm.py           # build --apply, refresh, view, check
 python okfm/okfm.py --check   # the same four, writing nothing
 ```
 
-`--check` is what CI runs: the build dry-runs, and drift and the viewer index fail on
+`--check` is what CI runs: the build dry-runs, and drift and the web UI index fail on
 mismatch instead of updating. One command, because that is the command the README gives
 people — if CI needs a different incantation than the documentation, one of them is wrong.
 

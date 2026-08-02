@@ -47,7 +47,7 @@ _DESC = re.compile(r"^description:[ \t]*(.+)$", re.M)
 
 # Anything that is a derivation of a bundle rather than a source. Removing the bundle and
 # leaving one of these behind is the contamination trap in §18.3.
-DERIVATIONS = ["okfm-viewer.html", "okfm-index.json"]
+DERIVATIONS = ["okfm-web-ui.html", "okfm-index.json"]
 
 SKIP_DIRS = {".git", ".github", "node_modules", "__pycache__", ".okfm-cache", "runs"}
 

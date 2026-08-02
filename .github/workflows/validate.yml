@@ -31,7 +31,7 @@ jobs:
       #
       # One command, because that is the command an adopter runs. If CI needs a
       # different incantation than the README gives people, one of them is wrong.
-      # --check writes nothing: build dry-runs, drift and the viewer index fail on
+      # --check writes nothing: build dry-runs, drift and the web UI index fail on
       # mismatch instead of updating.
       - name: The level 2 pipeline
         run: python dropin/okfm.py --check

@@ -1,7 +1,7 @@
 # The half that already shipped
 
 Federation splits cleanly in two, and the cheap half is done: a registry bundle, `OKF Member`
-concepts, cross-bundle references, commit pinning, and a viewer that renders more than one
+concepts, cross-bundle references, commit pinning, and a web UI that renders more than one
 bundle. [`okfm-mesh/`](../../../.okfm/mesh/index.md) is that half, running, with six members.
 
 # The half that has not

@@ -196,7 +196,7 @@ def synthesize_config(root: Path) -> dict:
         "bundle": ".okfm",
         "mesh": "mesh",
         "mode": "mirror",
-        "viewer": {"path": "../okfm-viewer.html"},
+        "web_ui": {"path": "../okfm-web-ui.html"},
         "index": {"max_concepts": 60, "priority_types": []},
         "exclude_scopes": ["guide"],
     }

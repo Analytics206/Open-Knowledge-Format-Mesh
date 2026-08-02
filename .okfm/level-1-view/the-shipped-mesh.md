@@ -1,9 +1,9 @@
 ---
 type: Document
 title: The shipped mesh
-description: Six real bundles you can read, validate and copy — not a worked example built to be looked at.
+description: "Seven real bundles you can read, validate and copy — a working mesh split on change cadence, not a demonstration built to be looked at."
 status: draft
-generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
+generated: { by: "agent:claude-opus-5", at: 2026-08-02T03:09:28Z }
 sources:
   - id: doc
     resource: ../../docs/okfm-guide/level-1-view/the-shipped-mesh.md

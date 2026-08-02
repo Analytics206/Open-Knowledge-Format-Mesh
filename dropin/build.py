@@ -154,7 +154,7 @@ def write_mesh(cfg: dict, out_root: Path, mesh_name: str, built: list[tuple[str,
 
     The mesh is the point of the format, so a project that ends up with four bundles and no
     way to say how they relate has been given the parts and not the thing. It is generated
-    rather than authored for the same reason the viewer index is: a map maintained by hand
+    rather than authored for the same reason the web UI index is: a map maintained by hand
     disagrees with the territory eventually, and the disagreement is silent.
 
     It owns the map and never member content -- index-*over*, not authority-*over*.
@@ -181,7 +181,7 @@ def write_mesh(cfg: dict, out_root: Path, mesh_name: str, built: list[tuple[str,
             "okfm_relations:",
             "  - { predicate: part_of, target: /index.md }",
             # Mesh-absolute, and the reason this edge exists at all: without it the mesh
-            # knows its members and the graph does not. Filter a viewer to the registry and
+            # knows its members and the graph does not. Filter a web UI to the registry and
             # one member bundle and nothing connects them -- which is the single
             # relationship a mesh is for.
             f"  - {{ predicate: registers, "

@@ -1,9 +1,9 @@
 ---
 type: Runbook
 title: The pipeline
-description: One command that runs build, refresh, bake and validate in order and stops at the first failure.
+description: "One command that runs build, refresh, bake and validate in order and stops at the first failure, so the second, misleading error never appears."
 status: draft
-generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
+generated: { by: "agent:claude-opus-5", at: 2026-08-02T03:09:28Z }
 sources:
   - id: doc
     resource: ../../docs/okfm-guide/level-2-build/the-pipeline.md

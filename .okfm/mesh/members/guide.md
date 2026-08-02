@@ -32,7 +32,7 @@ ownership seam separating this bundle from the others: not size, but blast radiu
 
 # Notes
 
-Every concept carries `okfm_scope: guide`, so the guide renders in the viewer and counts
+Every concept carries `okfm_scope: guide`, so the guide renders in the web UI and counts
 toward nothing — not health statistics, not the injected index, not a benchmark corpus.
 
 Deletable. `rm -rf okfm-guide/` is the whole procedure, and this member concept becomes a

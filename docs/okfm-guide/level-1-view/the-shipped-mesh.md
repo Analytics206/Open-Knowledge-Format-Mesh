@@ -21,7 +21,7 @@ source file can answer. See [prior art](../../../docs/prior-art.md) §21.1.
 # The guide is deletable
 
 `rm -rf okfm-guide/` is the entire removal procedure. Every concept in it carries
-`okfm_scope: guide`, which the default config excludes — so the guide renders in the viewer
+`okfm_scope: guide`, which the default config excludes — so the guide renders in the web UI
 and counts toward nothing: not health statistics, not the injected index, not a benchmark
 corpus.
 
@@ -31,7 +31,7 @@ and it is worth proving on something harmless.
 
 # Honest about its own state
 
-Most concepts here are `status: draft` with no `verified` entry, so the viewer reads them as
+Most concepts here are `status: draft` with no `verified` entry, so the web UI reads them as
 unverified. That is accurate rather than broken — deterministic extraction produced them and
 nobody has reviewed them. Adding a `verified` line you did not earn is the one thing the
 specification forbids outright.

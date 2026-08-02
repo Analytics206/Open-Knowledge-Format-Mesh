@@ -3,14 +3,19 @@
 
     python dev/check_levels.py
 
-The four adoption levels are only meaningful if they are made of something checkable. They
+The three adoption levels are only meaningful if they are made of something checkable. They
 are: each component concept carries `okfm_needs`, drawn from the exposure ladder in
 decisions/0008 — `[]` < `human` < `model` < `secrets` — and each level admits a prefix of it.
 
     level 1   nothing.        A download. No component runs at all.
     level 2   + human.        Deterministic; a person may have to decide something.
-    level 3   + model.        Something in the workflow has to reason.
-    level 4   + secrets.      OKFM drives a provider, so OKFM holds a key.
+    level 3   + model, secrets. Something in the workflow has to reason.
+
+Level 3 admits `secrets` because its credentialed variant is where OKFM drives a provider
+rather than an agent driving OKFM. That was a fourth level for a while and collapsed: the
+ladder asks for a browser, then Python, then a model, and there is nothing further to ask
+for. Who holds the key is a change of direction, not another step up — and `okfm_needs`
+records it either way, which is where the distinction actually does work.
 
 A component's needs set is a **floor**, not an equality. `guard.py` needs nothing
 mechanically and still belongs to level 3, because there is nothing to guard until something
@@ -34,7 +39,7 @@ FM = re.compile(r"\A---\r?\n(.*?)\r?\n---\r?\n", re.S)
 NEEDS = re.compile(r"^okfm_needs:[ \t]*(\[.*?\]|\n(?:[ \t]*-.*\n?)+)", re.M)
 
 LADDER = ["human", "model", "secrets"]
-ALLOWED = {1: set(), 2: {"human"}, 3: {"human", "model"}, 4: {"human", "model", "secrets"}}
+ALLOWED = {1: set(), 2: {"human"}, 3: {"human", "model", "secrets"}}
 
 
 def utf8_stdout() -> None:

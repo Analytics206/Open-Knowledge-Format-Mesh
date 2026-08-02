@@ -30,16 +30,20 @@ default with no configuration: `docs/` is found, each subfolder becomes a bundle
 files at the top become one, and the mesh maps them. Point it somewhere other than `docs/`,
 drop a subtree, or skip the top-level files by editing three lines in `.okfm/okfm.json`.
 
-## Four levels
+## Three levels
 
 Each level includes the one below it. Stop wherever the value stops being worth the cost.
 
 | | What you do | What OKFM needs from you |
 |---|---|---|
-| **1 — view** | Download it. Open the viewer. Read the guide. | a browser |
+| **1 — view** | Download it. Open the web UI. Read the guide. | a browser |
 | **2 — build** | Paste one folder into your project and run one command. | Python 3.13 |
 | **3 — enrichment** | Let your own agent fill in what extraction cannot. | an agent you already use |
-| **4 — the suite** | Providers, packs, federation, workflows. | an API key |
+
+Level 3 has a **credentialed variant**: providers, packs, federation's negotiation half, the
+console app, and the benchmark, where OKFM drives a provider instead of your agent driving
+OKFM. That is a change of direction rather than a fourth level — the ladder asks for a
+browser, then Python, then a model, and there is nothing further to ask for.
 
 Levels 1 and 2 never need a model or a key. That is enforced in CI by
 [`dev/check_levels.py`](dev/check_levels.py), which reads the `okfm_needs` field on every
@@ -56,12 +60,12 @@ runs, and there is no CLI yet.
 | | |
 |---|---|
 | Specification, rationale, roadmap, prior art | ✅ |
-| The mesh — 8 bundles, 63 concepts, self-hosted | ✅ |
-| `okfm-viewer.html` — graph, closure ledger, health panel | ✅ works offline |
+| The mesh — 7 bundles, 60 concepts, self-hosted | ✅ |
+| `okfm-web-ui.html` — graph, closure ledger, health panel | ✅ works offline |
 | `dropin/` — paste into a project, build a mesh | ✅ level 2, deterministic |
 | `templates/AGENTS.md`, enrich / guard / revalidate | ✅ level 3 |
 | Benchmark harness | ✅ prototype — deterministic half, placeholder questions |
-| `okfm` CLI, live resolvers, web console | ⬜ Phase 2 |
+| `okfm` CLI, live resolvers, console app | ⬜ Phase 2 |
 | Providers, packs, federation's negotiation half | ⬜ Phase 3+ |
 
 See the [roadmap](docs/roadmap.md) for phases, and [decisions](docs/decisions/index.md) for
@@ -75,7 +79,7 @@ what is settled and what is open.
 git clone https://github.com/Analytics206/Open-Knowledge-Format-Mesh
 ```
 
-Open `okfm-viewer.html` in a browser. No server, no build, no dependencies.
+Open `okfm-web-ui.html` in a browser. No server, no build, no dependencies.
 
 You get the mesh as a graph, coloured by concept type, with a health panel and a closure
 ledger. Then read [`.okfm/guide/index.md`](.okfm/guide/index.md) — every file in that folder
@@ -123,15 +127,15 @@ your own tool. Drafts stop at `status: draft` until a human says otherwise.
 The whole contract is one file: [`templates/AGENTS.md`](templates/AGENTS.md). Copy it into
 your project as whatever your agent reads.
 
-## Level 4 — the full suite *(Phase 3+)*
+## Level 3, credentialed *(Phase 3+)*
 
-Providers, packs, federation's negotiation half, the web console, and the benchmark. Two
+Providers, packs, federation's negotiation half, the console app, and the benchmark. Two
 adapters — OpenAI-compatible and Anthropic — plus a config list of endpoints, so adding a
 provider is a config line rather than code. Local models via Ollama are a supported path:
 enrichment is short, bounded, repetitive work that a small local model handles well.
 
-The direction reverses at this level: OKFM drives a provider instead of your agent driving
-OKFM, which is why a key appears here and nowhere earlier.
+The direction reverses here: OKFM drives a provider instead of your agent driving OKFM, which
+is why a key appears at this point and nowhere earlier.
 
 ---
 
@@ -142,13 +146,12 @@ OKFM, which is why a key appears here and nowhere earlier.
   mesh/                  the master OKF: one OKF Member concept per bundle
   level-1-view/          ┐
   level-2-build/         │ one OKF per adoption level, built from docs/okfm-guide/
-  level-3-enrich/        │
-  level-4-suite/         ┘
+  level-3-enrich/        ┘
   docs/                  the loose documents at the top of docs/
   guide/                 the format, and a bundle that demonstrates it
 
 docs/                    the documents the mesh is built from
-  okfm-guide/            raw material for the four level bundles
+  okfm-guide/            raw material for the three level bundles
   rationale.md           why the system is shaped this way
   roadmap.md             phases, open questions, success measures
   prior-art.md           the ecosystem, and the measurements that went against us
@@ -156,8 +159,8 @@ docs/                    the documents the mesh is built from
 
 spec/okfm-v0.2.1.md      normative — what makes a bundle a legal OKFM bundle
 dropin/                  the level 2 build — paste this into a project as .okfm/
-benchmark/               the level 4 benchmark harness — prototype
-okfm-viewer.html         read-only viewer — opens from disk, for people not agents
+benchmark/               the benchmark harness — prototype
+okfm-web-ui.html         read-only, opens from disk — for people, not agents
 okfm.json                this repository's config; it self-hosts its own mesh
 templates/               AGENTS.md and a starter bundle — copy these
 dev/                     this repository's own maintenance scripts
@@ -173,7 +176,7 @@ saying where every section lives.
 `docs/decisions/` is in place — those files *are* the concepts — so burying them in a hidden
 folder would trade away the one thing they are good for. The mesh registers both by path.
 
-**Nothing generated is ever edited.** The viewer's index, the master OKF, and the drift cache
+**Nothing generated is ever edited.** The web UI's index, the master OKF, and the drift cache
 are all regenerated by the build and fail CI when the committed copy disagrees. A map
 maintained by hand disagrees with its territory eventually, and the disagreement is silent.
 
@@ -203,7 +206,7 @@ a concept summarised a validator and the agent stopped there. See
 observed during the build and cached. A stored verdict is a stored opinion with an expiry date.
 
 **No duplicate knowledge.** Knowledge lives in one place and is referenced everywhere else.
-Rendered views, exports, and caches are derivations, never edited. This is why the viewer never
+Rendered views, exports, and caches are derivations, never edited. This is why the web UI never
 embeds concept bodies.
 
 **Extraction is not drafting.** Copying a sentence that already exists cannot invent; writing a

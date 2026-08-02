@@ -1,14 +1,14 @@
 ---
 type: OKF Member
 title: Level 1 — view
-description: The download. The viewer, the shipped bundles, and pointing your own agent at the repository.
+description: The download. The web UI, the shipped bundles, and pointing your own agent at the repository.
 resource: ../../level-1-view
 status: stable
 tags: [level-1, viewer, no-install]
 generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
 okfm_member:
   owner: "human:analytics206"
-  aliases: ["level 1", "the viewer level"]
+  aliases: ["level 1", "the web UI level"]
   agent: null
   sync_policy: pull
 okfm_scope: project
@@ -20,7 +20,7 @@ okfm_relations:
 
 # Scope
 
-Owns the three things you get without running anything: the viewer, the bundles it renders,
+Owns the three things you get without running anything: the web UI, the bundles it renders,
 and the practice of handing the repository to an agent you already use.
 
 Does not own the format. That is [`okfm-guide`](guide.md) and the specification.

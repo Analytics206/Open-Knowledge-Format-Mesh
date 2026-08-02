@@ -60,7 +60,7 @@ A reader never has to ask which OKF version a given OKFM release speaks. Documen
 | 11 | Adoption Profile: an Analytics Domain | [`docs/roadmap.md`](../docs/roadmap.md) |
 | 12 | Federation — the OKF Mesh | *this document* |
 | 13 | Drop-In Instantiation and Distribution | *this document* |
-| 14 | The Mesh Viewer | *this document* |
+| 14 | The Mesh Web UI | *this document* |
 | 15 | Roadmap | [`docs/roadmap.md`](../docs/roadmap.md) |
 | 16 | Adoption Profile: retrofitting a loop that already runs | [`docs/roadmap.md`](../docs/roadmap.md) |
 | 17 | Deferred — Parking Lot with Re-entry Triggers | [`docs/roadmap.md`](../docs/roadmap.md) |
@@ -800,15 +800,15 @@ does not.
 This is the primary architectural constraint, and it is stricter than "well-factored
 code": **anything that cannot be handed to a stranger does not belong in core.**
 
-### 13.2 Two layers, four levels
+### 13.2 Two layers, three levels
 
-**OKFM is a format contract that installs nothing, plus a reference implementation that is
+**OKFM is a format contract you take as one folder, plus a reference implementation that is
 optional and replaceable.** Someone who writes their own implementation against this
 specification has an OKFM implementation; the base is what they conformed to.
 
 | Layer | Contains | Installs |
 |---|---|---|
-| **Base** | this specification, the schema, the guide bundle, the viewer, templates, examples, and the deterministic build | nothing beyond a runtime |
+| **Base** | this specification, the schema, the guide bundle, the web UI, templates, examples, and the deterministic build | nothing beyond a runtime |
 | **Implementation** | CLI, reasoning components, providers, packs, federation, console, benchmark | the reference implementation |
 
 An adopter engages at one of four **levels**, each cumulative, each a complete and usable
@@ -853,7 +853,7 @@ okfm/
   NOTICE                     # Apache-2.0 attribution for OKF (§13.8)             ✓
   okfm.json                  # this repo's own config — it self-hosts the guide   ✓
   okfm.schema.json           # config schema
-  okfm-viewer.html           # the mesh viewer (§14)                              ✓
+  okfm-web-ui.html           # the mesh viewer (§14)                              ✓
   spec/
     okfm-v0.2.1.md           # normative specification                            ✓
   # ---- documents: what a person reads and edits. Never written to. -------
@@ -861,7 +861,7 @@ okfm/
     rationale.md             # §0-2, §22 — why the system is shaped this way      ✓
     roadmap.md               # §4, §11, §15-17, §19-20 — assets, phases, measures ✓
     prior-art.md             # §21 — ecosystem, and the evidence against          ✓
-    okfm-guide/              # raw material for the four level bundles            ✓
+    okfm-guide/              # raw material for the three level bundles           ✓
     decisions/               # dated decision records — an IN-PLACE bundle        ✓
   templates/
     bundle/                  # index.md, log.md, one starter concept     ✓
@@ -876,10 +876,9 @@ okfm/
   # registered by path. `rm -rf .okfm` returns the project to what it was.
   .okfm/
     mesh/                    # the master OKF — one OKF Member per bundle         ✓
-    level-1-view/            # level 1 — the format, the viewer (§14.5)           ✓
+    level-1-view/            # level 1 — the format, the web UI (§14.5)           ✓
     level-2-build/           # level 2 — the deterministic build                  ✓
-    level-3-enrich/          # level 3 — the enrichment loop                      ✓
-    level-4-suite/           # level 4 — providers, packs, federation, benchmark  ✓
+    level-3-enrich/          # level 3 — enrichment, and its credentialed variant ✓
     docs/                    # the loose documents at the top of docs/            ✓
     guide/                   # the format, and a bundle that demonstrates it      ✓
 
@@ -890,7 +889,7 @@ okfm/
     refresh                  # observe pointers, report drift (§8.4)         ✓
     okfm_core                # locating, discovery, frontmatter, vocabularies ✓
     bootstrap                # extraction: title, description                ✓
-    bake_viewer              # regenerate the viewer index                   ✓
+    bake_web_ui              # regenerate the web UI index                   ✓
     check_bundles            # conformance, profile, strip test              ✓
     enrich / guard / revalidate   # level 3 — outside the pipeline           ✓
     telemetry                # one run record per run (§10.1)                ✓
@@ -924,7 +923,7 @@ it.
 Two further boundaries are checked mechanically, not intended:
 
 1. **Base validates with `tools/` deleted.** CI runs it as an actual arm: remove the
-   directory, validate every bundle, open the viewer.
+   directory, validate every bundle, open the web UI.
 2. **`dropin/` and `core` carry no domain words.** CI greps for project and domain names
    (the domain names CI is configured to reject) and fails on a hit. That test is what keeps the
    scaffolding distributable while it is developed against two specific domains.
@@ -1004,20 +1003,24 @@ files around it, and writes a bundle. First run with no config reports what it f
 documentation about scoping.
 
 ```shell
-cp -r okfm/dropin my-project/okfm && cd my-project
-python okfm/build            # bundle written to okfm/bundle/, config written beside it
+cp -r okfm/dropin my-project/.okfm && cd my-project
+python .okfm/okfm.py         # one OKF per docs folder, plus the master OKF
 ```
 
-Open `okfm-viewer.html` and the mesh is there — unenriched, because no model was involved,
+Open `okfm-web-ui.html` and the mesh is there — unenriched, because no model was involved,
 and honest about it: extracted descriptions, `status: draft`, no `verified` entry anywhere.
 
-**Level 4** — the full suite.
+**Level 3, credentialed variant** — OKFM drives a provider rather than an agent driving OKFM.
 
 ```shell
 okfm init --pack warehouse      # writes okfm.json, index.md, log.md, one concept
 okfm validate                   # green on an empty mesh
 okfm index                      # see what an agent would be handed
 ```
+
+This was a fourth level and collapsed into a variant of the third. The ladder asks for a
+browser, then Python, then a model; who holds the key after that is a change of direction
+rather than another step up, and `okfm_needs` records it either way.
 
 #### The distribution test, one per level
 
@@ -1028,7 +1031,7 @@ stronger and more honest question.
 | Level | Passes when a competent stranger, given only the README, can… |
 |---|---|
 | **1** | hand-write a valid concept their own agent reads correctly — **nothing installed** |
-| **2** | paste the folder into a project with **no existing bundle**, run it, and open the viewer on a real generated mesh — **no key, no model** |
+| **2** | paste the folder into a project with **no existing bundle**, run it, and open the web UI on a real generated mesh — **no key, no model** |
 | **3** | enrich a stale concept with their own agent and get a reviewable draft — **no credential held by OKFM** |
 | **4** | reach a running mesh answering one real question about their own project in **under an hour**, editing configuration and concepts only — never core |
 
@@ -1064,27 +1067,27 @@ ecosystem precedent already establishes (§21.2). OKFM's own code and content ar
 
 ---
 
-## 14. The Mesh Viewer
+## 14. The Mesh Web UI
 
-`okfm-viewer.html` ships at the project root and is committed. Open it and you see
+`okfm-web-ui.html` ships at the project root and is committed. Open it and you see
 the mesh: a graph, a closure ledger, and a health panel. It is in core because a mesh
 you cannot see is a mesh you cannot maintain, and because the health panel is where
 §20's success measures become visible rather than aspirational.
 
 ### 14.1 Location
 
-Default `./okfm-viewer.html`, overridable:
+Default `./okfm-web-ui.html`, overridable:
 
 ```json
-"viewer": {
-  "path": "./okfm-viewer.html",
+"web_ui": {
+  "path": "./okfm-web-ui.html",
   "index": "./okfm-index.json",
   "serve_port": 7345
 }
 ```
 
-Root is the default because the file has to be *found* — a viewer buried three
-directories deep is a viewer nobody opens. A subdirectory is one config line.
+Root is the default because the file has to be *found* — a web UI buried three
+directories deep is a web UI nobody opens. A subdirectory is one config line.
 
 ### 14.2 Three data sources, tried in order
 
@@ -1098,14 +1101,14 @@ The page is dynamic. It holds no snapshot of your mesh:
    a five-line example, and names the two commands that matter. An empty mesh is an
    invitation, not an error.
 
-`file://` blocks `fetch`, so a viewer opened directly from disk lands on source 2 or
+`file://` blocks `fetch`, so a web UI opened directly from disk lands on source 2 or
 3. `okfm view --serve` starts a local server and unlocks source 1 plus live bodies.
 The badge in the masthead states which source is showing; the reader is never left
 guessing whether they are looking at their own mesh.
 
 ### 14.3 Bodies: fetched, never embedded
 
-Concept bodies are **read from the bundle at click time** when the viewer is served,
+Concept bodies are **read from the bundle at click time** when the web UI is served,
 and simply unavailable when it is not. The page never contains them.
 
 This is one rule with three distinct justifications, and it is enforced by
@@ -1124,13 +1127,13 @@ construction rather than by discipline:
 **Mechanical enforcement, not a note in a document:**
 
 - `okfm-index.json` and any locally-regenerated viewer are **gitignored**; the
-  committed `okfm-viewer.html` contains guide metadata only.
+  committed `okfm-web-ui.html` contains guide metadata only.
 - `okfm validate` fails if a committed artifact under `viewer.path` contains concept
   body text.
 - The benchmark harness (§18.3) refuses to run when a rendered view is present in a
   control arm — the published mistake, automated away.
 - Generated artifacts are excluded from context assembly (§8) by scope, so no agent
-  reads the viewer instead of the bundle.
+  reads the web UI instead of the bundle.
 
 ### 14.4 Derived at render time
 
@@ -1151,13 +1154,13 @@ profile, the loop family, attestation, drift, federation, and how to write a fir
 concept. It is documentation and working example at once: the guide teaches by *being*
 the thing it describes, and it validates like any other bundle.
 
-The point is the first five minutes. Clone the repository, open the viewer, and there
+The point is the first five minutes. Clone the repository, open the web UI, and there
 is a populated graph to explore rather than an empty screen and a README.
 
 **It is scoped, so it never pollutes your mesh.** Every guide concept carries
 `okfm_scope: guide`, and `exclude_scopes: ["guide"]` keeps it out of health
 statistics, the index budget (§8.5), benchmark corpora (§18), and any context
-assembled for an agent. It renders in the viewer; it counts toward nothing.
+assembled for an agent. It renders in the web UI; it counts toward nothing.
 
 `rm -rf okfm-guide/` is the entire removal procedure — nothing references it, and the
 viewer falls back to its empty state. `okfm init --guide` restores it.
@@ -1183,7 +1186,7 @@ passed staleness, unverified concepts, unreconciled rules, orphans.
 ### 14.7 Scope
 
 Read-only. Not an editor, not a search index, not a context source. Agents read the
-bundle; the viewer is for people. The health traversal also exports as JSON, so CI can
+bundle; the web UI is for people. The health traversal also exports as JSON, so CI can
 fail on thresholds — open loops, drifted sources in `stable` concepts — without a
 browser.
 

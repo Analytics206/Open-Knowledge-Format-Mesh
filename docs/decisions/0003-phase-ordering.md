@@ -88,7 +88,7 @@ half is what this record was arguing about.
 
 | Half | Contains | When |
 |---|---|---|
-| **Addressing** | registry bundle, `OKF Member` concepts, cross-bundle refs, commit pinning, cross-bundle drift, multi-bundle viewer | **Phase 1** |
+| **Addressing** | registry bundle, `OKF Member` concepts, cross-bundle refs, commit pinning, cross-bundle drift, multi-bundle web UI | **Phase 1** |
 | **Negotiation** | agent interfaces, transport, feedback inbox/outbox, cross-owner routing | after the port, as argued above |
 
 The addressing half moves earlier because OKFM's own repository becomes a mesh at
@@ -103,7 +103,7 @@ measurable payoff.
 
 | Phase | Delivers |
 |---|---|
-| **1** | Baseline adoption, the Level 2 build, the Level 3 loop, **federation's addressing half** — registry, `OKF Member` concepts, cross-bundle refs, commit pinning, multi-bundle viewer |
+| **1** | Baseline adoption, the Level 2 build, the Level 3 loop, **federation's addressing half** — registry, `OKF Member` concepts, cross-bundle refs, commit pinning, multi-bundle web UI |
 | **2** | Extraction into a distributable project: core/packs/config split, the three runtime modes, the distribution tests |
 | **3** | **The credentialed half** — `sys://` resolvers, meaning-family curation, attested computations, reconciliation against a report its owner already trusts |
 | **4** | **Federation's negotiation half** — agent interfaces, transport, the feedback inbox/outbox ledger, cross-owner routing |
@@ -146,7 +146,7 @@ a capability with no named corpus attached, and the corpus arrives when someone 
 Where federation sits in the *delivery* order was this record's question. Where it sits in
 the **level** model was never answered, and the answer is level 1.
 
-The mesh is what you get when you download the project and open the viewer: several bundles,
+The mesh is what you get when you download the project and open the web UI: several bundles,
 a master OKF over them, typed edges between them, and a graph that draws the whole thing.
 Nothing runs. That is the definition of level 1, and it means federation's addressing half is
 already the most complete demonstration in the project rather than a thing waiting on a

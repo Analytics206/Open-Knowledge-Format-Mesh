@@ -5,12 +5,12 @@ viewer.
 
 # Two artifacts, not one
 
-[The viewer](../level-1-view/the-viewer.md) opens from `file://` with no server, no build, and
+[The web UI](../level-1-view/the-web-ui.md) opens from `file://` with no server, no build, and
 no dependencies, and that property is the whole of level 1. Adding write access to it would
 require a server, which would take a browser-openable file and turn it into an install.
 
 So the console is separate: served, able to edit configuration, run the loop, and show a run
-in progress. The viewer stays read-only and stays a file.
+in progress. The web UI stays read-only and stays a file.
 
 # The commands come out of building it
 

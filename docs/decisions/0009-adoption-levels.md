@@ -1,16 +1,16 @@
 ---
 type: Decision
 title: DR-0009 — Four adoption levels
-description: "Four adoption levels, each usable on its own, with the boundary between 2 and 3 sitting exactly on the model line and credentials appearing only at 4 — because that is where the direction reverses and OKFM drives a provider instead of an agent driving OKFM."
+description: "Three adoption levels, each usable on its own — a browser, then Python, then a model — with the credentialed case a variant of level 3 rather than a fourth level, because who holds the key is a change of direction and not another step up."
 status: draft
-verified: { by: "human:analytics206", at: 2026-08-02T02:54:00Z }
+verified: { by: "human:analytics206", at: 2026-08-02T03:08:50Z }
 tags: [levels, adoption, boundaries]
 generated: { by: "agent:claude-opus-5", at: 2026-08-02T02:07:15Z }
 sources:
   - id: self
     resource: /0009-adoption-levels.md
     okfm_role: subject
-    okfm_captured: { hash: "sha256:b9e5773950cde18e04098f5fede61a644e99b3ed13ec6ef44282ec09206e1d9b", at: 2026-08-01 }
+    okfm_captured: { hash: "sha256:13b0f4726746cd4b200c51f4016bb45e442c4e19d51a11babea1bc974ede6c94", at: 2026-08-01 }
 okfm_scope: project
 ---
 # DR-0009 — Four adoption levels
@@ -67,16 +67,16 @@ Cumulative — each includes everything below it.
 
 ### Level 1 — download it
 
-Download the project. Open `okfm-viewer.html`. Read the guide.
+Download the project. Open `okfm-web-ui.html`. Read the guide.
 
 That is the entire level. There is nothing to install and nothing to run.
 
-**Ships:** `spec/`, `okfm-guide/`, `okfm-viewer.html`, `docs/`, `examples/`, `templates/`.
+**Ships:** `spec/`, `okfm-guide/`, `okfm-web-ui.html`, `docs/`, `examples/`, `templates/`.
 
 ### Level 2 — the deterministic process, as a drop-in folder
 
 **Copy the folder into your project and run it.** It defaults to the location it sits in,
-scans the files around it, and produces a bundle. Open the viewer and see the result —
+scans the files around it, and produces a bundle. Open the web UI and see the result —
 unenriched, but real.
 
 Not a process the adopter builds from an example. A process they paste and run.
@@ -162,7 +162,7 @@ a model.
 | `verified` | never machine, ever |
 
 The result is honest by construction: an extracted description plus `status: draft` plus no
-`verified` entry renders in the viewer as exactly what it is — a real concept nobody has
+`verified` entry renders in the web UI as exactly what it is — a real concept nobody has
 reviewed. Drift detection works on it immediately, because `okfm_captured` is real.
 
 Extraction quality tracks how the source corpus is written — a docs tree that opens each
@@ -258,7 +258,7 @@ The levels align with component requirements at exactly one boundary:
 
 | Level | Components it admits |
 |---|---|
-| 1 | none runnable — documents and a viewer |
+| 1 | none runnable — documents and a web UI |
 | 2 | `model ∉ needs` — so `[]`, `[human]`, `[secrets]`, `[human, secrets]` |
 | 3 | adds `model` |
 | 4 | any, plus composition and provider configuration |
@@ -323,7 +323,7 @@ worded to allow the modification the governing constraint expects:
 | Level | Passes when a stranger, given only the README, can… |
 |---|---|
 | 1 | hand-write a valid concept their own agent reads correctly — **nothing installed** |
-| 2 | paste the folder into a project with **no existing bundle**, run it, and open the viewer on a real generated mesh — **no key, no model** |
+| 2 | paste the folder into a project with **no existing bundle**, run it, and open the web UI on a real generated mesh — **no key, no model** |
 | 3 | enrich a stale concept with their own agent and get a reviewable draft — **no key held by OKFM** |
 | 4 | reach a running mesh answering one real question about their project, in under an hour |
 
@@ -351,7 +351,39 @@ which, per DR-0007, is the intended mode.
 
 - Does Level 1 ship `templates/`, or does that belong at Level 2? An adopter copying by hand
   wants a starter bundle; a starter bundle is arguably part of the format.
-- Should the viewer state which level an adopter is operating at? It already distinguishes a
+- Should the web UI state which level an adopter is operating at? It already distinguishes a
   live mesh from the bundled guide, which is close to the same signal.
 - Does Level 3 ship an MCP server, or only components callable from one? The distinction
   decides whether "an agent they already use" is really sufficient.
+
+## Amendment 2026-08-02 — three levels; the fourth is a variant of the third
+
+Level 4 is folded into level 3 as its **credentialed variant**. Providers, packs,
+federation's negotiation half, the console app, and the benchmark all keep their content and
+lose a level number.
+
+**Why it collapsed.** The ladder measures one thing: *what OKFM asks of you before you can
+start*. A browser, then Python, then a model. After that there is nothing further to ask for.
+Holding the key yourself instead of your agent holding it reverses the **direction** — OKFM
+drives a provider rather than a provider's client driving OKFM — and a reversal is not a step
+up.
+
+The tell was that the fourth level had to be re-explained every time it came up. A distinction
+that cannot be recalled from memory after several passes is not carrying its weight, whatever
+its merits on paper.
+
+There was also a standing objection this record never fully answered: anyone can point an
+agent at any level and do whatever they like. That makes a level *gate* fictional, and level 4
+read most like a gate. Three levels describe what OKFM provides; nothing describes or limits
+what an adopter does with it.
+
+**What is not lost.** The credentialed/uncredentialed distinction is real and load-bearing —
+it decides whether OKFM holds a secret. It survives where it always did the work:
+`okfm_needs` records `secrets` per component, and CI gates on the set rather than on the level
+number. [`dev/check_levels.py`](../../dev/check_levels.py) now admits `secrets` at level 3,
+and levels 1 and 2 still admit nothing beyond a human — which is the only boundary the model
+needs to enforce.
+
+**Naming that came with it.** The level 1 artifact is **the web UI** (`okfm-web-ui.html`,
+read-only, opens from disk). The level 3 served console is **the OKFM console app**. Both are
+web UIs, which is exactly why they needed distinct names.

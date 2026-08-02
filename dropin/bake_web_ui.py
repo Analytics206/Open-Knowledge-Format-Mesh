@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-"""Regenerate the viewer's baked index from the real bundles.
+"""Regenerate the web UI's baked index from the real bundles.
 
 An early cut of `okfm view`'s baking step (decisions/0008 build step 9). The committed
 viewer must carry METADATA ONLY -- never concept bodies. A rendered copy of a bundle is a
 second home for its knowledge (spec 3.14), it goes stale silently, and a published incident
 records a benchmark control arm being contaminated by exactly this (spec 21.3).
 
-Trust and staleness are NOT written here. They are derived by the viewer at render time
+Trust and staleness are NOT written here. They are derived by the web UI at render time
 (spec 3.4) from the signals this script copies out: `verified`, `stale_after`,
 `okfm_captured`.
 
 `needs: []` -- no network, no secrets, no model.
 
-    python dropin/bake_viewer.py [--check]
+    python dropin/bake_web_ui.py [--check]
 
 --check exits non-zero if the committed viewer is out of date, for CI.
 """
@@ -24,7 +24,7 @@ from pathlib import Path
 from okfm_core import HERE, PROJECT, configured_bundles, load_or_create_config
 
 ROOT = PROJECT
-VIEWER = PROJECT / "okfm-viewer.html"
+VIEWER = PROJECT / "okfm-web-ui.html"
 CACHE = HERE / ".okfm-cache" / "observations.json"
 
 RESERVED_TYPES = {"Index", "Log"}
@@ -86,7 +86,7 @@ def load_observations() -> dict:
 def drift_of(block: str, rid: str, obs: dict) -> int | None:
     """1 drifted, 0 match, None never observed.
 
-    None is emitted as JSON `null` and the viewer renders it `unknown`. Defaulting it to
+    None is emitted as JSON `null` and the web UI renders it `unknown`. Defaulting it to
     0 would be the stored-opinion failure spec §3.4 exists to prevent.
     """
     pairs = _CAPTURED.findall(block)
@@ -171,7 +171,7 @@ def main() -> int:
         return 0
 
     if check:
-        print("STALE: committed viewer does not match the bundles — run bake_viewer.py",
+        print("STALE: committed viewer does not match the bundles — run bake_web_ui.py",
               file=sys.stderr)
         return 1
 

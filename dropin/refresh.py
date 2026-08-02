@@ -4,7 +4,7 @@
     python okfm/refresh.py            # observe, write the cache, report
     python okfm/refresh.py --check    # exit 1 if a `stable` concept has a drifted source
 
-Drift is **observed here and nowhere else.** Nothing on the read path — not the viewer, not
+Drift is **observed here and nowhere else.** Nothing on the read path — not the web UI, not
 an injected index, not an agent — resolves a pointer. That is what keeps reading a mesh free
 and what stops an agent paying a database round trip before it has done anything.
 

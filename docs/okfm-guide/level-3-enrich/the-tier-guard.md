@@ -38,3 +38,21 @@ with no legitimate override gets disabled instead of used.
 Reading a diff is arithmetic. But there is nothing to guard until something has drafted, so
 the guard has no reason to exist at level 2 — the same reasoning that places
 [the work list](the-work-list.md) here.
+
+# Scope it to the pass you are checking
+
+```bash
+python okfm/okfm.py guard .okfm/level-3-enrich/    # only what the pass touched
+```
+
+Without a path the diff is *everything uncommitted*, which is right when an enrichment pass is
+the only thing in flight and wrong the moment it is not. Run it after a pass that landed
+alongside a rename or a restructure and it reports the restructure's title changes as
+violations — true, unhelpful, and indistinguishable from a real one.
+
+That failure mode matters more than it looks. A guard that fires on unrelated edits is a guard
+people learn to clear with `--allow`, and `--allow` used reflexively is the same as no guard
+at all. Naming paths costs nothing and keeps the signal worth reading.
+
+This was found by running it in the wrong order: enrichment on top of a half-finished rename,
+thirteen flagged fields, and no way to tell which four mattered.

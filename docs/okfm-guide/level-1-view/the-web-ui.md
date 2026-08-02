@@ -1,6 +1,6 @@
 # What it is
 
-[`okfm-viewer.html`](../../../okfm-viewer.html) — one file, opened with `file://`. No server, no
+[`okfm-web-ui.html`](../../../okfm-web-ui.html) — one file, opened with `file://`. No server, no
 build step, no network request. It carries a baked index of the mesh: every concept's path,
 type, status, trust inputs, relations, and drift state.
 
@@ -9,16 +9,16 @@ type, status, trust inputs, relations, and drift state.
 The index holds pointers and metadata. It does not hold concept bodies, and that is a
 correctness rule rather than a size optimisation: a file containing every concept body is a
 second copy of the bundle, and a second copy is the artifact that contaminated a published
-benchmark's control arm (§18.3, §21.3). Click a concept and the viewer sends you to the file
+benchmark's control arm (§18.3, §21.3). Click a concept and the web UI sends you to the file
 on disk.
 
-The index is **baked, not hand-maintained** — `dropin/bake_viewer.py` regenerates it and CI
+The index is **baked, not hand-maintained** — `dropin/bake_web_ui.py` regenerates it and CI
 fails if the committed copy disagrees. That makes viewer-versus-mesh drift impossible by
 construction rather than by discipline.
 
 # What it shows that a file listing cannot
 
-Trust and staleness are **derived at read time** (§3.4), so the viewer computes them from
+Trust and staleness are **derived at read time** (§3.4), so the web UI computes them from
 `generated`, `verified`, and `stale_after` every time it loads. Drift is different: it is
 observed during the build and cached, because observing it means reading every source.
 

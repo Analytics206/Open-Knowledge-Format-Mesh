@@ -6,7 +6,7 @@
 
     python okfm/okfm.py build [--apply] # markdown -> concepts
     python okfm/okfm.py refresh         # observe pointers, report drift
-    python okfm/okfm.py view            # bake the viewer index
+    python okfm/okfm.py view            # bake the web UI index
     python okfm/okfm.py check           # validate every bundle
 
 Level 3, outside the pipeline because neither belongs in an unattended run:
@@ -37,7 +37,7 @@ HERE = Path(__file__).resolve().parent
 STEPS = [
     ("build",   "build.py",         ["--apply"], []),
     ("refresh", "refresh.py",       [],          ["--check"]),
-    ("view",    "bake_viewer.py",   [],          ["--check"]),
+    ("view",    "bake_web_ui.py",   [],          ["--check"]),
     ("check",   "check_bundles.py", [],          []),
 ]
 

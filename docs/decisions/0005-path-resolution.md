@@ -1,14 +1,15 @@
 ---
 type: Decision
 title: DR-0005 — Bundle-relative in files, mesh-relative in the index
-description: The specification defines bundle-relative paths (`/rules/churn-billing.md`) and cross-bundle addressing (`okf://sp3d-rules/rules/churn-billing.md`), but never says how a bundle-relative path becomes…
+description: "Bundle-relative inside a concept, plain relative in body links, and mesh-relative only in the generated index — the transformation is one-way and lives entirely in the index builder, so nothing inside a bundle ever stores a path that names its own bundle."
 status: draft
+verified: { by: "human:analytics206", at: 2026-08-02T03:08:50Z }
 generated: { by: "process:okfm-bootstrap", at: 2026-08-01T00:00:00Z }
 sources:
   - id: self
     resource: /0005-path-resolution.md
     okfm_role: subject
-    okfm_captured: { hash: "sha256:efd39c50cd5ecd21...", at: 2026-08-01 }
+    okfm_captured: { hash: "sha256:d75210de93815baa77c6ae277a6f8e1ce02d62e0715645bbd7c8f0ef1cdf0761", at: 2026-08-01 }
 okfm_scope: project
 ---
 # DR-0005 — Bundle-relative in files, mesh-relative in the index
@@ -23,7 +24,7 @@ The specification defines bundle-relative paths (`/rules/churn-billing.md`) and
 cross-bundle addressing (`okf://sp3d-rules/rules/churn-billing.md`), but never says how a
 bundle-relative path becomes a path in a **mesh-level** index spanning several bundles.
 
-Writing the guide bundle forced the question. The viewer's baked index uses
+Writing the guide bundle forced the question. The web UI's baked index uses
 `/okfm-guide/index.md` — bundle directory included. A concept file inside that bundle
 should, per §6.5, write `/index.md`.
 

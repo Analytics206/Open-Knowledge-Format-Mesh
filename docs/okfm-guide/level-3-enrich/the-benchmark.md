@@ -47,7 +47,7 @@ the knowledge rather than merely missing the shortcut. That measures file deleti
 curation. The harness detects the condition and says so instead of producing a flattering
 number.
 
-**A derivation is a copy.** `okfm-viewer.html` carries a baked index of the mesh. Leaving it
+**A derivation is a copy.** `okfm-web-ui.html` carries a baked index of the mesh. Leaving it
 in the control arm would quietly turn that arm into a second treatment arm. It is removed by
 name, and the harness scans what remains for surviving concept prose.
 

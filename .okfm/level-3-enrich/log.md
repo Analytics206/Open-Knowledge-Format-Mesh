@@ -32,3 +32,17 @@ tier model has it stamped by whatever produced the content, so a model pass **mu
 it. It is also load-bearing: the extractor decides which descriptions it owns by reading
 `generated.by`, so protecting it meant a later refresh could clobber prose a person had
 written — which it had already done once, silently.
+
+# 2026-08-02 — level 4 folded in as the credentialed variant
+
+The suite bundle is gone; its five components live here. Same content, one fewer level
+number to explain.
+
+The ladder asks for a browser, then Python, then a model. There was nothing further to ask
+for — OKFM holding the key instead of your agent holding it reverses the *direction* rather
+than adding a step, and a fourth level read as a gate where none existed. It came up in
+review three times, which is the signal that a distinction is not carrying its weight.
+
+`okfm_needs` still records `secrets` per component, and CI still gates on the set rather than
+the level number, so nothing checkable was lost. `check_levels` now admits `secrets` at
+level 3.

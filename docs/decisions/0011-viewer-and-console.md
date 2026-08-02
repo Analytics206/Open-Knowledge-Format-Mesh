@@ -1,6 +1,6 @@
 ---
 type: Decision
-title: DR-0011 — The viewer stays read-only; a console is a separate artifact
+title: DR-0011 — The web UI stays read-only; a console is a separate artifact
 description: "The read-only viewer stays one file that opens from disk and configuration editing goes to a separate served console, because write access would turn a browser-openable file into an install — and the CLI falls out of building the console rather than being designed against an imagined user."
 status: draft
 verified: { by: "human:analytics206", at: 2026-08-02T02:54:00Z }
@@ -13,7 +13,7 @@ sources:
     okfm_captured: { hash: "sha256:304f764f22bfa64ae628a5024102babcefc298a45b925c31bc0aa32570ab2c46", at: 2026-08-01 }
 okfm_scope: project
 ---
-# DR-0011 — The viewer stays read-only; a console is a separate artifact
+# DR-0011 — The web UI stays read-only; a console is a separate artifact
 
 - **Status:** accepted 2026-08-01, **built last** — a full web UI is planned; only the
   timing is deferred
@@ -22,12 +22,12 @@ okfm_scope: project
 
 ## The ask
 
-A web UI at Level 3 or 4 that can edit configuration, and view at minimum.
+An OKFM console app at level 3 that can edit configuration, and view at minimum.
 
 ## The tension
 
 §14.7 is categorical: *"Read-only. Not an editor, not a search index, not a context source.
-Agents read the bundle; the viewer is for people."*
+Agents read the bundle; the web UI is for people."*
 
 That rule is load-bearing for reasons §14.3 spells out — an editor needs bodies loaded, and
 a file containing every concept body is the artifact that contaminated a benchmark control
@@ -43,12 +43,12 @@ now first-class steps in the model with nothing but a text editor behind them.
 
 **Two artifacts, not one artifact with a mode flag.**
 
-### The viewer — unchanged, Level 1
+### The web UI — unchanged, Level 1
 
-`okfm-viewer.html`. Opens from `file://`, no server, no build, no writes, no bodies embedded.
+`okfm-web-ui.html`. Opens from `file://`, no server, no build, no writes, no bodies embedded.
 Every constraint in §14.3 and §14.7 stands exactly as written.
 
-This is non-negotiable because it *is* Level 1's promise. The moment the viewer can write, it
+This is non-negotiable because it *is* Level 1's promise. The moment the web UI can write, it
 needs to be served, which needs a runtime, which means Level 1 no longer installs nothing.
 
 ### The console — new, Level 3
@@ -65,10 +65,10 @@ chosen to install.
 | Trigger a rebuild | It is running the same components the CLI runs |
 
 **It reads bodies from the bundle at request time and never embeds them** — the same rule
-the viewer already follows (§14.3), for the same three reasons.
+the web UI already follows (§14.3), for the same three reasons.
 
 **It never becomes a context source.** Agents read the bundle. The console is for people,
-exactly as the viewer is.
+exactly as the web UI is.
 
 ## Why Level 3 and not Level 4
 
@@ -79,7 +79,7 @@ it is needed. Waiting until Level 4 would ship drafting without a way to approve
 
 Configuration editing is likewise level-independent.
 
-## Why not just make the viewer serveable
+## Why not just make the web UI serveable
 
 Because `okfm view --serve` already exists in the design (§14.2 source 1) and does the
 read-only half. Adding writes to the same file means one artifact with two security postures
@@ -91,7 +91,7 @@ console and keeps a fully functional viewer.
 ## Against
 
 **Two UIs is duplicated effort.** Some, but less than it appears — the console can render the
-same three views by importing the viewer's rendering, and differs in adding a review queue
+same three views by importing the web UI's rendering, and differs in adding a review queue
 and write endpoints. The duplication is in shell and transport, not in the graph.
 
 **A console invites scope creep toward editing concepts.** It does, and the line must be
@@ -111,7 +111,7 @@ by the time Level 3 enrichment is producing drafts at volume, the workflow it sh
 will be known rather than guessed.
 
 The half of this record that is a *constraint* is already in force and costs nothing to
-hold: **the viewer stays read-only**, §14.3 and §14.7 unchanged.
+hold: **the web UI stays read-only**, §14.3 and §14.7 unchanged.
 
 ## The CLI and the UI are one surface
 

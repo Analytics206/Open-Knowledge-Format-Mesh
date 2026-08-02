@@ -16,7 +16,7 @@ okfm_relations:
 rm -rf okfm-guide/
 ```
 
-Nothing references it. No configuration needs editing. The viewer notices it is gone
+Nothing references it. No configuration needs editing. The web UI notices it is gone
 and falls back to its empty state, which explains what a concept is and names the two
 commands that matter.
 
@@ -37,7 +37,7 @@ excludes that scope:
 
 That one line keeps the guide out of health statistics, out of the injected index and
 its budget, out of benchmark corpora, and out of any context assembled for an agent.
-It renders in the viewer and counts toward nothing.
+It renders in the web UI and counts toward nothing.
 
 So the guide is not costing you tokens, skewing your freshness numbers, or competing
 with your own concepts for space in an agent's context. Deleting it is tidiness, not

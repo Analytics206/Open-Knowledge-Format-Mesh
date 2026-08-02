@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Check that an edit pass wrote only what it owns — Level 3's enforcement.
 
-    python okfm/okfm.py guard             # check the working tree against HEAD
-    python okfm/okfm.py guard --staged    # check what is staged
+    python okfm/okfm.py guard                    # check the working tree against HEAD
+    python okfm/okfm.py guard --staged           # check what is staged
+    python okfm/okfm.py guard .okfm/level-3/     # check only what the pass touched
 
 DR-0008 says a `[model]` component may write `description`, `tags`, prose, and reason
 codes — and may not write `verified`, `okfm_relations`, `status`, `type`, `title`,
@@ -53,8 +54,9 @@ _FM_BOUND = re.compile(r"^[+-]---\s*$")
 _KEY = re.compile(r"^[+-](\s*)([\w_]+):")
 
 
-def diff(staged: bool) -> str:
-    args = ["git", "diff", "--unified=0"] + (["--cached"] if staged else []) + ["--", "*.md"]
+def diff(staged: bool, paths: list[str]) -> str:
+    args = ["git", "diff", "--unified=0"] + (["--cached"] if staged else [])
+    args += ["--", *(paths or ["*.md"])]
     return subprocess.run(args, cwd=PROJECT, capture_output=True, text=True,
                           encoding="utf-8").stdout
 
@@ -62,12 +64,18 @@ def diff(staged: bool) -> str:
 def main() -> int:
     argv = sys.argv[1:]
     staged = "--staged" in argv
-    allowed = set()
+    allowed, paths = set(), []
     for a in argv:
         if a.startswith("--allow="):
             allowed |= {x.strip() for x in a.split("=", 1)[1].split(",")}
+        elif not a.startswith("--"):
+            # Naming paths scopes the check to the pass you are actually checking.
+            # Without it the diff is "everything uncommitted", which mixes an enrichment
+            # pass with whatever structural work happened to be in flight — and a guard
+            # that fires on unrelated edits is a guard people learn to pass with --allow.
+            paths.append(a)
 
-    text = diff(staged)
+    text = diff(staged, paths)
     if not text.strip():
         print("No markdown changes to check"
               + (" (staged)" if staged else " (working tree)"))

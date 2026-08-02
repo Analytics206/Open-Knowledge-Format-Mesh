@@ -1,10 +1,10 @@
 ---
 type: Document
 title: Drift observation
-description: Reads every source, compares it to the hash the concept captured, and caches the verdict. Three states, never two.
+description: "Reads every source, compares it to the hash the concept captured, and caches the observation. Three states, never two — and only a person clears drift, for the reason this document had to learn the hard way."
 status: draft
 verified: { by: "human:analytics206", at: 2026-08-02T02:54:00Z }
-generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
+generated: { by: "agent:claude-opus-5", at: 2026-08-02T03:09:28Z }
 sources:
   - id: doc
     resource: ../../docs/okfm-guide/level-2-build/drift-observation.md

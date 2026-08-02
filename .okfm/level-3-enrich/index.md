@@ -1,12 +1,12 @@
 ---
 type: Index
 title: "Level 3 — enrichment"
-description: Your agent writes what extraction cannot, a guard checks what it wrote, and you approve it. OKFM holds no credential.
+description: Your agent writes what extraction cannot, a guard checks it, and you approve. Its credentialed variant is where OKFM holds the key instead of your agent.
 status: stable
 generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
 okfm_scope: project
 okfm_level: 3
-okfm_needs: [model, human]
+okfm_needs: [model, human, secrets]
 okfm_relations:
   - { predicate: registered_by, target: /okfm-mesh/index.md }
   - { predicate: depends_on, target: /okfm-level-2/index.md }
@@ -22,6 +22,8 @@ Level 3 is the loop that fixes that: the build says what needs work, your agent 
 guard checks that the agent stayed inside its authority, and you approve. Four steps, one of
 which is a person, one of which is a model, and neither is optional.
 
+It is the last level. There is nothing to graduate to.
+
 # Components
 
 | Component | Does | Needs |
@@ -35,16 +37,43 @@ which is a person, one of which is a model, and neither is optional.
 Two of the five need nothing mechanically. They are here because they exist only to serve a
 step that does — a work list with nothing to enrich it is a report about nothing.
 
-# OKFM holds no credential here
+# The credentialed variant
 
-Your agent drives OKFM. You are already authenticated in your own tool, and OKFM never sees a
-key, never chooses a provider, and never makes a network call. That is the whole reason keys
-first appear at [level 4](../level-4-suite/index.md), where the direction reverses and OKFM
-drives a provider.
+Everything above assumes **your agent drives OKFM**. You are already authenticated in a tool
+you were using anyway; OKFM never sees a key, never chooses a provider, and never makes a
+network call.
 
-# The boundary is exactly the model line
+The variant reverses that: **OKFM drives a provider**, so OKFM holds the credential. Same
+loop, opposite direction — plus everything that follows from a process able to act unattended.
 
-A workflow containing a step that cannot terminate without a model is level 3, and that is
-mechanically checkable rather than a matter of taste. It is also why the level 2 pipeline does
-not call anything here: a composite's needs set is the union of its parts, so one model step
-would move the whole pipeline up a level and off every fork's pull request.
+| Component | State | Needs today |
+|---|---|---|
+| [The benchmark](the-benchmark.md) | prototype runs | — |
+| [Providers and keys](providers-and-keys.md) | designed, not built | — |
+| [Packs](packs.md) | partly built — vocabulary overlays work | — |
+| [Federation, the negotiation half](federation-negotiation.md) | designed, not built | — |
+| [The console app](the-console-app.md) | designed, not built | — |
+
+Four of the five are `status: draft` and say so in their first line. A level that described
+unbuilt components as though they shipped would be the mesh lying about itself in the one
+place it cannot afford to.
+
+# Why this is a variant and not a fourth level
+
+It was one for a while, and the number kept needing to be re-explained.
+
+The ladder is about **what OKFM asks of you before you can start**: a browser, then Python,
+then a model. After that there is nothing further to ask for — holding the key yourself
+instead of your agent holding it is a change of *direction*, not another step up. And since
+anyone can point an agent at any level and do as they like, a fourth level read as a gate
+where none existed.
+
+Nothing is lost by collapsing it. `okfm_needs` still records `secrets` per component, and CI
+still gates on the set rather than the number, so the distinction survives exactly where it
+does work. What went away is a level nobody could place from memory.
+
+# The boundary that is left
+
+Levels 1 and 2 admit nothing beyond a human. Level 3 admits `model` and `secrets`.
+[`dev/check_levels.py`](../../dev/check_levels.py) enforces it, and it is the only boundary
+the level model needs.

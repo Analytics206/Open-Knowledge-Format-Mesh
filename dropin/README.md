@@ -62,7 +62,7 @@ network, no secrets, no model.
 | `build.py` | Markdown → concepts, one bundle per folder, plus the master OKF. |
 | `okfm_core.py` | Locating and frontmatter parsing. Knows nothing about where it was installed. |
 | `bootstrap.py` | Extraction — `title`, `description` — and in-place concept creation. |
-| `bake_viewer.py` | Regenerates the viewer's index from the bundles. `--check` gates CI. |
+| `bake_web_ui.py` | Regenerates the web UI's index from the bundles. `--check` gates CI. |
 | `check_bundles.py` | Conformance, profile, strip test, predicates, links, footnotes. |
 | `refresh.py` | Observes pointers, writes the observation cache, reports drift. `--check` gates CI. |
 | `enrich.py` | What needs enriching and the brief for doing it. Prints work; calls no model. |
@@ -126,7 +126,7 @@ python okfm/refresh.py --check    # exit 1 on drift in a `stable` concept
 ```
 
 **Drift is observed here and nowhere else.** Nothing on the read path resolves a pointer —
-not the viewer, not an injected index, not an agent. That is what keeps reading a mesh free
+not the web UI, not an injected index, not an agent. That is what keeps reading a mesh free
 ([DR-0006](../docs/decisions/0006-drift-cost-and-caching.md)).
 
 Three states, never two: `match`, `drifted`, and **`unknown`** for a pointer never observed.

@@ -15,7 +15,7 @@ Two things at once: documentation for OKFM, and a real OKF v0.2 bundle you can o
 read, validate, and copy. Every file here is a legal concept — the guide teaches by
 being an example of the thing it describes.
 
-The viewer you are probably reading this in loaded these concepts because no other
+The web UI you are probably reading this in loaded these concepts because no other
 mesh was found.
 
 # Start here
@@ -41,7 +41,7 @@ The specification lives in [`spec/okfm-v0.2.1.md`](../../spec/okfm-v0.2.1.md).
 # This bundle is scoped
 
 Every file here carries `okfm_scope: guide`, and the default config excludes that
-scope. The guide renders in the viewer and counts toward nothing — not health
+scope. The guide renders in the web UI and counts toward nothing — not health
 statistics, not the injected index, not a benchmark corpus, not any context assembled
 for an agent. It cannot pollute your mesh, which is why it is safe to leave installed.
 
@@ -53,7 +53,7 @@ its frontmatter is a concept.
 # Nothing here is verified yet
 
 These concepts carry `generated` but no `verified` entry, so every trust tier you see
-in the viewer reads *unverified*. That is honest rather than broken: nobody has
+in the web UI reads *unverified*. That is honest rather than broken: nobody has
 reviewed them. Adding a `verified` entry you did not earn is the one thing the
 specification forbids outright — see the backfill honesty rule in the roadmap.
 

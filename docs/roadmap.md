@@ -32,7 +32,7 @@ The assets in hand, the two proving grounds, the delivery phases, what is delibe
 | 11 | Adoption Profile: an Analytics Domain | *this document* |
 | 12 | Federation — the OKF Mesh | [`spec/okfm-v0.2.1.md`](../spec/okfm-v0.2.1.md) |
 | 13 | Drop-In Instantiation and Distribution | [`spec/okfm-v0.2.1.md`](../spec/okfm-v0.2.1.md) |
-| 14 | The Mesh Viewer | [`spec/okfm-v0.2.1.md`](../spec/okfm-v0.2.1.md) |
+| 14 | The Mesh Web UI | [`spec/okfm-v0.2.1.md`](../spec/okfm-v0.2.1.md) |
 | 15 | Roadmap | *this document* |
 | 16 | Adoption Profile: retrofitting a loop that already runs | *this document* |
 | 17 | Deferred — Parking Lot with Re-entry Triggers | *this document* |
@@ -221,7 +221,7 @@ Discovery in a data domain is not search but **source understanding**: schema in
 
 > Moved to [`spec/okfm-v0.2.1.md`](../spec/okfm-v0.2.1.md).
 
-## 14. The Mesh Viewer
+## 14. The Mesh Web UI
 
 > Moved to [`spec/okfm-v0.2.1.md`](../spec/okfm-v0.2.1.md).
 
@@ -265,7 +265,7 @@ Scope: `sys://` resolvers for databases and API captures; a discovery adapter in
 ### Phase 4 — Federation, the negotiation half
 
 The addressing half — registry bundle, `OKF Member` concepts, cross-bundle references,
-commit pinning, a multi-bundle viewer — landed in Phase 1, because OKFM's own repository is
+commit pinning, a multi-bundle web UI — landed in Phase 1, because OKFM's own repository is
 a mesh and the content already existed.
 
 What remains is the expensive, unproven part.
@@ -368,7 +368,7 @@ Written as a profile rather than a project, for the reason in §11 and in [DR-00
 3. **Attestation rate:** share of displayed business numbers backed by a passing attestation. Target: all of them.
 4. **Golden-set agreement:** attested computations reproduce the existing trusted reports.
 5. **Re-evaluation avoidance:** share of discovery candidates short-circuited by `already_evaluated`.
-6. **Outcome closure:** share of trial decisions that eventually receive an `Outcome`. The loop is closed only if this stays high. Visible directly in the viewer's closure ledger (§14.6).
+6. **Outcome closure:** share of trial decisions that eventually receive an `Outcome`. The loop is closed only if this stays high. Visible directly in the web UI's closure ledger (§14.6).
 7. **Citation resolvability:** share of pointers in `stable` concepts resolving cleanly on refresh.
 8. **Drift latency:** time from a source change to dependent concepts flagged stale.
 9. **Distribution test:** a stranger reaches a running mesh on their own project in under an hour, editing config and concepts only (§13.7). Interim proxy: Phase 3 measured in pack/config work versus core edits.

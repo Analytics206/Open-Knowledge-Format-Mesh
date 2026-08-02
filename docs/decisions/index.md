@@ -89,7 +89,7 @@ half already landed early under 0010. Phase order: baseline and addressing → d
 the port → negotiation.
 
 **0011** — a full web UI is planned and built last, as the natural consumer of everything
-below it. The viewer stays read-only regardless. The CLI and the UI are one surface: every
+below it. The web UI stays read-only regardless. The CLI and the UI are one surface: every
 mutation has exactly one implementation, the UI calls it, the CLI exposes it, and building
 the UI is what reveals which commands are actually needed.
 
