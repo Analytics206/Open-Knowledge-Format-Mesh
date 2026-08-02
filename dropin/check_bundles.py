@@ -16,8 +16,8 @@ import re
 import sys
 from pathlib import Path
 
-from okfm_core import (PROJECT, configured_bundles, load_or_create_config, parse_relations,
-                       vocab_terms)
+from okfm_core import (ACTOR_KINDS, PROJECT, actor_kind, actor_of, configured_bundles,
+                       load_or_create_config, parse_relations, vocab_terms)
 
 _FM = re.compile(r"\A---\r?\n(.*?)\r?\n---\r?\n", re.S)
 _OKFM_KEY = re.compile(r"^(okfm_[\w]+):", re.M)
@@ -134,6 +134,24 @@ def main() -> int:
                                   f"two different files cannot, so at least one pointer is "
                                   f"wrong and will report drift forever")
                 pins[digest] = res
+
+            # --- profile: the actor vocabulary (spec 6.3) ---------------------
+            # `generated.by` and `verified.by` are read by the ownership model, not just
+            # displayed: the build decides what it may overwrite from one, and the trust tier
+            # a reader sees is derived from the other. An actor with an unrecognised prefix is
+            # classified as nothing in particular, which quietly means "machine" — so a
+            # mistyped `humna:alex` silently downgrades a real review rather than failing.
+            #
+            # A warning, not an error, and deliberately: official OKF does not constrain this
+            # field, and rejecting an adopter's existing convention would be OKFM policing a
+            # value it merely reads. The trust model degrades safely — it never awards a tier
+            # it cannot justify — so saying so is enough.
+            for key in ("generated", "verified"):
+                who = actor_of(block, key)
+                if who and not actor_kind(who):
+                    warnings.append(f"{rid}: {key}.by `{who}` — unknown actor kind. "
+                                    f"One of {', '.join(k + ':' for k in ACTOR_KINDS)}, "
+                                    f"or the trust tier reads it as a machine")
 
             # --- profile: controlled predicates (spec 7.3) --------------------
             # Both YAML forms, via the one parser in `okfm_core`. This had its own copy that

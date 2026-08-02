@@ -174,8 +174,29 @@ UTF-8 markdown: YAML frontmatter + body. `type` is the only always-required key,
 - Per-claim attribution uses markdown footnotes keyed to `sources[].id` — keyed, not positional, so agent rewrites cannot silently misattribute.
 - `generated: { by, at }` — how current content was produced.
 - `verified: [{ by, at }]` — who or what confirmed it. Distinct from `generated` because the writer need not be the confirmer. A bare mapping counts as a one-element list.
-- Actor convention: `<producer>/<version>`, `human:<id>`, `process:<id>`.
-- Trust tiers are **derived**, not stored: no `verified` ⇒ unverified; non-human verifiers ⇒ machine-confirmed; a `human:` verifier ⇒ human-reviewed.
+- **Actor convention: `<kind>:<id>`, and `<kind>` is one of exactly three.**
+
+| Actor | Means | Example |
+|---|---|---|
+| `human:<id>` | a person | `human:alex` |
+| `agent:<tool>/<model>` | a model, driven by somebody | `agent:claude-opus-5` |
+| `process:<id>` | deterministic code | `process:okfm-build` |
+
+> This read `<producer>/<version>`, `human:<id>`, `process:<id>` — offering a bare
+> producer form and omitting `agent:` entirely, while `agent:` was 28 of this corpus's 80
+> actors and `templates/AGENTS.md` told authors to write the bare form. Four conventions in
+> circulation for a field the ownership model keys on.
+
+The prefix is **read, not displayed**. The build decides what it may overwrite from
+`generated.by`, the enrichment work list decides whose prose already exists from it, and
+re-validation refuses anything but a `human:`. An unrecognised prefix is classified as
+nothing in particular, which resolves to *machine* — so a mistyped `humna:alex` quietly
+downgrades a real review rather than failing loudly. Validators warn on one.
+
+- Trust tiers are **derived**, not stored: no `verified` ⇒ unverified; a `human:` verifier ⇒
+  human-reviewed; anything else ⇒ machine-confirmed. Derived from the actor's **prefix**, not
+  from whether the string contains `human:` — that test awarded the top tier to `nonhuman:bot`,
+  and a false *human* is a review nobody performed.
 
 ### 6.4 Lifecycle
 
@@ -1326,6 +1347,24 @@ is a populated graph to explore rather than an empty screen and a README.
 `okfm_scope: guide`, and `exclude_scopes: ["guide"]` keeps it out of health
 statistics, the index budget (§8.5), benchmark corpora (§18), and any context
 assembled for an agent. It renders in the web UI; it counts toward nothing.
+
+#### `okfm_scope`, and its two values
+
+An open string, and two values carry meaning today:
+
+| Value | Means |
+|---|---|
+| `project` | ordinary knowledge — counted, indexed, and assembled for agents. The default in every sense that matters, and what almost every concept carries |
+| `guide` | shipped demonstration material — rendered, and excluded from every count |
+
+Only `guide` was ever written down, in this section, as though it were the only value. Meanwhile
+`okfm_scope: project` was on 49 of the 64 scoped concepts in this repository and documented
+nowhere, so a first-time author could see it in every file and find no statement that it was
+legal. Omitting the key entirely is also legal; nothing excludes an unscoped concept.
+
+The mechanism is general: `exclude_scopes` takes any list of scope names, so a pack or an
+adopter may introduce their own — `vendor`, `archive` — and keep it out of the counts without
+any change to the tooling.
 
 `rm -rf .okfm/guide/` is the entire removal procedure — nothing references it, and the
 viewer falls back to its empty state. `okfm init --guide` restores it.

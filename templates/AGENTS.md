@@ -58,8 +58,14 @@ Anything you write carries:
 
 ```yaml
 status: draft
-generated: { by: "<your-agent>/<model>", at: <ISO-8601> }
+generated: { by: "agent:<tool>/<model>", at: <ISO-8601> }
 ```
+
+The `agent:` prefix is required and is read rather than displayed — the build decides what it
+may overwrite from it, and the trust tier a reader sees is derived from it. Three kinds exist:
+`human:`, `agent:`, `process:`. An unrecognised prefix resolves to *machine*, so a typo here
+silently downgrades rather than failing. (This said `<your-agent>/<model>`, with no prefix at
+all, while every shipped concept used `agent:`.)
 
 and **no `verified` entry**. Ever. Verification is a human act; writing one you did not earn
 silently promotes a trust tier nobody granted, which is worse than an honest gap.

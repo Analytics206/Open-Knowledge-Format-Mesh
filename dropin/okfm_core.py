@@ -77,6 +77,38 @@ _REL_BLOCK = re.compile(r"^okfm_relations:\s*\n((?:[ \t]*[-{].*\n?|[ \t]+\w+:.*\
 _REL_PAIR = re.compile(r"predicate:\s*([\w_]+)\s*[,\n]\s*(?:[ \t]*)target:\s*([^\s},]+)")
 
 
+# Who did a thing. Three kinds, and the prefix is load-bearing rather than decorative:
+# `_owned()` reads it to decide what the build may overwrite, `enrich.py` reads it to decide
+# whose work is already drafted, `revalidate` refuses anything but a human, and the trust
+# tier a reader sees is derived from it.
+#
+# There were four conventions in circulation. Spec 6.3 offered `<producer>/<version>`,
+# `human:<id>` and `process:<id>`; AGENTS.md told authors to write `<your-agent>/<model>`;
+# and `agent:` — used by 28 of this corpus's 80 actors — appeared in no document at all as a
+# legal form. A field the ownership model keys on cannot have an undocumented majority value.
+ACTOR_KINDS = ("human", "agent", "process")
+
+
+def actor_kind(value: str | None) -> str | None:
+    """`human`, `agent`, `process`, or None when the prefix is not one of them.
+
+    A real prefix match. `trust()` used to ask whether `human:` appeared anywhere in the
+    line, so `nonhuman:bot` was classified as a human verifier — the highest trust tier,
+    awarded on a substring.
+    """
+    if not value:
+        return None
+    kind = str(value).strip().strip("\"'").split(":", 1)[0]
+    return kind if kind in ACTOR_KINDS else None
+
+
+def actor_of(block: str, key: str) -> str | None:
+    """The `by:` inside a `generated:`/`verified:` mapping, unquoted."""
+    raw = scalar(block, key) or ""
+    m = re.search(r'by:\s*"?([^",}\s]+)', raw)
+    return m.group(1) if m else None
+
+
 def parse_relations(block: str) -> list[tuple[str, str]]:
     """(predicate, target) for every typed edge in a frontmatter block.
 
