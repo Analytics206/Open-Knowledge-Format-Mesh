@@ -1,22 +1,54 @@
 # dropin/
 
-The Level 2 deterministic build. **Copy this folder into a project and run it.**
+The Level 2 deterministic build. **Copy this folder into a project as `.okfm/` and run it.**
 
 ```bash
-cp -r dropin my-project/okfm && cd my-project
+cp -r dropin my-project/.okfm && cd my-project
 ```
 
 ```bash
-python okfm/okfm.py             # the whole pipeline: build, observe, bake, validate
-python okfm/okfm.py --check     # same, but writes nothing and fails on mismatch (CI)
+python .okfm/okfm.py             # the whole pipeline: build, observe, bake, validate
+python .okfm/okfm.py --check     # same, but writes nothing and fails on mismatch (CI)
 ```
 
 Individual steps stay runnable — `okfm.py build`, `refresh`, `view`, `check` — but one
 command is the one to remember.
 
-It defaults to the directory it was dropped into. With no configuration it scans that
-directory, reports what it found, and writes the config it used — so the first thing you
-edit is a file it made for you.
+## What the first run does
+
+With no configuration it finds `docs/`, gives **every folder of documents its own OKF**, adds
+one for the loose files at the top, and writes a master OKF over all of them:
+
+```text
+my-project/
+  docs/guides/          →   .okfm/guides/
+  docs/architecture/    →   .okfm/architecture/
+  docs/*.md             →   .okfm/docs/
+                            .okfm/mesh/      ← the master OKF
+```
+
+Then it writes the config it used, so the first thing you edit is a file it made for you.
+Three keys control the scan:
+
+```json
+"discover": { "root": "docs", "root_files": true, "exclude": ["archive", "vendor"] }
+```
+
+`root` points somewhere other than `docs/`. `exclude` drops a subtree — paths are relative to
+the root. `root_files: false` skips the loose documents at the top, which in many projects are
+a landing page and two stubs rather than knowledge.
+
+Discovery runs on **every** build rather than being frozen into the config on the first one. A
+folder added next month gets an OKF without anyone remembering to declare it — which is also
+what makes `exclude` mean something more than "delete a line". Writing an explicit `sources`
+list turns discovery off entirely; someone who wrote one meant it.
+
+Your documents are never written to. Everything the tool produces lands under `.okfm/`, so
+`rm -rf .okfm` leaves the project exactly as it was.
+
+**Re-running is safe.** The build writes only concepts nothing else has touched, judged by
+`generated.by` and the presence of `verified`. A tool that eats your edits on the second run
+gets deleted after the second run.
 
 Python 3.13, **standard library only**. No install step, no requirements file. Every
 component is `needs: []` under [DR-0008](../docs/decisions/0008-build-pipeline.md): no
@@ -27,7 +59,7 @@ network, no secrets, no model.
 | File | Does |
 |---|---|
 | `okfm.py` | One entry point. Runs the pipeline, or dispatches a single step. |
-| `build.py` | Markdown → concepts. Discovers config, scans sources, writes concepts. |
+| `build.py` | Markdown → concepts, one bundle per folder, plus the master OKF. |
 | `okfm_core.py` | Locating and frontmatter parsing. Knows nothing about where it was installed. |
 | `bootstrap.py` | Extraction — `title`, `description` — and in-place concept creation. |
 | `bake_viewer.py` | Regenerates the viewer's index from the bundles. `--check` gates CI. |
@@ -41,7 +73,7 @@ network, no secrets, no model.
 
 ## Two modes
 
-**Mirror (default).** Concepts are written into `bundle/` and point back at your files via
+**Mirror (default).** Concepts are written into `.okfm/` and point back at your files via
 `resource`. Your markdown is never touched.
 
 **In-place (`--in-place`).** Frontmatter is added to your files, so they *become* the

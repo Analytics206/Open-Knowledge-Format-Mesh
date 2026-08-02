@@ -150,11 +150,52 @@ consequences. Under this record the registry would carry a dangling member. Miti
 registry treats a missing member as a resolvable condition, not an error — which is
 §6.7's tolerance requirement applied to the mesh level, and worth proving anyway.
 
+## Amendment 2026-08-01 — the mesh lives in `.okfm/`, and every folder gets one
+
+The four level bundles were built, and building them settled three things this record had
+guessed at.
+
+**Layout.** Bundles do not sit at the repository root. Everything OKFM produces lives under
+`.okfm/`, one subfolder per bundle, beside a `docs/` tree it never writes to. Two folders,
+each with an obvious owner, and `rm -rf .okfm` returns the project to what it was. The naming
+below is superseded: `okfm-process` / `okfm-enrich` / `okfm-suite` became
+`.okfm/level-2-build` / `level-3-enrich` / `level-4-suite`, matching the folders in
+`docs/levels/` they are built from.
+
+**One OKF per folder of documents, not per level.** The level split was a special case of a
+better default: any folder that holds documents is a unit somebody already decided to
+separate, so it becomes a bundle. `docs/guides/` and `docs/architecture/` are apart because
+they are about different things, and mirroring that arrangement needs no configuration to get
+right. Loose files at the top of `docs/` become a bundle too, and both exclusions —
+a subtree, or the top-level files — are config keys.
+
+**The master OKF is generated.** `build.py` writes the mesh: one `OKF Member` concept per
+bundle plus the map. A map maintained by hand disagrees with its territory eventually, and the
+disagreement is silent — the same argument that already made the viewer index generated rather
+than checked.
+
+### What this cost, and one thing it caught
+
+Six bundles became eight and the record's arithmetic changed twice, which is the expected
+price of a layout decision made before the thing exists.
+
+It also surfaced a real defect. `build.py` overwrote every concept it had generated,
+unconditionally. That was invisible while all bundles were hand-authored, and it would have
+destroyed level 3's enrichment on the first rebuild afterwards — silently, on the command an
+adopter runs most often. The build now writes only concepts nothing else has touched, judged
+by `generated.by` and the presence of `verified`.
+
+A layout change is not usually where you expect to find a data-loss bug. It was found because
+moving the bundles forced a rebuild against content somebody had already improved, which is
+exactly the situation the bug needed and the situation no earlier test had created.
+
 ## Settled details
 
-**The registry lives at `okfm-registry/`, not the repository root.** Root would read as a
-master bundle, which §12.2 warns against, and a registry that sits beside its members rather
-than above them says the right thing about what it owns.
+**The registry does not sit at the repository root.** Root would read as a master bundle,
+which §12.2 warns against, and a registry that sits beside its members rather than above them
+says the right thing about what it owns. It lives at `.okfm/mesh/` — see the amendment above;
+the original `okfm-registry/` was renamed for findability, since "registry" is a synonym a
+visitor should not have to learn for the thing the project is named after.
 
 **Two scopes.** `guide` for teaching material, excluded everywhere including here. `project`
 for OKFM's own knowledge about itself — counted in this repository's statistics, because the

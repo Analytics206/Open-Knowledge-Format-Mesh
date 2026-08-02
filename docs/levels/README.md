@@ -9,10 +9,10 @@ and everything OKFM generates lands in one folder you can delete.
 
 | Level | Raw material | Its OKF | What OKFM needs from you |
 |---|---|---|---|
-| 1 — view | [`level-1-view/`](level-1-view) | [`.okfm/level-1/`](../../.okfm/level-1/index.md) | a browser |
-| 2 — build | [`level-2-build/`](level-2-build) | [`.okfm/level-2/`](../../.okfm/level-2/index.md) | Python 3.13 |
-| 3 — enrichment | [`level-3-enrich/`](level-3-enrich) | [`.okfm/level-3/`](../../.okfm/level-3/index.md) | an agent you already use |
-| 4 — the suite | [`level-4-suite/`](level-4-suite) | [`.okfm/level-4/`](../../.okfm/level-4/index.md) | an API key |
+| 1 — view | [`level-1-view/`](level-1-view) | [`.okfm/level-1-view/`](../../.okfm/level-1-view/index.md) | a browser |
+| 2 — build | [`level-2-build/`](level-2-build) | [`.okfm/level-2-build/`](../../.okfm/level-2-build/index.md) | Python 3.13 |
+| 3 — enrichment | [`level-3-enrich/`](level-3-enrich) | [`.okfm/level-3-enrich/`](../../.okfm/level-3-enrich/index.md) | an agent you already use |
+| 4 — the suite | [`level-4-suite/`](level-4-suite) | [`.okfm/level-4-suite/`](../../.okfm/level-4-suite/index.md) | an API key |
 
 Every level includes the ones below it. Stop wherever the value stops being worth the cost.
 

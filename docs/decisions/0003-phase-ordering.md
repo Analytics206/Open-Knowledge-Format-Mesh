@@ -102,7 +102,7 @@ measurable payoff.
 
 | Phase | Delivers |
 |---|---|
-| **1** | Baseline adoption, arXiv retrofit, the Level 2 build, **federation's addressing half** — registry, `OKF Member` concepts, cross-bundle refs, commit pinning, multi-bundle viewer |
+| **1** | Baseline adoption, the Level 2 build, the Level 3 loop, **federation's addressing half** — registry, `OKF Member` concepts, cross-bundle refs, commit pinning, multi-bundle viewer |
 | **2** | Extraction into a distributable project: core/packs/config split, the three runtime modes, the distribution tests |
 | **3** | **SugarPaws3d port** — `sys://` resolvers, meaning-family curation, attested computations, golden-report reconciliation |
 | **4** | **Federation's negotiation half** — agent interfaces, transport, the feedback inbox/outbox ledger, cross-owner routing |
@@ -114,3 +114,28 @@ it is the mitigation for the first counter-argument above.
 
 By Phase 4 there are two real bundles with a real disagreement history to federate, which
 is a better test than a toy pair.
+
+## Amendment 2026-08-01 — the proving grounds are not phases of this project
+
+Phase 1 named an arXiv loop retrofit and Phase 3 a SugarPaws3d port. Both are gone from the
+plan, and the correction is worth stating precisely because it is easy to read as a
+cancellation.
+
+They were never work this repository performs. They are **other projects** — one of them a
+loop that already runs, in a repository this one does not touch. Writing them into the phase
+plan made OKFM look like a project with a domain, and a scaffolding that has a domain is one
+step from having that domain's assumptions compiled into it. The CI grep forbidding domain
+words in code was already defending against exactly this; the roadmap was undermining it in
+prose.
+
+What they actually are is the **feedback loop**: adopt OKFM in a real project, find what
+breaks, bring the finding back here as a change. That is a validation channel, and a valuable
+one, but it belongs outside the plan rather than inside it — nothing here should be blocked on
+a repository this one cannot see, and nothing here should be built to fit one.
+
+**What replaces them.** The exit criteria that depended on a specific corpus now depend on
+this repository's own mesh, which is real content with the same properties: eight bundles,
+genuine cross-bundle references, a working drift signal, and a benchmark harness pointed at
+it. Where a criterion genuinely needs a domain — a `sys://` resolver against a live database,
+attested computations reconciled against existing trusted reports — it stays in the roadmap as
+a capability with no named corpus attached, and the corpus arrives when someone adopts it.

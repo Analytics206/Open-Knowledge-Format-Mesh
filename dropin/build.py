@@ -31,7 +31,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from okfm_core import (
-    HERE, PROJECT, RESERVED, bundle_root, frontmatter, load_or_create_config, scalar,
+    HERE, PROJECT, RESERVED, bundle_root, frontmatter, load_or_create_config,
+    resolve_sources, scalar,
 )
 from bootstrap import _extract_description, _title, _yaml_str
 
@@ -127,6 +128,79 @@ def write_index(out_dir: Path, name: str, names: list[str], stamp: str, apply: b
         (out_dir / "index.md").write_text("\n".join(lines), encoding="utf-8", newline="\n")
 
 
+def write_mesh(out_root: Path, mesh_name: str, built: list[tuple[str, str, int]],
+               stamp: str, apply: bool) -> int:
+    """Write the master OKF: one `OKF Member` concept per bundle, plus the map.
+
+    The mesh is the point of the format, so a project that ends up with four bundles and no
+    way to say how they relate has been given the parts and not the thing. It is generated
+    rather than authored for the same reason the viewer index is: a map maintained by hand
+    disagrees with the territory eventually, and the disagreement is silent.
+
+    It owns the map and never member content -- index-*over*, not authority-*over*.
+    """
+    mesh_dir = out_root / mesh_name
+    written = 0
+
+    for name, path, count in built:
+        dest = mesh_dir / "members" / f"{name}.md"
+        if not _owned(dest):
+            continue
+        body = "\n".join([
+            "---",
+            "type: OKF Member",
+            f"title: {_yaml_str(name)}",
+            f"description: {_yaml_str(f'{count} concept(s) derived from {path}.')}",
+            f"resource: ../../{name}",
+            "status: draft",
+            f'generated: {{ by: "{MINE}", at: {stamp} }}',
+            "okfm_member:",
+            "  owner: null",
+            "  agent: null",
+            "  sync_policy: pull",
+            "okfm_relations:",
+            "  - { predicate: part_of, target: /index.md }",
+            "---",
+            "",
+            f"# {name}",
+            "",
+            f"Built from [`{path}`](../../../{path}). Its documents are the source; these",
+            "concepts point at them and never restate them.",
+            "",
+            "`owner` is null because nothing can infer it. Naming the accountable person is",
+            "the one thing this file is for that a directory listing does not already do.",
+            "",
+        ])
+        if apply:
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            dest.write_text(body, encoding="utf-8", newline="\n")
+        written += 1
+
+    index = mesh_dir / "index.md"
+    if _owned(index):
+        lines = [
+            "---", "type: Index", "title: The mesh",
+            "description: The master OKF — an OKF whose concepts are the other OKFs.",
+            "status: draft", f'generated: {{ by: "{MINE}", at: {stamp} }}', "---", "",
+            "# Members", "",
+        ]
+        lines += [f"- [{n}](members/{n}.md) — {c} concept(s) from `{p}`" for n, p, c in built]
+        lines += [
+            "",
+            "# What this owns",
+            "",
+            "Membership, and nothing else. Member content lives in the member. This file is",
+            "regenerated on every build, so editing it is not the way to change it — add or",
+            "remove a source folder instead.",
+            "",
+        ]
+        if apply:
+            mesh_dir.mkdir(parents=True, exist_ok=True)
+            index.write_text("\n".join(lines), encoding="utf-8", newline="\n")
+        written += 1
+    return written
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--apply", action="store_true", help="write; otherwise dry-run")
@@ -144,14 +218,14 @@ def main() -> int:
     print(f"bundle  : {out_root}")
     print(f"mode    : {'in-place' if a.in_place else cfg.get('mode', 'mirror')}\n")
 
-    sources = cfg.get("sources") or []
+    sources = resolve_sources(cfg)
     if not sources:
         print("No source directories found.")
-        print("Nothing was written. Add entries to `sources` in the config above,")
-        print("or drop this folder beside a directory that contains markdown.")
+        print("Nothing was written. Point `discover.root` at a directory that holds")
+        print("markdown, or list folders explicitly under `sources`.")
         return 0
 
-    total = 0
+    total, built = 0, []
     for entry in sources:
         rel = entry["path"] if isinstance(entry, dict) else entry
         ctype = (entry.get("type") if isinstance(entry, dict) else None) or "Document"
@@ -171,6 +245,15 @@ def main() -> int:
         shown = out_dir.relative_to(PROJECT) if out_dir.is_relative_to(PROJECT) else out_dir
         print(f"  {'wrote' if a.apply else 'would'}  {len(names):>3}  {rel}  →  {shown}")
         total += len(names)
+        if out_dir.is_dir() or names:
+            built.append((name, rel, len(names) or
+                          sum(1 for f in out_dir.glob("*.md") if f.name not in RESERVED)))
+
+    mesh_name = cfg.get("mesh", "mesh")
+    if mesh_name and built:
+        n = write_mesh(out_root, mesh_name, sorted(built), stamp, a.apply)
+        print(f"  {'wrote' if a.apply else 'would'}  {n:>3}  the mesh  →  "
+              f"{(out_root / mesh_name).relative_to(PROJECT)}")
 
     print(f"\n{total} concept(s) {'written' if a.apply else 'planned'}")
     if not a.apply:

@@ -11,22 +11,42 @@ strip every `okfm_` key and what remains is still a valid OKF bundle.
 
 ---
 
+## How it sits in a project
+
+```text
+my-project/
+  docs/                  your documents. OKFM reads these and never writes to them.
+    guides/
+    architecture/
+  .okfm/                 everything OKFM. Delete it and the project is as it was.
+    mesh/                  the master OKF — an OKF whose concepts are the other OKFs
+    docs/                  an OKF for the loose files at the top of docs/
+    guides/                an OKF for docs/guides/
+    architecture/          an OKF for docs/architecture/
+```
+
+**Every folder of documents gets its own OKF, and a master OKF sits over them.** That is the
+default with no configuration: `docs/` is found, each subfolder becomes a bundle, the loose
+files at the top become one, and the mesh maps them. Point it somewhere other than `docs/`,
+drop a subtree, or skip the top-level files by editing three lines in `.okfm/okfm.json`.
+
 ## Four levels
 
 Each level includes the one below it. Stop wherever the value stops being worth the cost.
 
-| | What you do | What you need |
+| | What you do | What OKFM needs from you |
 |---|---|---|
-| **1 — the format** | Download it. Open the viewer. Read the guide. | a browser |
-| **2 — the build** | Paste a folder into your project and run it. | Python 3.13 |
+| **1 — view** | Download it. Open the viewer. Read the guide. | a browser |
+| **2 — build** | Paste one folder into your project and run one command. | Python 3.13 |
 | **3 — enrichment** | Let your own agent fill in what extraction cannot. | an agent you already use |
 | **4 — the suite** | Providers, packs, federation, workflows. | an API key |
 
-Levels 1 and 2 never need a model or a key. That boundary is enforced in CI, not promised
-here.
+Levels 1 and 2 never need a model or a key. That is enforced in CI by
+[`dev/check_levels.py`](dev/check_levels.py), which reads the `okfm_needs` field on every
+component and fails when one exceeds what its level allows.
 
-You can also just point your coding agent at this repository and ask it for whatever you
-want. That works from level 1 and needs nothing from us.
+You can also just point your coding agent at this repository and ask it for whatever you want.
+That works from level 1 and needs nothing from us.
 
 ## Status
 
@@ -36,12 +56,13 @@ runs, and there is no CLI yet.
 | | |
 |---|---|
 | Specification, rationale, roadmap, prior art | ✅ |
-| The mesh — registry, guide, decision records | ✅ 3 bundles, 26 concepts |
+| The mesh — 8 bundles, 63 concepts, self-hosted | ✅ |
 | `okfm-viewer.html` — graph, closure ledger, health panel | ✅ works offline |
-| `templates/AGENTS.md` — the level 3 agent contract | ✅ |
-| `dropin/` — paste into a project, build a mesh | ✅ mirror mode, self-locating |
-| `okfm` CLI, live resolvers, drift cache | ⬜ Phase 1 |
-| Enrichment, providers, packs, federation | ⬜ Phase 2+ |
+| `dropin/` — paste into a project, build a mesh | ✅ level 2, deterministic |
+| `templates/AGENTS.md`, enrich / guard / revalidate | ✅ level 3 |
+| Benchmark harness | ✅ prototype — deterministic half, placeholder questions |
+| `okfm` CLI, live resolvers, web console | ⬜ Phase 2 |
+| Providers, packs, federation's negotiation half | ⬜ Phase 3+ |
 
 See the [roadmap](docs/roadmap.md) for phases, and [decisions](docs/decisions/index.md) for
 what is settled and what is open.
@@ -56,39 +77,45 @@ git clone https://github.com/Analytics206/Open-Knowledge-Format-Mesh
 
 Open `okfm-viewer.html` in a browser. No server, no build, no dependencies.
 
-You get the mesh as a graph, colored by concept type, with a health panel and a closure
-ledger. Then read [`okfm-guide/index.md`](okfm-guide/index.md) — every file in that folder is
-a legal OKF concept, so the guide demonstrates the format by being written in it.
+You get the mesh as a graph, coloured by concept type, with a health panel and a closure
+ledger. Then read [`.okfm/guide/index.md`](.okfm/guide/index.md) — every file in that folder
+is a legal OKF concept, so the guide demonstrates the format by being written in it.
 
-Delete the guide whenever you like: `rm -rf okfm-guide/`.
+Delete the guide whenever you like: `rm -rf .okfm/guide/`.
 
-## Level 2 — paste and run *(Phase 1)*
-
-Copy the folder into your project and run it. It defaults to where it sits, scans the files
-around it, and writes a bundle.
+## Level 2 — paste and run
 
 ```bash
-cp -r okfm/dropin my-project/okfm && cd my-project
+cp -r "Open Knowledge Format Mesh/dropin" my-project/.okfm && cd my-project
 ```
 
 ```bash
-python okfm/okfm.py
+python .okfm/okfm.py
 ```
+
+It finds `docs/`, builds one OKF per folder plus a master OKF over them, and writes the config
+it used — so the first thing you edit is a file it made for you rather than a blank page.
 
 Descriptions are **extracted** from your files rather than written, so they can be unhelpful
 but never wrong about what your source says. Everything lands `status: draft` with no
 `verified` entry, because nobody has reviewed it. Drift detection works from the first build,
 because the captured hashes are real.
 
-The first run writes the config it used, listing what it scanned — most projects have many
-folders under `docs/` and want concepts for only some, so pruning is deleting a line.
+Re-running is safe: the build writes only concepts nothing else has touched.
 
 Python 3.13, standard library only. No install step.
 
-## Level 3 — enrichment *(Phase 2)*
+## Level 3 — enrichment
 
 Your agent, LLM, or MCP server fills in what extraction cannot: summaries, tags, section
 purposes. Level 2 detects what went stale, level 3 drafts the prose, you approve it.
+
+```bash
+python .okfm/okfm.py enrich                          # what needs work, and why
+#                                                      your agent does it
+python .okfm/okfm.py guard                           # did it stay in its lane?
+python .okfm/okfm.py revalidate <path> --by human:you
+```
 
 OKFM holds no credential here — your agent drives OKFM, and you are already authenticated in
 your own tool. Drafts stop at `status: draft` until a human says otherwise.
@@ -98,51 +125,62 @@ your project as whatever your agent reads.
 
 ## Level 4 — the full suite *(Phase 3+)*
 
-```bash
-okfm init --pack warehouse && okfm validate && okfm index
-```
+Providers, packs, federation's negotiation half, the web console, and the benchmark. Two
+adapters — OpenAI-compatible and Anthropic — plus a config list of endpoints, so adding a
+provider is a config line rather than code. Local models via Ollama are a supported path:
+enrichment is short, bounded, repetitive work that a small local model handles well.
 
-Providers, packs, federation, the loop-family workflows, and the benchmark. Two adapters —
-OpenAI-compatible and Anthropic — plus a config list of endpoints, so adding a provider is a
-config line rather than code. Local models via Ollama are a supported path: enrichment is
-short, bounded, repetitive work that a small local model handles well.
+The direction reverses at this level: OKFM drives a provider instead of your agent driving
+OKFM, which is why a key appears here and nowhere earlier.
 
 ---
 
 ## Repository map
 
 ```text
+.okfm/                   the mesh — every bundle this repository publishes
+  mesh/                  the master OKF: one OKF Member concept per bundle
+  level-1-view/          ┐
+  level-2-build/         │ one OKF per adoption level, built from docs/levels/
+  level-3-enrich/        │
+  level-4-suite/         ┘
+  docs/                  the loose documents at the top of docs/
+  guide/                 the format, and a bundle that demonstrates it
+
+docs/                    the documents the mesh is built from
+  levels/                raw material for the four level bundles
+  rationale.md           why the system is shaped this way
+  roadmap.md             phases, open questions, success measures
+  prior-art.md           the ecosystem, and the measurements that went against us
+  decisions/             why this project is shaped the way it is — also a bundle
+
 spec/okfm-v0.2.1.md      normative — what makes a bundle a legal OKFM bundle
-docs/rationale.md        why the system is shaped this way
-docs/roadmap.md          proving grounds, phases, open questions, success measures
-docs/prior-art.md        the ecosystem, and the measurements that went against us
-
-okfm-registry/           the mesh map — one OKF Member concept per bundle
-okfm-guide/              level 1 — documentation, and a real bundle
-docs/decisions/          why this project is shaped the way it is — also a bundle
-
+dropin/                  the level 2 build — paste this into a project as .okfm/
+benchmark/               the level 4 benchmark harness — prototype
 okfm-viewer.html         read-only viewer — opens from disk, for people not agents
-okfm.json                this repo's config; it self-hosts its own mesh
+okfm.json                this repository's config; it self-hosts its own mesh
 templates/               AGENTS.md and a starter bundle — copy these
-examples/minimal/        an adopter-shaped config
-dropin/                  the level 2 build — paste this into a project
 dev/                     this repository's own maintenance scripts
-.github/workflows/       CI — no secrets, runs on forks
 ```
 
-The three bundles are a working mesh rather than a demonstration. They have genuinely
-different change cadences — a guide change means the format moved; a decision is appended
-weekly — which is the §12.1 ownership seam rather than a split by size. More bundles join as
-levels ship.
-
-Section numbers are global across the four documents and preserved from the unified
-specification, so `§12.3` means the same thing everywhere. Each document opens with a map
+Section numbers are global across the four specification documents and preserved from the
+unified original, so `§12.3` means the same thing everywhere. Each document opens with a map
 saying where every section lives.
+
+## Two rules about where things live
+
+**Mirrored bundles live in `.okfm/`. In-place bundles live with their sources.**
+`docs/decisions/` is in place — those files *are* the concepts — so burying them in a hidden
+folder would trade away the one thing they are good for. The mesh registers both by path.
+
+**Nothing generated is ever edited.** The viewer's index, the master OKF, and the drift cache
+are all regenerated by the build and fail CI when the committed copy disagrees. A map
+maintained by hand disagrees with its territory eventually, and the disagreement is silent.
 
 ## What OKFM adds to OKF
 
-OKF v0.2 brings provenance, trust tiers, lifecycle, staleness dates, and attested
-computation. OKFM adds six things and deliberately no more:
+OKF v0.2 brings provenance, trust tiers, lifecycle, staleness dates, and attested computation.
+OKFM adds six things and deliberately no more:
 
 | Addition | The question it answers |
 |---|---|
@@ -158,31 +196,30 @@ computation. OKFM adds six things and deliberately no more:
 **Write down what the code cannot say.** A concept that restates its source is a maintenance
 liability that buys nothing measurable, and it can cost you an answer the source would have
 given. This rule comes from a published experiment where the bundle *lost* a question because
-a concept summarized a validator and the agent stopped there. See
+a concept summarised a validator and the agent stopped there. See
 [prior art](docs/prior-art.md) §21.1.
 
 **Derive verdicts, never store them.** Trust and staleness are computed when read. Drift is
-observed during the build and cached. A stored verdict is a stored opinion with an expiry
-date.
+observed during the build and cached. A stored verdict is a stored opinion with an expiry date.
 
 **No duplicate knowledge.** Knowledge lives in one place and is referenced everywhere else.
-Rendered views, exports, and caches are derivations, never edited. This is why the viewer
-never embeds concept bodies.
+Rendered views, exports, and caches are derivations, never edited. This is why the viewer never
+embeds concept bodies.
 
-**Extraction is not drafting.** Copying a sentence that already exists cannot invent; writing
-a new one can. That distinction is what makes level 2 work with no model.
+**Extraction is not drafting.** Copying a sentence that already exists cannot invent; writing a
+new one can. That distinction is what makes level 2 work with no model.
 
 **No domain words in code.** Enforced by CI, so the tooling stays portable while it is
 developed against specific domains.
 
 ## Contributing
 
-Early. The specification is stable enough to read and argue with; most of the implementation
+Early. The specification is stable enough to read and argue with; much of the implementation
 does not exist. The live questions are §19 in the [roadmap](docs/roadmap.md) and anything
 marked **proposed** in [decisions](docs/decisions/index.md).
 
 ## License
 
 MIT — see [LICENSE](LICENSE). OKFM is an independent project, not endorsed by or affiliated
-with Google. See [NOTICE](NOTICE) for attribution of the OKF specification (Apache-2.0) and
-the prior art this design draws on.
+with Google. See [NOTICE](NOTICE) for attribution of the OKF specification (Apache-2.0) and the
+prior art this design draws on.

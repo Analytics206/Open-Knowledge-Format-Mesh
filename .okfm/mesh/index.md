@@ -23,12 +23,12 @@ smuggle central authority back into a design that exists to prevent it.
 
 | Member | Is |
 |---|---|
-| [okfm-level-1](members/okfm-level-1.md) | the download — viewer, bundles, your own agent |
-| [okfm-level-2](members/okfm-level-2.md) | the deterministic build |
-| [okfm-level-3](members/okfm-level-3.md) | the enrichment loop |
-| [okfm-level-4](members/okfm-level-4.md) | providers, packs, federation, the benchmark |
-| [okfm-guide](members/okfm-guide.md) | the format, and a bundle that demonstrates it |
-| [okfm-decisions](members/okfm-decisions.md) | why this project is shaped the way it is |
+| [okfm-level-1](members/level-1-view.md) | the download — viewer, bundles, your own agent |
+| [okfm-level-2](members/level-2-build.md) | the deterministic build |
+| [okfm-level-3](members/level-3-enrich.md) | the enrichment loop |
+| [okfm-level-4](members/level-4-suite.md) | providers, packs, federation, the benchmark |
+| [okfm-guide](members/guide.md) | the format, and a bundle that demonstrates it |
+| [okfm-decisions](members/decisions.md) | why this project is shaped the way it is |
 
 # Where the members live
 
@@ -55,7 +55,7 @@ cross-bundle references, and a viewer rendering seven bundles at once.
 separate accountable owners. These bundles are co-located under one steward and resolve
 in-process, which §12.6 permits explicitly — *"do not make them converse through chat
 completions for theater."* What is missing is a member that can **refuse**, and that needs a
-bundle somewhere else. See [level 4](members/okfm-level-4.md).
+bundle somewhere else. See [level 4](members/level-4-suite.md).
 
 See [DR-0010](../../docs/decisions/0010-okfm-self-hosts-as-a-mesh.md) for how the mesh got
 here, including the parts of that record this layout has since overtaken.

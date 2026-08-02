@@ -1,14 +1,24 @@
 {
   "okfm": "0.2.1",
   "pack": "warehouse",
-  "bundles": { "primary": "./okf" },
+
+  "_discover": "Every folder of documents under `root` gets its own OKF in `bundle`, plus one for the loose files at the top and a master OKF over all of them. This is the default with no config at all; the first run writes it out so the first thing you edit is a file the tool made for you.",
+  "discover": {
+    "root": "docs",
+    "root_files": true,
+    "exclude": ["archive", "vendor"]
+  },
+  "bundle": ".okfm",
+  "mesh": "mesh",
+  "mode": "mirror",
+
   "index": {
     "max_concepts": 60,
     "priority_types": ["Attested Computation", "Rule", "Metric", "Perspective"]
   },
   "exclude_scopes": ["guide"],
   "stores": {
-    "sp3d-db": { "kind": "sql", "adapter": "bigquery", "profile": "env:SP3D_DSN" }
+    "warehouse-db": { "kind": "sql", "adapter": "bigquery", "profile": "env:WAREHOUSE_DSN" }
   },
-  "federation": { "registry": null }
+  "federation": { "registry": "./.okfm/mesh" }
 }

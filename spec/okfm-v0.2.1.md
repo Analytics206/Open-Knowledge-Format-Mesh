@@ -856,39 +856,51 @@ okfm/
   okfm-viewer.html           # the mesh viewer (§14)                              ✓
   spec/
     okfm-v0.2.1.md           # normative specification                            ✓
+  # ---- documents: what a person reads and edits. Never written to. -------
   docs/
     rationale.md             # §0-2, §22 — why the system is shaped this way      ✓
     roadmap.md               # §4, §11, §15-17, §19-20 — assets, phases, measures ✓
     prior-art.md             # §21 — ecosystem, and the evidence against          ✓
-    decisions/               # dated decision records                             ✓
+    levels/                  # raw material for the four level bundles            ✓
+    decisions/               # dated decision records — an IN-PLACE bundle        ✓
   templates/
     bundle/                  # index.md, log.md, one starter concept     ✓
     AGENTS.md                # the prose contract — level 3, mode 2 (§13.6)  ✓
   examples/
     minimal/                 # an adopter-shaped config                            ✓
+  benchmark/                 # §18 harness — deterministic half                   ✓
 
   # ---- the mesh: OKFM described in its own format (§12) -------------------
-  okfm-registry/             # the map — one OKF Member concept per bundle  ✓
-  okfm-guide/                # level 1 — the format (§14.5)                        ✓
-  okfm-process/              # level 2 — the deterministic build
-  okfm-enrich/               # level 3 — the reasoning components
-  okfm-suite/                # level 4 — providers, packs, federation, workflows
+  # One OKF per folder of documents, plus a master OKF over them. Mirrored
+  # bundles live here; in-place bundles stay with their sources and are
+  # registered by path. `rm -rf .okfm` returns the project to what it was.
+  .okfm/
+    mesh/                    # the master OKF — one OKF Member per bundle         ✓
+    level-1-view/            # level 1 — the format, the viewer (§14.5)           ✓
+    level-2-build/           # level 2 — the deterministic build                  ✓
+    level-3-enrich/          # level 3 — the enrichment loop                      ✓
+    level-4-suite/           # level 4 — providers, packs, federation, benchmark  ✓
+    docs/                    # the loose documents at the top of docs/            ✓
+    guide/                   # the format, and a bundle that demonstrates it      ✓
 
   # ---- level 2: the drop-in folder. Copy this whole directory. ------------
-  dropin/                    # paste this whole directory into a project    ✓
+  dropin/                    # paste into a project as .okfm/               ✓
     okfm                     # one entry point, dispatches the pipeline      ✓
-    build                    # markdown -> concepts, self-locating           ✓
+    build                    # one bundle per folder, plus the master OKF    ✓
     refresh                  # observe pointers, report drift (§8.4)         ✓
-    okfm_core                # locating, frontmatter, vocabularies           ✓
+    okfm_core                # locating, discovery, frontmatter, vocabularies ✓
     bootstrap                # extraction: title, description                ✓
     bake_viewer              # regenerate the viewer index                   ✓
     check_bundles            # conformance, profile, strip test              ✓
+    enrich / guard / revalidate   # level 3 — outside the pipeline           ✓
+    telemetry                # one run record per run (§10.1)                ✓
     resolvers/               # file:// only — live schemes need credentials
-    vocab/                   # core reason codes, predicates                ✓
+    vocab/                   # types, predicates, reason codes              ✓
     # Python 3.13, standard library only. No requirements file, by design.
 
   dev/                       # this repository's own maintenance — ships to nobody ✓
     check_docs               # the four-document spec corpus                 ✓
+    check_levels             # every component fits the level it claims      ✓
 
   # ---- levels 3-4: the implementation. Optional, replaceable. -------------
   tools/

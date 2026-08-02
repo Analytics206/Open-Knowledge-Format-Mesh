@@ -83,58 +83,118 @@ def find_config() -> tuple[Path | None, dict]:
     return None, {}
 
 
-def discover_sources(root: Path, limit: int = 40) -> list[str]:
-    """Directories under `root` that hold markdown worth turning into concepts.
+MAX_DEPTH = 4
 
-    Deliberately shallow and conservative. Most projects have many folders under docs/
-    and want concepts for only some, so this is a starting point to prune -- which is why
-    the result is written to config rather than recomputed on every run.
 
-    `docs/` wins outright when it exists. Nearly every project keeps its documentation there,
-    and a first run that produces concepts for the documentation is obviously right, where one
-    that also sweeps up `src/`, `.changesets/` and a vendored SDK is obviously wrong and takes
-    an adopter ten minutes to undo. Scanning the whole tree is the fallback, not the default.
+def docs_root(cfg: dict, root: Path) -> Path:
+    """The directory to scan. `docs/` when it exists, otherwise the project itself.
+
+    Nearly every project keeps its documentation in `docs/`, and a first run that produces
+    concepts for the documentation is obviously right where one that also sweeps up `src/`,
+    a vendored SDK and three lockfiles is obviously wrong and takes ten minutes to undo.
+    Scanning the whole tree is the fallback, not the default -- and `discover.root` overrides
+    both.
     """
-    scan = root / "docs" if (root / "docs").is_dir() else root
+    named = (cfg.get("discover") or {}).get("root")
+    if named:
+        return (root / named).resolve()
+    return root / "docs" if (root / "docs").is_dir() else root
 
-    found = []
-    for d in sorted(scan.rglob("*")):
-        if not d.is_dir():
-            continue
-        rel = d.relative_to(scan)
-        parts = set(rel.parts)
-        if parts & SKIP_DIRS or d.resolve() == HERE:
-            continue
-        if HERE in d.resolve().parents:          # never scan our own output
-            continue
-        if len(rel.parts) > 3:                   # depth guard
-            continue
-        mds = [f for f in d.glob("*.md") if f.name not in RESERVED]
-        if len(mds) >= 2:                        # one stray README is not a bundle
-            found.append(d.relative_to(root).as_posix())
-        if len(found) >= limit:
-            break
 
-    # The scanned directory's own markdown counts too, if there is enough of it.
-    own = [f for f in scan.glob("*.md") if f.name not in RESERVED]
-    if len(own) >= 2:
-        found.insert(0, scan.relative_to(root).as_posix() or ".")
+def discover_sources(root: Path, cfg: dict | None = None, limit: int = 60) -> list[dict]:
+    """One OKF per folder of documents.
+
+    Every directory under the docs root that holds at least one non-reserved markdown file
+    becomes its own bundle, and the root's own files become one too. That is the arrangement
+    people already have -- `docs/guides/`, `docs/architecture/`, `docs/adr/` are separate
+    because they are about separate things -- so mirroring it needs no explanation and no
+    configuration to get right.
+
+    Two exclusions, because the default is deliberately generous:
+
+        "discover": { "root": "docs", "root_files": false, "exclude": ["archive", "vendor"] }
+
+    `exclude` paths are relative to the docs root and take a whole subtree. `root_files: false`
+    drops the loose documents at the top, which in many projects are a landing page and two
+    stubs rather than knowledge.
+
+    Discovery runs on **every** build rather than being frozen into the config on the first
+    one. A folder added next month should get an OKF without anyone remembering to declare it;
+    that is only true if the scan is live, which is also what makes `exclude` mean something
+    more than "delete a line".
+    """
+    cfg = cfg or {}
+    d = cfg.get("discover") or {}
+    scan = docs_root(cfg, root)
+    excluded = [x.strip("/") for x in d.get("exclude", [])]
+
+    def skipped(rel: Path) -> bool:
+        p = rel.as_posix()
+        return any(p == x or p.startswith(x + "/") for x in excluded)
+
+    found, names = [], {}
+
+    def add(directory: Path) -> None:
+        rel_to_scan = directory.relative_to(scan)
+        # Basename, so `docs/guides/` is the bundle `guides` rather than `docs-guides`.
+        # Only a collision forces the longer form, and then it forces it for both.
+        base = directory.name
+        name = base if base not in names else "-".join(rel_to_scan.parts) or base
+        names[base] = name
+        found.append({"path": directory.relative_to(root).as_posix(),
+                      "bundle": name, "type": "Document"})
+
+    if d.get("root_files", True) and not skipped(Path(".")):
+        own = [f for f in scan.glob("*.md") if f.name not in RESERVED]
+        if own:
+            add(scan)
+
+    for directory in sorted(scan.rglob("*")):
+        if not directory.is_dir() or len(found) >= limit:
+            continue
+        rel = directory.relative_to(scan)
+        if set(rel.parts) & SKIP_DIRS or len(rel.parts) > MAX_DEPTH or skipped(rel):
+            continue
+        if directory.resolve() == HERE or HERE in directory.resolve().parents:
+            continue                             # never scan our own output
+        if any(f.name not in RESERVED for f in directory.glob("*.md")):
+            add(directory)
+
     return found
 
 
+def resolve_sources(cfg: dict, root: Path = PROJECT) -> list[dict]:
+    """The source folders this build will read.
+
+    An explicit `sources` list wins outright -- someone who wrote one meant it, and silently
+    adding to it would be worse than not discovering at all. Otherwise the docs root is
+    scanned live.
+    """
+    explicit = cfg.get("sources")
+    if explicit:
+        return [s if isinstance(s, dict) else {"path": s, "type": "Document"} for s in explicit]
+    return discover_sources(root, cfg)
+
+
 def synthesize_config(root: Path) -> dict:
-    sources = discover_sources(root)
+    scan = docs_root({}, root)
     return {
         "okfm": "0.2.1",
         "pack": None,
         "_generated": (
-            "Written by the OKFM drop-in build on its first run. `sources` lists what it "
-            "found under docs/; delete a line to stop building concepts for it, or add a "
-            "path to scan somewhere else. Concepts are written to `bundle`, one subfolder "
-            "per source. Everything else is a sensible default you can ignore."
+            "Written by the OKFM drop-in build on its first run. Every folder of documents "
+            "under `discover.root` gets its own OKF in `bundle`, plus one for the loose "
+            "files at the top and a master OKF over all of them. Add a path to "
+            "`discover.exclude` to drop a subtree, or set `root_files` to false to skip the "
+            "loose files. Everything else is a sensible default you can ignore."
         ),
-        "sources": [{"path": s, "type": "Document"} for s in sources],
+        "discover": {
+            "root": scan.relative_to(root).as_posix() or ".",
+            "root_files": True,
+            "exclude": [],
+        },
         "bundle": ".okfm",
+        "mesh": "mesh",
         "mode": "mirror",
         "viewer": {"path": "../okfm-viewer.html"},
         "index": {"max_concepts": 60, "priority_types": []},
@@ -214,5 +274,9 @@ def configured_bundles(cfg: dict) -> dict[str, Path]:
     root = bundle_root(cfg)
     if not root.is_dir():
         return {}
-    subs = {d.name: d for d in sorted(root.iterdir()) if d.is_dir()}
+    # A directory holding no concepts is not a bundle. This matters because the tool can be
+    # pasted in AS `.okfm/`, which puts `vocab/` and `references/` beside the bundles --
+    # listing them as empty bundles is noise in every report the validator produces.
+    subs = {d.name: d for d in sorted(root.iterdir())
+            if d.is_dir() and any(is_concept(f) for f in d.rglob("*.md"))}
     return subs or {"bundle": root}

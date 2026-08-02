@@ -15,7 +15,7 @@ list.
 you. Here OKFM supplies files; your agent reads them; the model is yours, running in a tool
 you were already paying for.
 
-[Level 3](../../../.okfm/level-3/index.md) is different in kind. There OKFM ships a workflow that
+[Level 3](../../../.okfm/level-3-enrich/index.md) is different in kind. There OKFM ships a workflow that
 does not terminate without a model — the enrichment loop has a step no arithmetic can
 perform. That is OKFM requiring a model, and it is why the level boundary sits exactly on the
 `model` line and can be checked mechanically.
@@ -27,7 +27,7 @@ level, which is true and which would make every level level 3.
 
 Whatever your agent builds is a one-off. It will not have the drift hashes, the tier guard,
 or the validation pass, so nothing will tell you later that a concept has stopped matching
-its source. That is what [level 2](../../../.okfm/level-2/index.md) adds, and it is one folder and
+its source. That is what [level 2](../../../.okfm/level-2-build/index.md) adds, and it is one folder and
 one command.
 
 # What to hand it

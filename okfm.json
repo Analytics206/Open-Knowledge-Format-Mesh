@@ -1,20 +1,24 @@
 {
   "okfm": "0.2.1",
   "pack": null,
+
+  "_discover": "Every folder of documents under `root` gets its own OKF in `bundle`, plus one for the loose files at the top and a master OKF over all of them. `decisions` is excluded because it is an in-place bundle — those files are the concepts, so mirroring them would be a second copy of knowledge that already exists.",
+  "discover": {
+    "root": "docs",
+    "root_files": true,
+    "exclude": ["decisions"]
+  },
   "bundle": ".okfm",
+  "mesh": "mesh",
   "mode": "mirror",
-  "sources": [
-    { "path": "docs/levels/level-1-view", "bundle": "level-1", "type": "Document" },
-    { "path": "docs/levels/level-2-build", "bundle": "level-2", "type": "Document" },
-    { "path": "docs/levels/level-3-enrich", "bundle": "level-3", "type": "Document" },
-    { "path": "docs/levels/level-4-suite", "bundle": "level-4", "type": "Document" }
-  ],
+
   "bundles": {
     "okfm-mesh": "./.okfm/mesh",
-    "okfm-level-1": "./.okfm/level-1",
-    "okfm-level-2": "./.okfm/level-2",
-    "okfm-level-3": "./.okfm/level-3",
-    "okfm-level-4": "./.okfm/level-4",
+    "okfm-level-1": "./.okfm/level-1-view",
+    "okfm-level-2": "./.okfm/level-2-build",
+    "okfm-level-3": "./.okfm/level-3-enrich",
+    "okfm-level-4": "./.okfm/level-4-suite",
+    "okfm-docs": "./.okfm/docs",
     "okfm-guide": "./.okfm/guide",
     "okfm-decisions": "./docs/decisions"
   },

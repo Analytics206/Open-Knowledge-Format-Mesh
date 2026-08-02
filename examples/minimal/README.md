@@ -1,29 +1,43 @@
 # examples/minimal
 
 What an *adopter's* configuration looks like, as opposed to the one at the repository
-root — which is OKFM self-hosting its own guide.
+root — which is OKFM self-hosting its own mesh.
 
 Three differences worth noticing:
 
 | | Root `okfm.json` | This one |
 |---|---|---|
 | `pack` | `null` — OKFM itself has no domain | `"warehouse"` — schema/query/metric shaped |
-| `bundles` | the bundled guide | the adopter's own `./okf` |
+| `discover.exclude` | the in-place decision records | an archive and a vendored tree |
 | `stores` | none | a SQL store, credentials **by reference** |
 
 The credential line is the one to copy:
 
 ```json
-"profile": "env:SP3D_DSN"
+"profile": "env:WAREHOUSE_DSN"
 ```
 
-A config file gets committed. A credential does not. Stores name an environment
-variable or a secret-manager handle and never the secret itself.
+A config file gets committed. A credential does not. Stores name an environment variable or
+a secret-manager handle and never the secret itself.
 
-`exclude_scopes: ["guide"]` keeps the bundled guide out of your health statistics,
-your injected index, and any context assembled for an agent. Leave it in place unless
-you have deleted the guide.
+## You do not have to write any of this
 
-Everything except `pack` is optional. Omit `bundles` and discovery falls back to
-convention — any `.md` file with a non-empty `type:` in its frontmatter, anywhere in
-the project.
+Running the build with no configuration produces the same result and writes this file for
+you. `docs/` is found, every folder of documents under it becomes its own OKF in `.okfm/`,
+the loose files at the top become one more, and a master OKF is written over all of them.
+
+The three keys under `discover` are the ones worth knowing:
+
+- **`root`** — scan somewhere other than `docs/`.
+- **`exclude`** — drop a subtree. Paths are relative to `root`, and an `archive/` full of
+  superseded documents is the usual first entry.
+- **`root_files`** — set to `false` when the loose documents at the top of `docs/` are a
+  landing page and two stubs rather than knowledge.
+
+Discovery runs on every build, not just the first, so a folder added next month gets an OKF
+without anyone remembering to declare it. Writing an explicit `sources` list turns discovery
+off entirely — someone who wrote one meant it.
+
+`exclude_scopes: ["guide"]` keeps the bundled guide out of your health statistics, your
+injected index, and any context assembled for an agent. Leave it in place unless you have
+deleted the guide.

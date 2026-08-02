@@ -223,17 +223,19 @@ The port's discovery step is not vector search but source understanding: schema 
 
 Four slices, each end-to-end. No phase builds platform without a user-visible query working at its end.
 
-### Phase 1 — Baseline adoption + arXiv retrofit
+> **The proving grounds are not phases.** §11 and §16 describe two real projects — a patron-analytics port and a retrofit of a running research loop — and neither is work this repository performs. They are the **feedback loop**: adopt OKFM somewhere real, find what breaks, bring the finding back. Writing them into the phase plan made a domain-free scaffolding look like a project with a domain, which is one step from having that domain's assumptions compiled into it. See the amendment in [DR-0003](decisions/0003-phase-ordering.md). Where a phase genuinely needs a domain, it names the capability and leaves the corpus unnamed until someone adopts it.
 
-Scope: migrate the current OKF to conformant v0.2 using an **existing migrator** rather than a hand-written one (§21.2); the §7.4 sidecar audit, applying the §7.7 admission test to every existing concept; OKFM profile keys frozen; loop-family types; telemetry 1.0; initial reason vocabulary. Validation is **adopted, then extended**: an existing conformance validator and CI action handle official §11; a second OKFM pass adds vocab-checked predicates and reason codes, pointer resolvability, and the strip test. Retrofit the running loop to write concepts and telemetry, send stored `Feedback` to the arXiv MCP, and check `already_evaluated` before evaluating a candidate. Stand up the benchmark harness (§18.4) and take a baseline reading.
+### Phase 1 — Baseline adoption and the self-hosted mesh
+
+Scope: migrate to conformant v0.2 using an **existing migrator** rather than a hand-written one (§21.2); the §7.4 sidecar audit, applying the §7.7 admission test to every existing concept; OKFM profile keys frozen; loop-family types; telemetry 1.0; initial reason vocabulary. Validation is **adopted, then extended**: an existing conformance validator and CI action handle official §11; a second OKFM pass adds vocab-checked predicates and reason codes, pointer resolvability, and the strip test. The Level 2 deterministic build and the Level 3 enrichment loop, each usable on its own. Stand up the benchmark harness (§18.4) and take a baseline reading.
 
 Also in Phase 1, per [DR-0003](decisions/0003-phase-ordering.md) and
 [DR-0010](decisions/0010-okfm-self-hosts-as-a-mesh.md): **federation's addressing half** —
-the registry bundle, `OKF Member` concepts, cross-bundle references with commit pinning, and
-a viewer that renders more than one bundle. It costs almost nothing because OKFM's own
-repository is already a mesh of three bundles, and it proves the project's central metaphor
-now rather than at the end.
-**Exit:** "Why did we reject paper X?" answered from the bundle alone; one run fully reconstructable from telemetry; bundle passes official conformance in CI with every `okfm_` key stripped; a first benchmark run recorded, whatever it says.
+the master OKF, `OKF Member` concepts, cross-bundle references with commit pinning, and a
+viewer that renders more than one bundle. It costs almost nothing because OKFM's own
+repository is a mesh of eight bundles, and it proves the project's central metaphor now
+rather than at the end.
+**Exit:** "Why did we decide X?" answered from the mesh alone; one run fully reconstructable from telemetry; every bundle passes official conformance in CI with every `okfm_` key stripped; a first benchmark run recorded, whatever it says.
 
 ### Phase 2 — Extraction into a distributable project
 
@@ -246,10 +248,13 @@ a first pass at the distribution test (§13.7) — someone other than the builde
 builder on a clean machine with only the README, reaches a running mesh in under an
 hour.
 
-### Phase 3 — SugarPaws3d port
+### Phase 3 — The credentialed half: live sources and attestation
 
-Scope: `sys://` resolver for the patron DB and API captures; discovery adapter; curated schema/queries/rules ingested as meaning-family concepts; churn/acts/deacts/revenue concepts, perspectives, rules; **Attested Computations with real attesters** for each figure; golden-report reconciliation; declared-vs-observed reconciliation over the 9-month history; the §11.5 question workflows; actor-aware defaults and plain-language trust rendering; the gap → propose → verify loop; drift detection live on `sys://` pointers.
-**Exit:** one business question answered with a stated perspective, a **passing attestation**, resolvable citations, claim classification, and the answer recorded as an `Answer` concept. One attested computation reconciled against its existing trusted report. One declared/observed mismatch found (or consistency verified). One consumer question driving the full gap → propose → verify cycle. A benchmark run (§18.4) on real business questions, graded against the golden reports.
+The first phase that needs a real domain. It names capabilities, not a corpus — the corpus is
+whichever project adopts OKFM first, and §11 describes one candidate in detail.
+
+Scope: `sys://` resolvers for databases and API captures; a discovery adapter interface; curated schema, queries and rules ingested as meaning-family concepts; **Attested Computations with real attesters**; reconciliation against an existing trusted report; declared-vs-observed reconciliation over a real history; the §11.5 question workflows; actor-aware defaults and plain-language trust rendering; the gap → propose → verify loop; drift detection live on `sys://` pointers.
+**Exit:** one business question answered with a stated perspective, a **passing attestation**, resolvable citations, claim classification, and the answer recorded as an `Answer` concept. One attested computation reconciled against a report its owner already trusts. One declared/observed mismatch found (or consistency verified). One consumer question driving the full gap → propose → verify cycle. A benchmark run (§18.4) on real questions, graded against ground truth the adopter already has.
 
 ### Phase 4 — Federation, the negotiation half
 
