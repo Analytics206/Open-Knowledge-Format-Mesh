@@ -528,6 +528,23 @@ sources:
       at: 2026-07-30
 ```
 
+#### `okfm_captured` is optional, and every field inside it is
+
+Only `resource` is required on a source entry. A pointer with no capture is **`unknown`** for
+drift — not fresh, not drifted — which is the honest reading and the third state §8.3 exists
+to carry.
+
+This matters because it is the *normal* shape at Level 1. Hand-authoring installs and runs
+nothing, so an author cannot compute a sha256, and inventing one would pin a hash that never
+matches and reports drift forever. Writing `okfm_captured: { at: 2026-07-30 }` with a date and
+no hash is legal and useful: it records when somebody last looked.
+
+`okfm_role` is optional too. When present it comes from a **closed list of five** —
+`subject`, `implementation`, `constraint_source`, `golden_reference`, `defines` — held in
+[`vocab/roles.yaml`](../dropin/vocab/roles.yaml) so a pack can overlay a domain role without
+forking core. An unknown value is a warning rather than a rejection: nothing reads the field
+yet, and it describes why a *person* should follow a pointer.
+
 `okfm_role` names why the source is cited (`subject`, `implementation`, `constraint_source`, `golden_reference`, `defines`). `okfm_captured` is what makes content drift detectable.
 
 ### 8.3 Two orthogonal staleness mechanisms

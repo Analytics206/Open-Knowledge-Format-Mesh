@@ -26,6 +26,8 @@ _STORED_VERDICT = re.compile(r"^okfm_(stale|drifted|drift|trust|tier|fresh)\s*:"
 _SOURCE_PIN = re.compile(r'resource:\s*(\S+)[\s\S]*?okfm_captured:\s*\{\s*hash:\s*"?'
                          r'sha256:([0-9a-f]+)')
 
+_ROLE = re.compile(r"^\s+okfm_role:\s*([\w_]+)", re.M)
+
 _REASON_CODES = re.compile(r"^okfm_reason_codes:\s*(\[.*?\]|\n(?:[ \t]*-.*\n?)+)", re.M)
 
 
@@ -49,6 +51,7 @@ def main() -> int:
     predicates = vocab_terms("predicates", overlays)
     reason_codes = vocab_terms("reason_codes", overlays)
     known_types = vocab_terms("types", overlays)
+    roles = vocab_terms("roles", overlays)
     if not predicates:
         errors.append("vocab/predicates.yaml is missing or empty — cannot check relations")
 
@@ -134,6 +137,18 @@ def main() -> int:
                                   f"two different files cannot, so at least one pointer is "
                                   f"wrong and will report drift forever")
                 pins[digest] = res
+
+            # --- profile: source roles (spec 8.2) -----------------------------
+            # Closed at five. A warning rather than a rejection because nothing yet reads
+            # `okfm_role` — it says why a source is cited, for a person deciding whether to
+            # follow it. Predicates are rejected because traversal treats an edge as fact;
+            # failing a build over a descriptive field no code consumes would be policing
+            # vocabulary instead of protecting a computation.
+            for role in _ROLE.findall(block):
+                if roles and role not in roles:
+                    warnings.append(f"{rid}: okfm_role `{role}` is not one of "
+                                    f"{', '.join(sorted(roles))} — typo, or add it in a "
+                                    f"pack overlay")
 
             # --- profile: the actor vocabulary (spec 6.3) ---------------------
             # `generated.by` and `verified.by` are read by the ownership model, not just

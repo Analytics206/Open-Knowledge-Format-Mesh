@@ -36,6 +36,12 @@ publishes a trust nobody granted.
 
 Delete the HTML comment once you have read it.
 
+**Read [what you may claim](../.okfm/guide/authoring-rules.md) first.** It is four rules about
+not asserting something nobody did, and it is where hand-authoring actually goes wrong —
+not on syntax. Those rules used to live only in `AGENTS.md`, filed as Level 3 material,
+so an author writing a bundle by hand had no reason to open the one file that would have
+stopped them shipping a concept claiming a review that never happened.
+
 **You usually will not need this.** The drop-in build writes bundles for you, one per folder
 of documents, and hand-authoring is for the case where a bundle has no source documents —
 the way this repository's guide and mesh bundles do. If you are pointing OKFM at an existing

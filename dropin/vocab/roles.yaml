@@ -1,0 +1,25 @@
+# Source-role vocabulary — spec §8.2.
+#
+# `okfm_role` says WHY a source is cited, not what it is. Two concepts can cite the same
+# file for different reasons, and the reason is what tells a reader whether to follow the
+# pointer: `subject` means the concept is about it, `implementation` means the detail is
+# down there and a careful answer goes and gets it.
+#
+# CLOSED at five, for now. Unlike `type` — which official §6.2 says is not centrally
+# registered — this is an OKFM key inside an official `sources` entry, and the five cover
+# every reason a source has been cited so far.
+#
+# Flagged as a WARNING rather than rejected, and the distinction is the project's usual one:
+# a predicate is rejected because traversal reads an edge as fact, and nothing yet reads
+# `okfm_role` at all. Failing a build over a descriptive field nothing consumes would be the
+# tooling policing vocabulary rather than protecting a computation.
+#
+# RE-ENTRY: the first real domain that needs a sixth. Add it as a pack overlay first — if two
+# unrelated domains reach for the same one, it belongs in core.
+
+core:
+  - subject             # the concept is about this source
+  - implementation      # the source is how the thing is actually done; detail lives here
+  - constraint_source   # the source imposes a limit the concept must respect
+  - golden_reference    # a trusted output to reconcile against
+  - defines             # the source is the definition the concept relies on
