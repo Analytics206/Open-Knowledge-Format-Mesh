@@ -220,10 +220,16 @@ index buys roughly a quarter of the tokens and latency on top. Meanwhile the
 no-injection arms collapse to 13-50% accuracy when tools are withheld, because an
 agent that must decide to look often does not.
 
-Adopted into §8.5. Also adopted: discovery by `type:` frontmatter anywhere in the
-project rather than a mandated directory (§13.5), a small config surface with an
-index budget and type priority (§13.4), zero-overhead-when-absent, and surfacing a
-concept's neighbors when it is read.
+Adopted into §8.5. Also adopted: no mandated directory — a concept is recognised by its
+`type:` and not by where it sits (§13.5) — a small config surface with an index budget
+and type priority (§13.4), zero-overhead-when-absent, and surfacing a concept's
+neighbors when it is read.
+
+Adopted with a change: that project *scans* for frontmatter across a repository. OKFM
+recognises a concept anywhere but only ever **reads** where it is told to — `build.root`,
+minus `exclude`, plus `include`. The goal was incremental adoption with nothing to move,
+and two explicit lists reach it without a first run that sweeps up an adopter's templates
+and vendored docs.
 
 Not adopted: that project targets OKF v0.1 (a bare `timestamp`, no `sources`,
 `verified`, or `status`) and leaves types freeform with no validation. Fine for a

@@ -32,9 +32,10 @@ the implementation disagree, the implementation is right and a record here says 
 | [0006](0006-drift-cost-and-caching.md) | Drift is observed at build time, never at read time | accepted | §3.4, §8.3–8.5, §13.4, §14.4, §20.8 |
 | [0007](0007-two-layers.md) | Base installs nothing; the implementation is optional | accepted | §13.2, §13.3, §13.6, §13.7, §14 |
 | [0008](0008-build-pipeline.md) | What each component requires, and what the rebuild does | accepted | §8.4, §10, §11.6, §13.6, §16 |
-| [0009](0009-adoption-levels.md) | Four adoption levels | accepted | §13.1, §13.3, §13.6, §13.7 |
+| [0009](0009-adoption-levels.md) | Adoption levels — three, with level 3 credentialed as a variant | accepted, amended | §13.1, §13.3, §13.6, §13.7 |
 | [0010](0010-okfm-self-hosts-as-a-mesh.md) | OKFM's own repository is the first mesh | accepted | §12, §14.5, §21.5 |
 | [0011](0011-viewer-and-console.md) | Viewer stays read-only; a console is separate | accepted, built last | §14.3, §14.7 |
+| [0012](0012-reach-is-configured.md) | Reach is configured, not discovered | accepted | §13.4, §13.5, §21.4 |
 
 ## Two different axes, easily confused
 
@@ -52,9 +53,9 @@ needs an API key" true as the implementation grows, rather than a promise that q
 
 ## Still open
 
-**0001** — settled for the lower levels: Python 3.13, standard library only in `dropin/`.
-Level 4 packaging (`uvx` vs `pipx`, the PyPI name) is still open and not blocking, because
-Level 4 does not exist yet.
+**0001** — settled: Python 3.13, standard library only in `dropin/`. Packaging for the
+credentialed variant (`uvx` vs `pipx`, the PyPI name) is still open and not blocking, because
+nothing publishes yet.
 
 Two smaller questions sit inside accepted records: 0008's `Feedback` destination split, and
 0010's registry location. Neither blocks anything.
@@ -77,8 +78,15 @@ reference implementation.
 composite's set being the *union* of everything it invokes. CI gates on the set, not the
 tier number.
 
-**0009** — four cumulative adoption levels, each a complete usable process rather than a
-teaser for the next.
+**0009** — cumulative adoption levels, each a complete usable process rather than a teaser
+for the next. Amended: three levels, not four. Who holds the key is a change of direction —
+OKFM driving a provider instead of your agent driving OKFM — so the credentialed case is a
+*variant* of level 3 and not another step up.
+
+**0012** — a concept is recognised anywhere, but read only where the config says. `exclude`
+drops a folder inside a scan root; `include` adds a tree outside one. No project-wide sweep:
+a scan wide enough to be convenient turns an adopter's templates and vendored documentation
+into concepts on their first run.
 
 **0010** — OKFM's own repository becomes a mesh, so the project runs the thing it describes
 instead of only specifying it. Amended: the registry names the bundles that exist and gains

@@ -23,6 +23,21 @@ before the mistake was traced.
 The lesson generalises: a protected-field list is a claim about who owns what, and an
 incorrect entry is not a harmless extra safeguard.
 
+# A new file is judged differently
+
+On a file that did not exist a moment ago, *every* field is an addition, so the protected list
+would report all of them — four failures every time somebody writes a decision record, none of
+them real. So a created file is checked against a shorter list: `verified`, and a `status` that
+is anything but `draft`.
+
+That is not a relaxation, it is the actual rule. `type` and `title` and `okfm_captured` on a
+new file are authorship — there is no prior value to overwrite and no drift signal to erase.
+`verified` and a promoted `status` are different in kind: they are the human gate, and a
+concept that arrives already carrying them claims a review that did not happen.
+
+The same reasoning as scoping, below. A guard that fires on the normal case teaches people to
+run it with `--allow`, and at that point it has stopped being a guard.
+
 # Why after, not during
 
 The guard runs on the result. It does not sandbox the agent, intercept writes, or hold a

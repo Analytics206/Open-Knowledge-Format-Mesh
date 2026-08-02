@@ -103,7 +103,8 @@ def normalize(cfg: dict) -> dict:
         if key not in out and (name in src or default is not None):
             out[key] = src.get(name, default)
     if "discover" not in out and b:
-        out["discover"] = {k: b[k] for k in ("root", "root_files", "exclude") if k in b}
+        keys = ("root", "root_files", "exclude", "include")
+        out["discover"] = {k: b[k] for k in keys if k in b}
     return out
 
 
@@ -132,22 +133,75 @@ def docs_root(cfg: dict, root: Path) -> Path:
     return root / "docs" if (root / "docs").is_dir() else root
 
 
+def scan_roots(cfg: dict, root: Path) -> list[Path]:
+    """Every tree this build reads: the docs root, then whatever `include` names.
+
+    Two keys, because an adopter has exactly two things to say about where knowledge lives
+    and neither can be said with the other:
+
+        "build": { "root": "docs", "exclude": ["archive"], "include": ["adr", "rfcs"] }
+
+    `exclude` drops a folder **inside** a scan root. `include` adds a tree **outside** one --
+    you cannot exclude your way to a directory the scan never reached. An `include` path that
+    turns out to be inside a root already being scanned is dropped rather than scanned twice;
+    it is inside, so it is `exclude`'s business.
+    """
+    roots = [docs_root(cfg, root)]
+    for rel in (cfg.get("discover") or {}).get("include", []):
+        p = (root / rel).resolve()
+        if p.is_dir() and not any(p == r or r in p.parents for r in roots):
+            roots.append(p)
+    return roots
+
+
+def _project_parts(directory: Path, root: Path) -> tuple[str, ...]:
+    """Path parts relative to the project, minus any `..` an included path walked up through."""
+    rel = directory.relative_to(root, walk_up=True)
+    return tuple(p for p in rel.parts if p != "..")
+
+
+def _name_bundles(found: list[tuple[Path, Path]], root: Path) -> list[dict]:
+    """Bundle ids: the folder's own name, so `docs/guides/` is `guides` and not `docs-guides`.
+
+    A collision renames **every** folder holding that name, not just the second one reached.
+    Otherwise which folder keeps the short id depends on scan order, and adding a directory
+    next month silently renames somebody else's bundle -- which, since the id appears in every
+    cross-bundle relation target, breaks edges in bundles nobody touched.
+    """
+    holders: dict[str, list[tuple[Path, Path]]] = {}
+    for pair in found:
+        holders.setdefault(pair[0].name, []).append(pair)
+
+    def dashed(directory: Path, base: Path) -> str:
+        return "-".join(directory.relative_to(base).parts) or base.name
+
+    out = []
+    for directory, base in found:
+        group = holders[directory.name]
+        name = directory.name
+        if len(group) > 1:
+            # Relative to its own scan root first; if two roots produce the same path,
+            # fall back to the project-relative one, which cannot collide.
+            name = dashed(directory, base)
+            if sum(1 for d, b in group if dashed(d, b) == name) > 1:
+                name = "-".join(_project_parts(directory, root))
+        out.append({"path": directory.relative_to(root, walk_up=True).as_posix(),
+                    "bundle": name, "type": "Document"})
+    return out
+
+
 def discover_sources(root: Path, cfg: dict | None = None, limit: int = 60) -> list[dict]:
     """One OKF per folder of documents.
 
-    Every directory under the docs root that holds at least one non-reserved markdown file
-    becomes its own bundle, and the root's own files become one too. That is the arrangement
-    people already have -- `docs/guides/`, `docs/architecture/`, `docs/adr/` are separate
-    because they are about separate things -- so mirroring it needs no explanation and no
-    configuration to get right.
+    Every directory under a scan root that holds at least one non-reserved markdown file
+    becomes its own bundle, and each root's own loose files become one too. That is the
+    arrangement people already have -- `docs/guides/`, `docs/architecture/`, `docs/adr/` are
+    separate because they are about separate things -- so mirroring it needs no explanation
+    and no configuration to get right.
 
-    Two exclusions, because the default is deliberately generous:
-
-        "discover": { "root": "docs", "root_files": false, "exclude": ["archive", "vendor"] }
-
-    `exclude` paths are relative to the docs root and take a whole subtree. `root_files: false`
-    drops the loose documents at the top, which in many projects are a landing page and two
-    stubs rather than knowledge.
+    `root_files: false` drops the loose documents at the top of a root, which in many projects
+    are a landing page and two stubs rather than knowledge. `exclude` and `include` are
+    described on `scan_roots`.
 
     Discovery runs on **every** build rather than being frozen into the config on the first
     one. A folder added next month should get an OKF without anyone remembering to declare it;
@@ -156,42 +210,49 @@ def discover_sources(root: Path, cfg: dict | None = None, limit: int = 60) -> li
     """
     cfg = cfg or {}
     d = cfg.get("discover") or {}
-    scan = docs_root(cfg, root)
     excluded = [x.strip("/") for x in d.get("exclude", [])]
 
-    def skipped(rel: Path) -> bool:
-        p = rel.as_posix()
-        return any(p == x or p.startswith(x + "/") for x in excluded)
+    def skipped(directory: Path, base: Path) -> bool:
+        """An `exclude` entry reads naturally either relative to the root it sits under
+        (`archive`) or relative to the project (`docs/archive`), and people write both. Both
+        match: when a list called `exclude` is ambiguous, excluding is the safe reading.
+        """
+        forms = {directory.relative_to(base).as_posix(),
+                 "/".join(_project_parts(directory, root))}
+        return any(f == x or f.startswith(x + "/") for f in forms for x in excluded)
 
-    found, names = [], {}
+    def documents(directory: Path) -> bool:
+        return any(f.name not in RESERVED for f in directory.glob("*.md"))
 
-    def add(directory: Path) -> None:
-        rel_to_scan = directory.relative_to(scan)
-        # Basename, so `docs/guides/` is the bundle `guides` rather than `docs-guides`.
-        # Only a collision forces the longer form, and then it forces it for both.
-        base = directory.name
-        name = base if base not in names else "-".join(rel_to_scan.parts) or base
-        names[base] = name
-        found.append({"path": directory.relative_to(root).as_posix(),
-                      "bundle": name, "type": "Document"})
+    found: list[tuple[Path, Path]] = []          # (directory, the scan root it came from)
+    seen: set[Path] = set()
 
-    if d.get("root_files", True) and not skipped(Path(".")):
-        own = [f for f in scan.glob("*.md") if f.name not in RESERVED]
-        if own:
-            add(scan)
+    def add(directory: Path, base: Path) -> None:
+        if directory.resolve() not in seen:
+            seen.add(directory.resolve())
+            found.append((directory, base))
 
-    for directory in sorted(scan.rglob("*")):
-        if not directory.is_dir() or len(found) >= limit:
-            continue
-        rel = directory.relative_to(scan)
-        if set(rel.parts) & SKIP_DIRS or len(rel.parts) > MAX_DEPTH or skipped(rel):
-            continue
-        if directory.resolve() == HERE or HERE in directory.resolve().parents:
-            continue                             # never scan our own output
-        if any(f.name not in RESERVED for f in directory.glob("*.md")):
-            add(directory)
+    for base in scan_roots(cfg, root):
+        if len(found) >= limit:
+            break
+        if d.get("root_files", True) and not skipped(base, base) and documents(base):
+            add(base, base)
+        for directory in sorted(base.rglob("*")):
+            if len(found) >= limit:
+                break
+            if not directory.is_dir():
+                continue
+            rel = directory.relative_to(base)
+            if set(rel.parts) & SKIP_DIRS or len(rel.parts) > MAX_DEPTH:
+                continue
+            if skipped(directory, base):
+                continue
+            if directory.resolve() == HERE or HERE in directory.resolve().parents:
+                continue                         # never scan our own output
+            if documents(directory):
+                add(directory, base)
 
-    return found
+    return _name_bundles(found, root)
 
 
 def resolve_sources(cfg: dict, root: Path = PROJECT) -> list[dict]:
@@ -215,14 +276,15 @@ def synthesize_config(root: Path) -> dict:
         "_generated": (
             "Written by the OKFM drop-in build on its first run. Every folder of documents "
             "under `build.root` gets its own OKF in `build.out`, plus one for the loose files "
-            "at the top and a mesh OKF over all of them. Add a path to `build.exclude` to "
-            "drop a subtree, or set `root_files` to false to skip the loose files. Everything "
-            "else is a sensible default you can ignore."
+            "at the top and a mesh OKF over all of them. `build.exclude` drops a folder inside "
+            "the root; `build.include` adds a tree outside it; `root_files: false` skips the "
+            "loose files. Everything else is a sensible default you can ignore."
         ),
         "build": {
             "root": scan.relative_to(root).as_posix() or ".",
             "root_files": True,
             "exclude": [],
+            "include": [],
             "out": ".okfm",
             "mesh": "mesh",
             "mode": "mirror",

@@ -30,15 +30,14 @@ of documents, and hand-authoring is for the case where a bundle has no source do
 the way this repository's guide and mesh bundles do. If you are pointing OKFM at an existing
 `docs/` tree, run the build instead.
 
-## A note for when discovery-by-convention lands
+## Why this folder is safe to copy
 
-§13.5 makes any `.md` with a non-empty `type:` a concept, anywhere in a project. What is
-built today is discovery by *folder* — the build reads `docs/` and creates concepts from
-documents — so nothing currently sweeps a project looking for files that already carry a
-`type:`.
+These files carry a `type:` — they are concept-shaped by design, which is what makes them
+templates rather than prose about templates. In a tool that swept a project looking for
+frontmatter, that would mean every adopter inherited four placeholder concepts on their
+first build.
 
-These template files do carry one, and are concept-shaped by design. So `templates/` must be
-in the default ignore list if convention-based scanning arrives, or every adopter inherits
-four placeholder concepts on their first build.
-
-Recorded here rather than discovered later.
+Nothing sweeps. A build reads `build.root` and whatever `build.include` names, and nothing
+else (§13.5), so a `templates/` folder is invisible until somebody points at it. That is the
+concrete reason the sweep was rejected rather than deferred: a scan wide enough to be
+convenient is wide enough to pick up files that only *look* like knowledge.

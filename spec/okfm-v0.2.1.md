@@ -973,7 +973,7 @@ One file, small enough to read in full:
 
 - **Everything optional except `pack`,** which must be present but may be `null` — a
   mesh with no domain pack is valid, and this repository's own config is one. Omit
-  `bundles` and discovery falls back to convention (§13.5). Omit `stores` and only
+  `bundles` and the build discovers them by scanning (§13.5). Omit `stores` and only
   file and object pointers resolve.
 - **Credentials by reference only** (`env:` / secret-manager handles). A config file
   is committed; a credential is not.
@@ -985,7 +985,7 @@ One file, small enough to read in full:
 >
 > | Group | Holds |
 > |---|---|
-> | `build` | `root`, `root_files`, `exclude` — what to scan; `out`, `mesh`, `mode`, `vocab_overlays` — what to write and how |
+> | `build` | `root`, `root_files`, `exclude`, `include` — what to read (§13.5); `out`, `mesh`, `mode`, `vocab_overlays` — what to write and how |
 > | `bundles` | explicit id → path map. Its **presence turns discovery off**; the id is the folder name unless you say otherwise |
 > | `read` | `web_ui`, `index`, `exclude_scopes` — everything about consuming a mesh rather than producing one |
 > | `stores`, `federation` | unchanged from above |
@@ -994,39 +994,40 @@ One file, small enough to read in full:
 > two names for one thing, and the second one exists only to be got wrong — which it was, in
 > a relation target, by a search-and-replace that could not tell an id from a path.
 >
-> `bundles` also changed meaning: here it *narrows a scan*, in the implementation it replaces
-> discovery entirely.
->
 > No code action: this note records the divergence, the implementation stands.
 
-### 13.5 Discovery by convention
+### 13.5 Discovery
 
-Any `.md` file with a non-empty `type:` in its frontmatter is a concept, wherever it
-sits in the project. No dedicated directory is required, and `bundles` merely narrows
-the scan.
+**Recognition.** Any `.md` file with a non-empty `type:` in its frontmatter is a concept,
+wherever it sits. No dedicated directory is required and no layout is mandated — an
+in-place bundle is exactly a folder of ordinary documents that grew frontmatter, and the
+build refuses to mirror a file that is already a concept for this reason.
 
-This is what makes adoption incremental: an existing docs tree becomes a mesh by
-adding one frontmatter line at a time, with no migration project and nothing to move.
-It is also why **zero-overhead-when-absent** (§8.5, rule 4) matters — a project with
-no concepts must pay nothing for having OKFM installed.
+**Reach** is a separate question, and it is answered by configuration rather than by a
+scan of the project. A build reads `build.root` (`docs/` by default), and:
 
-> **The rule holds; the project-wide sweep it implies is not built.** Every concept the
-> implementation produces has frontmatter, and a `.md` carrying a non-empty `type:` **is**
-> treated as a concept wherever the tool encounters one — that is exactly how the in-place
-> bundles work, and why `build.py` refuses to mirror a file that is already a concept.
->
-> What does not exist is the *scan*. This section describes finding concepts that already
-> carry a `type:` anywhere in a project. The build instead reads the folders named by
-> `discover` — `docs/` by default — and **creates** concepts from the documents it finds
-> there. Two different jobs: one collects concepts that exist, the other makes them from
-> documents that are not concepts yet.
->
-> Only the second is built, because an adopter with no concepts is the common case and the
-> one adoption has to serve. The consequence to know about: a concept sitting outside the
-> configured folders is invisible to the build until its folder is listed or its bundle is
-> named in `bundles`.
->
-> No code action: this note records the divergence, the implementation stands.
+| | |
+|---|---|
+| `build.exclude` | drops a folder **inside** a root — an `archive/` of superseded documents, a vendored tree |
+| `build.include` | adds a tree **outside** one — `adr/`, `rfcs/`, a sibling package's docs |
+
+Two keys because those are the two things an adopter has to say, and neither can be said
+with the other: you cannot exclude your way to a directory the scan never reached. An
+`include` path that turns out to be inside a root already being scanned is dropped — it is
+inside, so it is `exclude`'s business. Each included tree is then scanned exactly as the
+root is, so nothing new has to be learned to use it.
+
+**There is no project-wide sweep**, and adding one was considered and rejected. A tool that
+walks an entire repository looking for files that already carry a `type:` finds an adopter's
+templates, their vendored dependencies' documentation, and any example frontmatter in a
+README — on the first run, before they have any idea what the tool does. Two explicit lists
+are duller and they are auditable: the config states the reach, so a folder is in the mesh
+because somebody said so.
+
+Adoption stays incremental regardless, which is the property that mattered: an existing docs
+tree becomes a mesh with no migration project and nothing to move, because the build reads
+where the documents already are. It is also why **zero-overhead-when-absent** (§8.5, rule 4)
+matters — a project with no concepts must pay nothing for having OKFM installed.
 
 ### 13.6 Runtime independence
 

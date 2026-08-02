@@ -27,9 +27,13 @@ my-project/
 
 **Every folder of documents gets its own OKF, and one OKF over them says which to read.** That
 is the default with no configuration: `docs/` is found, each subfolder becomes a bundle, the
-loose files at the top become one, and the mesh indexes them. Point it somewhere other than
-`docs/`, drop a subtree, or skip the top-level files by editing three lines in
-`.okfm/okfm.json`.
+loose files at the top become one, and the mesh indexes them.
+
+Two keys change what gets read, and they are the config worth knowing: **`exclude` drops a
+folder inside the root, `include` adds a tree outside it** — an `adr/` at the top of the
+project, a sibling package's docs. Nothing else is read. There is no scan of your repository
+hunting for files that already carry a `type:`, so a first run cannot turn your templates and
+a vendored SDK's documentation into concepts.
 
 ## One entry point instead of several
 

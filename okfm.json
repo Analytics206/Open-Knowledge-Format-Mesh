@@ -2,11 +2,12 @@
   "okfm": "0.2.1",
   "pack": null,
 
-  "_build": "Every folder of documents under `root` gets its own OKF in `out`, plus one for the loose files at the top and a mesh OKF over all of them. `decisions` is excluded because it is an in-place bundle — those files are the concepts, so mirroring them would be a second copy of knowledge that already exists.",
+  "_build": "Every folder of documents under `root` gets its own OKF in `out`, plus one for the loose files at the top and a mesh OKF over all of them. `exclude` drops a folder inside `root`; `include` adds a tree outside it. `decisions` is excluded because it is an in-place bundle — those files are the concepts, so mirroring them would be a second copy of knowledge that already exists.",
   "build": {
     "root": "docs",
     "root_files": true,
     "exclude": ["decisions"],
+    "include": [],
     "out": ".okfm",
     "mesh": "mesh",
     "mode": "mirror",

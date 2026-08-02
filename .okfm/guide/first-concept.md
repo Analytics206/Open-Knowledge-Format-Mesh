@@ -65,12 +65,14 @@ service cost more than the concurrency was worth"* beats *"Notes on database cho
 
 # Where it goes
 
-Anywhere. A concept is any `.md` file with a non-empty `type:` in its frontmatter,
-wherever it sits in your project. There is no mandated directory, and no migration
-project — an existing docs tree becomes a mesh one frontmatter block at a time.
+Wherever the documents it belongs with already are. A concept is any `.md` file with a
+non-empty `type:` in its frontmatter — no directory is mandated, and there is no migration
+project, so an existing docs tree becomes a mesh one frontmatter block at a time.
 
-Layout still helps humans, so the specification suggests a conventional tree. Treat it
-as a suggestion.
+One thing to know: the tool does not go looking. It reads `build.root` (`docs/` unless you
+say otherwise) and anything `build.include` names, so a concept in a folder outside that is
+legal, portable, and invisible until you name it. Nothing scans your whole project, which is
+why `templates/` and a vendored SDK's documentation do not turn up in your mesh.
 
 # Then
 

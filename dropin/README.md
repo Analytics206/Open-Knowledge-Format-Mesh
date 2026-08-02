@@ -28,16 +28,23 @@ my-project/
 ```
 
 Then it writes the config it used, so the first thing you edit is a file it made for you.
-Config is grouped — `build`, `bundles`, `read`, `stores`, `federation`. Three keys inside
-`build` control the scan:
+Config is grouped — `build`, `bundles`, `read`, `stores`, `federation`. Four keys inside
+`build` control what gets read:
 
 ```json
-"build": { "root": "docs", "root_files": true, "exclude": ["archive", "vendor"], "out": ".okfm" }
+"build": { "root": "docs", "root_files": true, "exclude": ["archive"], "include": ["adr"] }
 ```
 
-`root` points somewhere other than `docs/`. `exclude` drops a subtree — paths are relative to
-the root. `root_files: false` skips the loose documents at the top, which in many projects are
+`root` points somewhere other than `docs/`. **`exclude` drops a folder inside it; `include`
+adds a tree outside it** — you cannot exclude your way to a directory the scan never reached,
+which is why there are two keys rather than one. An included tree is scanned exactly as the
+root is. `root_files: false` skips the loose documents at the top, which in many projects are
 a landing page and two stubs rather than knowledge.
+
+**Nothing else is read.** There is no scan of your project looking for files that already
+carry a `type:`; a folder is in the mesh because you named it or because it sits under the
+root. That keeps a first run from producing concepts out of your templates and a vendored
+SDK's documentation.
 
 Discovery runs on **every** build rather than being frozen into the config on the first one. A
 folder added next month gets an OKF without anyone remembering to declare it — which is also
@@ -165,6 +172,10 @@ python okfm/okfm.py revalidate <path> --by human:you     # 4. you sign off
 **Step 3 is what makes the human gate real.** `guard` reads the diff and fails if the pass
 touched `verified`, `okfm_relations`, `status`, `type`, `title`, `sources`, or
 `okfm_captured`. Until it existed, those were rules in a document.
+
+A **created** file is judged on a shorter list — `verified`, and a `status` that is not
+`draft` — because on a new file every field is an addition and the full list would flag all
+of them. Authorship is not overwriting; arriving pre-verified is.
 
 **Step 4 is the only thing that clears drift**, and no build does it for you. Refreshing a
 capture automatically would erase the signal drift exists to carry. Naming a path and a

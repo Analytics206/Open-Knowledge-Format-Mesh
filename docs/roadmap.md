@@ -247,7 +247,7 @@ rather than at the end.
 
 Scope: §13 in full — split core / packs / config / bundle; move the loop into
 `core/workflows/`; extract `packs/research/`; write `okfm.json` and its schema;
-convention-based discovery; the three runtime modes (§13.6); the domain-word CI grep;
+the three runtime modes (§13.6); the domain-word CI grep;
 README quickstart, `templates/`, `examples/minimal/`, `okfm-guide/`, and `okfm view` (§14).
 **Exit:** a toy second domain stood up via pack + config with zero core edits, **and**
 a first pass at the distribution test (§13.7) — someone other than the builder, or the

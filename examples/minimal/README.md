@@ -9,6 +9,7 @@ Three differences worth noticing:
 |---|---|---|
 | `pack` | `null` — OKFM itself has no domain | `"warehouse"` — schema/query/metric shaped |
 | `build.exclude` | the in-place decision records | an archive and a vendored tree |
+| `build.include` | nothing outside `docs/` | `adr/`, which lives at the project top |
 | `stores` | none | a SQL store, credentials **by reference** |
 
 The credential line is the one to copy:
@@ -27,11 +28,14 @@ you. `docs/` is found, every folder of documents under it becomes its own OKF in
 the loose files at the top become one more, and a mesh OKF is written over all of them.
 
 The config has four groups — `build`, `bundles`, `read`, and the two pointer-resolution
-keys. Three keys inside `build` are the ones worth knowing:
+keys. Four keys inside `build` are the ones worth knowing:
 
-- **`build.root`** — scan somewhere other than `docs/`.
-- **`build.exclude`** — drop a subtree. Paths are relative to `root`, and an `archive/` full of
-  superseded documents is the usual first entry.
+- **`build.root`** — read somewhere other than `docs/`.
+- **`build.exclude`** — drop a folder **inside** the root. An `archive/` of superseded
+  documents is the usual first entry.
+- **`build.include`** — add a tree **outside** the root. This is the only way to reach one:
+  no exclusion gets you to a directory the scan never entered, and nothing sweeps the project
+  looking for concepts on its own.
 - **`build.root_files`** — set to `false` when the loose documents at the top of `docs/` are a
   landing page and two stubs rather than knowledge.
 

@@ -21,6 +21,9 @@ Tell an agent's edit from a person's. Git records that a line changed, not who d
 change it. So `guard` is a check you run **after an enrichment pass**, and a person editing
 their own concept will trip it — correctly, because the tool cannot know they are allowed
 to. `--allow` names fields to permit for a run where a human is the author.
+
+A **new** file is judged on whether it arrives already trusted, not on the full protected
+list — see `CREATED_PROTECTED`.
 """
 import re
 import subprocess
@@ -50,8 +53,24 @@ PROTECTED = {
 # refresh. That happened here before the rule was written down.
 MUST_UPDATE = ("generated",)
 
+# A NEW file is judged by a different rule, because on a new file every field is an
+# addition and the protected list would report all of them as "changed" — four misleading
+# failures every time somebody authors a decision record, which teaches people to reach for
+# `--allow` as a matter of routine. A guard that cries wolf on the normal case is worse than
+# no guard.
+#
+# What actually matters on creation is whether the concept arrives carrying trust nobody
+# granted it. `type`, `title`, `sources` and `okfm_captured` on a file that did not exist a
+# moment ago are authorship, not overwriting; there is no prior value to destroy and no drift
+# signal to erase. `verified` and a promoted `status` are different in kind — those are the
+# human gate, and a pass that writes them has claimed a review that did not happen (§16).
+CREATED_PROTECTED = {
+    "verified": "a concept cannot be born verified — trust is a human act (§16)",
+    "status": "a new concept starts `draft`; promotion is a separate human decision",
+}
+
 _FM_BOUND = re.compile(r"^[+-]---\s*$")
-_KEY = re.compile(r"^[+-](\s*)([\w_]+):")
+_KEY = re.compile(r"^[+-](\s*)([\w_]+):[ \t]*(.*)$")
 
 
 def diff(staged: bool, paths: list[str]) -> str:
@@ -82,13 +101,19 @@ def main() -> int:
         return 0
 
     violations, current, in_fm = [], None, False
-    files_touched = set()
+    files_touched, created, is_new = set(), set(), False
 
     for line in text.splitlines():
+        if line.startswith("--- "):
+            # git writes `--- /dev/null` for an added file, immediately before its `+++`.
+            is_new = line.strip() == "--- /dev/null"
+            continue
         if line.startswith("+++ b/"):
             current = line[6:]
             files_touched.add(current)
-            in_fm = False
+            if is_new:
+                created.add(current)
+            is_new = in_fm = False
             continue
         if line.startswith("@@"):
             # Hunk headers reset frontmatter tracking; a hunk starting mid-file is not
@@ -102,14 +127,21 @@ def main() -> int:
         m = _KEY.match(line)
         if not m or not current:
             continue
-        indent, key = m.group(1), m.group(2)
+        indent, key, value = m.group(1), m.group(2), m.group(3).strip()
+
+        if current in created:
+            if key in CREATED_PROTECTED and key not in allowed:
+                if key != "status" or value.strip("\"'") != "draft":
+                    violations.append((current, key, CREATED_PROTECTED[key]))
+            continue
 
         # A protected key changed anywhere in a concept's frontmatter region. Indent is
         # allowed to be non-zero: okfm_captured is nested inside a sources entry.
         if key in PROTECTED and key not in allowed:
             violations.append((current, key, PROTECTED[key]))
 
-    print(f"{len(files_touched)} markdown file(s) changed"
+    changed = len(files_touched) - len(created)
+    print(f"{changed} markdown file(s) changed, {len(created)} created"
           + (" (staged)" if staged else " (working tree)"))
     if allowed:
         print(f"allowed by flag: {', '.join(sorted(allowed))}")
@@ -124,10 +156,11 @@ def main() -> int:
         if (path, key) in seen:
             continue
         seen.add((path, key))
+        verb = "written on a new file" if path in created else "changed"
         print(f"  FAIL  {path}")
-        print(f"        `{key}` changed — {why}")
+        print(f"        `{key}` {verb} — {why}")
 
-    print(f"\n{len(seen)} protected field(s) changed.")
+    print(f"\n{len(seen)} protected field(s) flagged.")
     print("If a person made this edit deliberately, re-run with "
           "--allow=" + ",".join(sorted({k for _, k, _ in violations})))
     return 1

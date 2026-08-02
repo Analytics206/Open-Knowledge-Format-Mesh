@@ -1,13 +1,16 @@
 {
   "okfm": "0.2.1",
   "pack": "warehouse",
-  "_build": "Every folder of documents under `root` gets its own OKF in `out`, plus one for the loose files at the top and a mesh OKF over all of them. This is the default with no config at all; the first run writes it out so the first thing you edit is a file the tool made for you.",
+  "_build": "Every folder of documents under `root` gets its own OKF in `out`, plus one for the loose files at the top and a mesh OKF over all of them. This is the default with no config at all; the first run writes it out so the first thing you edit is a file the tool made for you. `exclude` drops a folder inside `root`; `include` adds a tree outside it, which is the only way to reach one.",
   "build": {
     "root": "docs",
     "root_files": true,
     "exclude": [
       "archive",
       "vendor"
+    ],
+    "include": [
+      "adr"
     ],
     "out": ".okfm",
     "mesh": "mesh",
