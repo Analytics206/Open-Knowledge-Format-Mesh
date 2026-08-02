@@ -132,11 +132,29 @@ def opaque(seed: int, qid: str, arm: str) -> str:
     return hashlib.sha256(f"{seed}:{qid}:{arm}".encode()).hexdigest()[:12]
 
 
+def arm_id(seed: int, arm: str) -> str:
+    """The directory name an answering agent actually sees.
+
+    Blinding the grader is not enough. An agent told it is working in `arms/control/` has
+    been handed the experiment's independent variable in a path, and it can act on it —
+    hedging, noting that documentation seems to be missing, or going looking for what it was
+    told it does not have. The arm has to be opaque at answering time too, not just at
+    grading time.
+    """
+    return hashlib.sha256(f"{seed}:arm:{arm}".encode()).hexdigest()[:12]
+
+
 def main() -> int:
     utf8_stdout()
     ap = argparse.ArgumentParser(add_help=False)
     ap.add_argument("--check", action="store_true")
     ap.add_argument("--seed", type=int, default=1)
+    # Materialise outside the repository when the answering agent has a real filesystem.
+    # An arm sitting inside the project it was cut from is one `../../..` away from the
+    # treatment corpus, and an agent that wanders up finds everything the control arm was
+    # built to withhold. Isolation belongs in the path, not in the instructions.
+    ap.add_argument("--out", default=None,
+                    help="write the run here instead of benchmark/runs/")
     ap.add_argument("-h", "--help", action="store_true")
     args = ap.parse_args()
     if args.help:
@@ -231,25 +249,27 @@ def main() -> int:
 
     # --- materialise ---------------------------------------------------------
     run_id = f"run_seed{args.seed}"
-    out = RUNS / run_id
+    out = Path(args.out).resolve() / run_id if args.out else RUNS / run_id
     if out.exists():
         shutil.rmtree(out)
+
+    arms = {arm: arm_id(args.seed, arm) for arm in ("treatment", "control")}
     for arm, paths in (("treatment", treatment), ("control", control)):
         for rel in paths:
-            dst = out / "arms" / arm / rel
+            dst = out / "arms" / arms[arm] / rel
             dst.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(PROJECT / rel, dst)
 
-    key, sheet = {}, []
+    key, sheet = {"_arms": arms}, []
     prompts = out / "prompts"
     prompts.mkdir(parents=True, exist_ok=True)
     for q in questions:
         for arm in ("treatment", "control"):
             oid = opaque(args.seed, q["id"], arm)
-            key[oid] = {"question": q["id"], "arm": arm}
+            key[oid] = {"question": q["id"], "arm": arm, "dir": arms[arm]}
             (prompts / f"{oid}.md").write_text(
                 f"# {oid}\n\n"
-                f"You have read-only access to a repository at `arms/{arm}/`.\n"
+                f"You have read-only access to a repository at `arms/{arms[arm]}/`.\n"
                 f"Answer from those files only. Cite the files you used.\n\n"
                 f"## Question\n\n{q['text']}\n",
                 encoding="utf-8", newline="\n")
@@ -268,12 +288,17 @@ def main() -> int:
     (out / "key.json").write_text(json.dumps(key, indent=2) + "\n",
                                   encoding="utf-8", newline="\n")
 
-    print(f"\nwrote {out.relative_to(PROJECT).as_posix()}")
-    print(f"  arms/treatment  {len(treatment)} files")
-    print(f"  arms/control    {len(control)} files")
-    print(f"  prompts/        {len(key)} ({len(questions)} questions x 2 arms)")
+    shown = (out.relative_to(PROJECT).as_posix()
+             if out.is_relative_to(PROJECT) else out.as_posix())
+    print(f"\nwrote {shown}")
+    # Arm directories are named by hash, and so is this line: printing which opaque id is
+    # which would put the answer in the same terminal the operator pastes prompts from.
+    # `key.json` holds the mapping, and grading reads it after the answers are in.
+    print(f"  arms/           2 opaque ids, {len(treatment)} and {len(control)} files")
+    print(f"  prompts/        {len(key) - 1} ({len(questions)} questions x 2 arms)")
     print("  grading-sheet.md, key.json")
-    print("\nNext: run each prompt with a fresh agent, save the answer beside it, grade blind.")
+    print("\nNext: answer each prompt with a fresh agent that can read only its own arm,")
+    print("save the answer beside it, then grade blind against the sheet.")
     return 0
 
 

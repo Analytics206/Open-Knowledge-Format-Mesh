@@ -20,10 +20,16 @@ dropin/references/telemetry/runs/
 
 # ---- Benchmark arms -----------------------------------------------------
 # A materialised arm is a full copy of the corpus, rebuilt from the same seed on
-# demand. The grading sheet and the key ARE committed (spec 18.1 rule 5), so any
-# run can be regraded later under a different rubric.
+# demand. Everything else about a run IS committed (spec 18.1 rule 5) — prompts,
+# answers, the key, the verdicts and the report — so any run can be regraded later
+# under a different rubric, and so a published number can be checked against the
+# answers it came from rather than taken on trust.
 
 benchmark/runs/*/arms/
+
+# Packets are a working file for whoever grades: the answer restated beside its
+# claim list. Regenerated from the answers by `grade.py --packets`.
+benchmark/runs/*/packets/
 
 # ---- Python -------------------------------------------------------------
 __pycache__/

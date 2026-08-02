@@ -76,14 +76,49 @@ number.
 in the control arm would quietly turn that arm into a second treatment arm. It is removed by
 name, and the harness scans what remains for surviving concept prose.
 
+# Blinding has to survive the answering step, not just the grading step
+
+An agent told it is working in `arms/control/` has been handed the experiment's independent
+variable in a file path, and it can act on it — hedging, remarking that documentation seems to
+be missing, or going looking for what it has just been told it does not have.
+
+So the arm directories are named by hash too, derived from the seed, and the mapping lives in
+`key.json` which nothing reads until the answers are in. The terminal output does not print
+which opaque id is which, because that would put the answer in the same window the operator is
+pasting prompts from.
+
+`--out` writes the run somewhere else entirely. An arm materialised inside the project it was
+cut from is one `../../..` away from the full corpus, and an agent that wanders up finds
+everything the control arm exists to withhold. Isolation belongs in the path rather than in the
+instructions.
+
+What blinding cannot do is make the difference undetectable. The control arm *is* missing a
+directory, and an agent that looks will notice. The point is that nothing labels it, so noticing
+requires inferring rather than reading.
+
+# Grading is split from scoring
+
+`grade.py --packets` writes one file per answer: the answer, the claims to mark, and nothing
+else — no arm, no question id, and the packets come out in hash order so the two arms of one
+question do not sit next to each other. Adjacency is a tell.
+
+Judging whether an answer contains a claim is judgement, and the code does none of it. Counting
+is arithmetic and the code does all of it. That split is what keeps blinding real rather than
+declared: a grader who can see the arm will find the claim they expect to find, and good faith
+does not fix it.
+
 # What gets measured
 
-Claims hit is the headline. Tokens are counted by the harness rather than self-reported, and
-measure effort rather than correctness. False statements are counted **separately from
-omissions**: an omission is a gap, but a false statement is a knowledge defect and should be
-traced back to the concept that caused it.
+Claims hit is the headline. False statements are counted **separately from omissions**, and the
+distinction carries the most useful thing this apparatus produces: an omission is a gap, but a
+false statement is a knowledge defect, and one traceable to a concept means curated knowledge
+actively misled somebody — which is worse than having none.
 
-Answers and the key are committed, so any run can be regraded later under a different rubric.
+A run where the bundle arm hits more claims *and* states more falsehoods is not a win, so there
+is deliberately no single combined score to hide it in.
+
+Answers, the key and the report are committed, so any run can be regraded later under a
+different rubric.
 
 # An honest negative result is the valuable one
 
