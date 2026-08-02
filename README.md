@@ -19,16 +19,39 @@ my-project/
     guides/
     architecture/
   .okfm/                 everything OKFM. Delete it and the project is as it was.
-    mesh/                  the master OKF — an OKF whose concepts are the other OKFs
+    mesh/                  read this first — an OKF whose concepts are the other OKFs
     docs/                  an OKF for the loose files at the top of docs/
     guides/                an OKF for docs/guides/
     architecture/          an OKF for docs/architecture/
 ```
 
-**Every folder of documents gets its own OKF, and a master OKF sits over them.** That is the
-default with no configuration: `docs/` is found, each subfolder becomes a bundle, the loose
-files at the top become one, and the mesh maps them. Point it somewhere other than `docs/`,
-drop a subtree, or skip the top-level files by editing three lines in `.okfm/okfm.json`.
+**Every folder of documents gets its own OKF, and one OKF over them says which to read.** That
+is the default with no configuration: `docs/` is found, each subfolder becomes a bundle, the
+loose files at the top become one, and the mesh indexes them. Point it somewhere other than
+`docs/`, drop a subtree, or skip the top-level files by editing three lines in
+`.okfm/okfm.json`.
+
+## One entry point instead of several
+
+`.okfm/mesh/` is the OKF you read first. Its concepts are the *other* OKFs, and each one
+carries the questions its bundle answers:
+
+```yaml
+okfm_member:
+  answers:
+    - how do I use my own key and provider
+    - what may an agent write, and what may it not
+    - how do I clear drift
+```
+
+Point an agent at that one file and it finds the rest itself, instead of you naming four
+bundles up front and hoping you picked the right ones. Ask *"where do I read about using my
+own key?"* and the mesh answers with a path.
+
+It is a **directory, not an orchestrator**. Nothing in it dispatches a question, calls a
+member, or merges an answer — your agent does that, reading the map. A registry that
+orchestrated would have to decide on behalf of bundles it does not own, which is the central
+authority federation exists to avoid.
 
 ## Three levels
 
@@ -97,7 +120,7 @@ cp -r "Open Knowledge Format Mesh/dropin" my-project/.okfm && cd my-project
 python .okfm/okfm.py
 ```
 
-It finds `docs/`, builds one OKF per folder plus a master OKF over them, and writes the config
+It finds `docs/`, builds one OKF per folder plus a mesh OKF over them, and writes the config
 it used — so the first thing you edit is a file it made for you rather than a blank page.
 
 Descriptions are **extracted** from your files rather than written, so they can be unhelpful
@@ -143,7 +166,7 @@ is why a key appears at this point and nowhere earlier.
 
 ```text
 .okfm/                   the mesh — every bundle this repository publishes
-  mesh/                  the master OKF: one OKF Member concept per bundle
+  mesh/                  read first — one OKF Member concept per bundle, with what it answers
   level-1-view/          ┐
   level-2-build/         │ one OKF per adoption level, built from docs/okfm-guide/
   level-3-enrich/        ┘

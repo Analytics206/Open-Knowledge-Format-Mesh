@@ -1,9 +1,9 @@
 ---
 type: Document
 title: Packs
-description: Domain vocabulary and workflows as an overlay, so core carries no domain words and stays portable.
+description: "Domain vocabulary and workflows as an overlay, so core carries no domain words. Partly built: the overlay mechanism works today, which makes this the one credentialed-variant component usable three levels down."
 status: draft
-generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
+generated: { by: "agent:claude-opus-5", at: 2026-08-02T03:28:25Z }
 sources:
   - id: doc
     resource: ../../docs/okfm-guide/level-3-enrich/packs.md

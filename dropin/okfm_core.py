@@ -184,7 +184,7 @@ def synthesize_config(root: Path) -> dict:
         "_generated": (
             "Written by the OKFM drop-in build on its first run. Every folder of documents "
             "under `discover.root` gets its own OKF in `bundle`, plus one for the loose "
-            "files at the top and a master OKF over all of them. Add a path to "
+            "files at the top and a mesh OKF over all of them. Add a path to "
             "`discover.exclude` to drop a subtree, or set `root_files` to false to skip the "
             "loose files. Everything else is a sensible default you can ignore."
         ),

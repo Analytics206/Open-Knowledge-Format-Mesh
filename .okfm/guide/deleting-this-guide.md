@@ -13,7 +13,7 @@ okfm_relations:
 # The whole procedure
 
 ```bash
-rm -rf okfm-guide/
+rm -rf .okfm/guide/
 ```
 
 Nothing references it. No configuration needs editing. The web UI notices it is gone

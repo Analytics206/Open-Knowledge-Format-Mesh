@@ -1,9 +1,9 @@
 ---
 type: Runbook
 title: The enrichment loop
-description: Build, list, draft, guard, review — the cycle that turns extracted quotations into written descriptions.
+description: "Build, list, draft, guard, review. Three of the five steps need nothing; the union of the other two is what makes the whole loop `[model, human]` and keeps it out of CI."
 status: draft
-generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
+generated: { by: "agent:claude-opus-5", at: 2026-08-02T03:28:25Z }
 sources:
   - id: doc
     resource: ../../docs/okfm-guide/level-3-enrich/the-enrichment-loop.md

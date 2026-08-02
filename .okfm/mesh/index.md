@@ -1,50 +1,78 @@
 ---
 type: Index
 title: The OKFM mesh
-description: The master OKF — an OKF whose concepts are the other OKFs. Owns membership, never member content.
+description: Read this first. An OKF whose concepts are the other OKFs — it answers "which one should I open?" and owns nothing else.
 status: stable
 generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
 okfm_scope: project
 ---
 
-# What this is
+# Start here
 
-The OKF of OKFs. This bundle's concepts are the other bundles: each member below is a concept
-of `type: OKF Member` naming a bundle, its owner, its aliases, and its scope.
+This is the **entry point**. Point an agent at this file and it can find the rest without
+being told what exists — which is the difference between a mesh and a folder of bundles
+somebody has to enumerate for you.
 
-It is the format describing the mesh in the format's own terms, which is the point — a project
-about knowledge meshes that could not represent its own would be arguing from nothing.
+Each member below is a concept of `type: OKF Member` naming a bundle, its owner, its aliases,
+and the questions it answers. Nothing else lives here: membership is all this bundle owns.
 
-**It owns only the map.** Membership, scopes, aliases, and cross-member links live here.
-Member content never does. This is index-*over*, not authority-*over*: an owning bundle would
-smuggle central authority back into a design that exists to prevent it.
+# Which OKF should I read?
+
+| If you want to know | Open | Start at |
+|---|---|---|
+| What makes a bundle legal — frontmatter, reserved files, the strip test | not a bundle | [`spec/okfm-v0.2.1.md`](../../spec/okfm-v0.2.1.md) |
+| How to write a first concept, and what *not* to write down | [okfm-guide](members/guide.md) | [`.okfm/guide/`](../guide/index.md) |
+| What I get by downloading this and running nothing | [okfm-level-1](members/level-1-view.md) | [`.okfm/level-1-view/`](../level-1-view/index.md) |
+| How to build a mesh from my own docs, and what the build will and will not write | [okfm-level-2](members/level-2-build.md) | [`.okfm/level-2-build/`](../level-2-build/index.md) |
+| How to point **my own agent** at it — the contract, the work list, the guard | [okfm-level-3](members/level-3-enrich.md) | [`.okfm/level-3-enrich/`](../level-3-enrich/index.md) |
+| How to use **my own key and provider** | [okfm-level-3](members/level-3-enrich.md) | [providers and keys](../level-3-enrich/providers-and-keys.md) |
+| Whether a CLI exists yet, and what it will be | [okfm-level-3](members/level-3-enrich.md) | [the console app](../level-3-enrich/the-console-app.md) |
+| Whether curated knowledge actually helps, and how that gets measured | [okfm-level-3](members/level-3-enrich.md) | [the benchmark](../level-3-enrich/the-benchmark.md) |
+| Why the project is shaped this way, and what would reverse a call | [okfm-decisions](members/decisions.md) | [`docs/decisions/`](../../docs/decisions/index.md) |
+| Phases, open questions, success measures, prior art | [okfm-docs](members/docs.md) | [`docs/roadmap.md`](../../docs/roadmap.md) |
+
+Every member carries its own share of this table as `okfm_member.answers`, so an agent can
+route on frontmatter instead of parsing prose.
 
 # Members
 
-| Member | Is |
+| Member | Owns |
 |---|---|
-| [okfm-level-1](members/level-1-view.md) | the download — viewer, bundles, your own agent |
+| [okfm-level-1](members/level-1-view.md) | the download — the web UI, the bundles, your own agent |
 | [okfm-level-2](members/level-2-build.md) | the deterministic build |
-| [okfm-level-3](members/level-3-enrich.md) | the enrichment loop |
-| [okfm-level-4](members/level-3-enrich.md) | providers, packs, federation, the benchmark |
+| [okfm-level-3](members/level-3-enrich.md) | the enrichment loop, and its credentialed variant |
 | [okfm-guide](members/guide.md) | the format, and a bundle that demonstrates it |
 | [okfm-decisions](members/decisions.md) | why this project is shaped the way it is |
+| [okfm-docs](members/docs.md) | rationale, roadmap, prior art |
+
+# What this does not do
+
+**It does not route for you.** Nothing here dispatches a question, calls a member, or merges
+an answer. It is a directory an agent reads; the agent does the rest.
+
+Deliberate rather than unfinished. A registry that orchestrates has to *decide*, and a thing
+deciding on behalf of bundles it does not own is central authority wearing a map's clothes —
+the failure federation exists to avoid. See
+[DR-0010](../../docs/decisions/0010-okfm-self-hosts-as-a-mesh.md).
+
+**It does not own member content.** Membership, scopes, aliases, and cross-member links live
+here; everything else lives in the member. Index-*over*, not authority-*over*.
 
 # Where the members live
 
-Five of the six are under [`.okfm/`](..), one subfolder each. The sixth,
+Five are under [`.okfm/`](..), one subfolder each. The sixth,
 [`docs/decisions/`](../../docs/decisions/index.md), is **in place** — those files are the
 decision records *and* the concepts, so they stay where a person would look for them.
 
-That is the general rule rather than an exception for this repository: mirrored bundles live
-in `.okfm/`, in-place bundles live with their sources, and the mesh registers both by path.
+That is the general rule, not an exception for this repository: mirrored bundles live in
+`.okfm/`, in-place bundles live with their sources, and the mesh registers both by path.
 
 # Why the split is legitimate
 
-Not by size. The bundles differ on **change cadence**, which is a §12.1 ownership criterion: a
-level 1 change means the entry experience moved and everyone is affected; a decision record is
+Not by size. The bundles differ on **change cadence**, a §12.1 ownership criterion: a level 1
+change means the entry experience moved and everyone is affected; a decision record is
 appended weekly and nobody downstream notices. Splitting a repository by size would be
-theatre; splitting it on a real seam is what makes cross-bundle pinning mean something.
+theatre; splitting on a real seam is what makes cross-bundle pinning mean anything.
 
 # What this proves, and what it does not
 
@@ -55,7 +83,4 @@ cross-bundle references, and a web UI rendering seven bundles at once.
 separate accountable owners. These bundles are co-located under one steward and resolve
 in-process, which §12.6 permits explicitly — *"do not make them converse through chat
 completions for theater."* What is missing is a member that can **refuse**, and that needs a
-bundle somewhere else. See [level 4](members/level-3-enrich.md).
-
-See [DR-0010](../../docs/decisions/0010-okfm-self-hosts-as-a-mesh.md) for how the mesh got
-here, including the parts of that record this layout has since overtaken.
+bundle somewhere else. See [the credentialed variant](members/level-3-enrich.md).

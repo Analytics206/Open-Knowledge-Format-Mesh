@@ -7,6 +7,13 @@ status: stable
 tags: [level-3, enrichment, agent]
 generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
 okfm_member:
+  answers:
+    - how do I use my own agent to improve descriptions
+    - how do I use my own key and provider
+    - is there a CLI yet
+    - what may an agent write, and what may it not
+    - how do I clear drift
+    - does curated knowledge actually help, and how is that measured
   owner: "human:analytics206"
   aliases: ["level 3", "enrichment"]
   agent: null

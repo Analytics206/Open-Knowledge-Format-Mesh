@@ -147,12 +147,12 @@ Where federation sits in the *delivery* order was this record's question. Where 
 the **level** model was never answered, and the answer is level 1.
 
 The mesh is what you get when you download the project and open the web UI: several bundles,
-a master OKF over them, typed edges between them, and a graph that draws the whole thing.
+a mesh OKF over them, typed edges between them, and a graph that draws the whole thing.
 Nothing runs. That is the definition of level 1, and it means federation's addressing half is
 already the most complete demonstration in the project rather than a thing waiting on a
 phase.
 
-**Level 2 supports what it can, and says what it cannot.** The build writes a master OKF and
+**Level 2 supports what it can, and says what it cannot.** The build writes a mesh OKF and
 both halves of every membership edge, so a mesh built by the drop-in is connected without
 anyone authoring an edge by hand. What level 2 cannot do is resolve `okf://` across a network
 or ask another bundle's agent anything — those need transport, which is the negotiation half.

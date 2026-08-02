@@ -4,7 +4,7 @@ title: DR-0005 — Bundle-relative in files, mesh-relative in the index
 description: "Bundle-relative inside a concept, plain relative in body links, and mesh-relative only in the generated index — the transformation is one-way and lives entirely in the index builder, so nothing inside a bundle ever stores a path that names its own bundle."
 status: draft
 verified: { by: "human:analytics206", at: 2026-08-02T03:08:50Z }
-generated: { by: "process:okfm-bootstrap", at: 2026-08-01T00:00:00Z }
+generated: { by: "agent:claude-opus-5", at: 2026-08-02T03:28:25Z }
 sources:
   - id: self
     resource: /0005-path-resolution.md
@@ -25,7 +25,7 @@ cross-bundle addressing (`okf://sp3d-rules/rules/churn-billing.md`), but never s
 bundle-relative path becomes a path in a **mesh-level** index spanning several bundles.
 
 Writing the guide bundle forced the question. The web UI's baked index uses
-`/okfm-guide/index.md` — bundle directory included. A concept file inside that bundle
+`/.okfm/guide/index.md` — bundle directory included. A concept file inside that bundle
 should, per §6.5, write `/index.md`.
 
 ## Decision
@@ -36,7 +36,7 @@ Three layers, three forms:
 |---|---|---|
 | `okfm_relations` targets, `sources[].resource` | **bundle-relative** | `/index.md` |
 | Markdown links in bodies | **relative** | `what-is-okfm.md` |
-| `okfm-index.json`, viewer `p` and `r` fields | **mesh-relative** | `/okfm-guide/index.md` |
+| `okfm-index.json`, viewer `p` and `r` fields | **mesh-relative** | `/.okfm/guide/index.md` |
 
 `okfm view` resolves bundle-relative to mesh-relative by prefixing the bundle root. The
 transformation is one-way and lives entirely in the index builder; nothing in a bundle

@@ -1,7 +1,7 @@
 {
   "okfm": "0.2.1",
   "pack": null,
-  "_discover": "Every folder of documents under `root` gets its own OKF in `bundle`, plus one for the loose files at the top and a master OKF over all of them. `decisions` is excluded because it is an in-place bundle \u2014 those files are the concepts, so mirroring them would be a second copy of knowledge that already exists.",
+  "_discover": "Every folder of documents under `root` gets its own OKF in `bundle`, plus one for the loose files at the top and a mesh OKF over all of them. `decisions` is excluded because it is an in-place bundle \u2014 those files are the concepts, so mirroring them would be a second copy of knowledge that already exists.",
   "discover": {
     "root": "docs",
     "root_files": true,

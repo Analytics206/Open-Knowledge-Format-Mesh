@@ -19,7 +19,7 @@ Enrichment is short, bounded, repetitive work: read one document, write one desc
 says what it is for. That is the shape small local models handle well, and it is the shape
 where a key is most annoying to require.
 
-If the loop works on Ollama, level 4 stops being gated on a billing relationship — which
+If the loop works on Ollama, the credentialed variant stops being gated on a billing relationship — which
 matters more for adoption than any provider feature.
 
 # Why the key appears here and nowhere earlier

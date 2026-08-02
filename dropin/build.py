@@ -150,7 +150,7 @@ def _bundle_id(cfg: dict, out_dir: Path, fallback: str) -> str:
 
 def write_mesh(cfg: dict, out_root: Path, mesh_name: str, built: list[tuple[str, str, int]],
                stamp: str, apply: bool) -> int:
-    """Write the master OKF: one `OKF Member` concept per bundle, plus the map.
+    """Write the mesh OKF: one `OKF Member` concept per bundle, plus the map.
 
     The mesh is the point of the format, so a project that ends up with four bundles and no
     way to say how they relate has been given the parts and not the thing. It is generated
@@ -206,7 +206,7 @@ def write_mesh(cfg: dict, out_root: Path, mesh_name: str, built: list[tuple[str,
     if _owned(index):
         lines = [
             "---", "type: Index", "title: The mesh",
-            "description: The master OKF — an OKF whose concepts are the other OKFs.",
+            "description: The mesh OKF — read first. Its concepts are the other OKFs.",
             "status: draft", f'generated: {{ by: "{MINE}", at: {stamp} }}', "---", "",
             "# Members", "",
         ]

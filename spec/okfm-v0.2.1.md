@@ -206,6 +206,16 @@ Conformant if every non-reserved `.md` file has parseable frontmatter with a non
 2. An OKFM key never contradicts an official key. Where official has a field, OKFM uses it (`status`, not `okfm_state`).
 3. OKFM keys may appear inside official structures (e.g. `okfm_role`, `okfm_captured` within a `sources` entry). Official consumers preserve them.
 4. **Every OKFM concept is readable without OKFM tooling.** The body carries the human-readable content; `okfm_` keys carry machine structure. Strip every `okfm_` key and the bundle is still a useful OKF bundle.
+
+> **Two profile keys arrived with the level model and are not described anywhere below.**
+> `okfm_needs` — a component's exposure set, drawn from `[] < human < model < secrets` — and
+> `okfm_level`, the adoption level it claims. Together they are what makes *"level 2 never
+> needs a model"* a build failure rather than a promise; `dev/check_levels.py` enforces that a
+> component's needs fit its level, and CI gates on the set rather than the number.
+>
+> Both are `okfm_`-prefixed and survive the strip test, so nothing here is broken by them.
+>
+> No code action: this note records the divergence, the implementation stands.
 5. High-volume machine records are **not** `.md` concepts. Telemetry, edge indexes, and vocabularies are YAML/JSONL under `references/`, invisible to conformance (which governs `.md` files) and absent from the concept graph.
 
 ### 7.2 Identity
@@ -258,6 +268,20 @@ okfm_relations:
 - **Lifecycle:** `supersedes`, `superseded_by`, `resulted_in`
 
 Freeform predicates are rejected by the validator. High-volume or line-level edges go to `references/edges/edges.jsonl` rather than frontmatter.
+
+> **The implementation has moved ahead of this list.** It carries a fifth family —
+> **Federation:** `registers`, `registered_by` — because an `OKF Member` concept names a
+> bundle and nothing here said what that edge *is*. Without it the mesh knew its members and
+> the graph did not: filter a web UI to the registry and one member and nothing connected
+> them, which is the single relationship a mesh exists to show.
+>
+> The vocabulary also lives at `dropin/vocab/predicates.yaml`, not
+> `references/vocab/predicates.yaml`. Vocabularies are tool configuration read on every
+> validation run, not bundle content, and putting them inside a bundle made the validator
+> depend on which bundle it happened to be pointed at. Pack overlays are named in config and
+> merged by family.
+>
+> No code action: this note records the divergence, the implementation stands.
 
 ### 7.4 Progressive disclosure: sidecars reconsidered
 
@@ -716,6 +740,18 @@ The member's `description` plus the registry's generated `index.md` give progres
 
 The registry owns **only the map**: membership, scopes, aliases, cross-member concept links. It never owns member content. It is index-over, not authority-over — calling it a "master" bundle would smuggle central authority back into a design that exists to prevent it.
 
+> **The implementation adds `okfm_member.answers`** — a list of the questions a member's
+> bundle can answer, in the words somebody would actually ask them. It is what turns the
+> registry from a list of names into something an agent can route on: point it at the mesh's
+> `index.md` and it resolves *"where do I read about using my own key?"* to a path, without
+> being told in advance which bundles exist.
+>
+> This is progressive disclosure at the mesh level doing the job this section describes, and
+> it needed one more field than the section provides. Scatter-gather below stays unbuilt: the
+> mesh is read by an agent, it does not dispatch.
+>
+> No code action: this note records the divergence, the implementation stands.
+
 **Cross-mesh routing** is scatter-gather: question → registry resolves relevant members → those members' agents answer from their own bundles → the asking workflow assembles, citations resolving into each contributing bundle. No global index over everything, ever (§12.7).
 
 ### 12.3 Cross-bundle references and pinning
@@ -871,7 +907,7 @@ okfm/
   benchmark/                 # §18 harness — deterministic half                   ✓
 
   # ---- the mesh: OKFM described in its own format (§12) -------------------
-  # One OKF per folder of documents, plus a master OKF over them. Mirrored
+  # One OKF per folder of documents, plus a mesh OKF over them. Mirrored
   # bundles live here; in-place bundles stay with their sources and are
   # registered by path. `rm -rf .okfm` returns the project to what it was.
   .okfm/
@@ -885,7 +921,7 @@ okfm/
   # ---- level 2: the drop-in folder. Copy this whole directory. ------------
   dropin/                    # paste into a project as .okfm/               ✓
     okfm                     # one entry point, dispatches the pipeline      ✓
-    build                    # one bundle per folder, plus the master OKF    ✓
+    build                    # one bundle per folder, plus the mesh OKF    ✓
     refresh                  # observe pointers, report drift (§8.4)         ✓
     okfm_core                # locating, discovery, frontmatter, vocabularies ✓
     bootstrap                # extraction: title, description                ✓
@@ -901,7 +937,7 @@ okfm/
     check_docs               # the four-document spec corpus                 ✓
     check_levels             # every component fits the level it claims      ✓
 
-  # ---- levels 3-4: the implementation. Optional, replaceable. -------------
+  # ---- level 3: the implementation. Optional, replaceable. ----------------
   tools/
     cli/                     # validate, build, index, refresh, view, init
     enrich/                  # the components that require a model
@@ -957,6 +993,26 @@ One file, small enough to read in full:
 - **`federation: null` is a valid mesh.** A single bundle is the common case; the
   registry appears only when a second owner does (§12).
 
+> **The implemented config surface is larger than this.** Keys the tooling reads today and
+> this section does not describe:
+>
+> | Key | Does |
+> |---|---|
+> | `discover.root` / `.exclude` / `.root_files` | where to scan, what subtree to drop, whether the loose files at the top count |
+> | `bundle` | where generated concepts are written — `.okfm` by default |
+> | `mesh` | the subfolder holding the mesh OKF, or null to skip generating one |
+> | `mode` | `mirror` or `in-place` |
+> | `levels` | bundle id → adoption level, for the level/needs check |
+> | `vocab_overlays` | extra predicate, type and reason-code files a pack contributes |
+> | `web_ui` | path to the level 1 web UI and the index it reads |
+> | `exclude_scopes` | scopes excluded from statistics, injection and benchmark corpora |
+>
+> `bundles` also changed meaning. Here it *narrows a scan*; in the implementation it is an
+> explicit id → path map, and its presence turns discovery off. Both behaviours are useful
+> and the implementation supports both, but the default is discovery rather than enumeration.
+>
+> No code action: this note records the divergence, the implementation stands.
+
 ### 13.5 Discovery by convention
 
 Any `.md` file with a non-empty `type:` in its frontmatter is a concept, wherever it
@@ -967,6 +1023,21 @@ This is what makes adoption incremental: an existing docs tree becomes a mesh by
 adding one frontmatter line at a time, with no migration project and nothing to move.
 It is also why **zero-overhead-when-absent** (§8.5, rule 4) matters — a project with
 no concepts must pay nothing for having OKFM installed.
+
+> **What is implemented is discovery by *folder*, not by frontmatter.** The build finds
+> `docs/`, gives every folder of documents under it its own OKF, adds one for the loose files
+> at the top, and writes a mesh OKF over all of them. It does not sweep a project looking for
+> files that already carry a `type:`.
+>
+> The two are complements rather than rivals: convention-scanning finds concepts that already
+> exist, folder-scanning *creates* them from documents that do not. Only the second is built,
+> because an adopter with no concepts yet is the common case and the one this has to serve.
+>
+> The rule this section states still holds where it matters — a `.md` with a `type:` **is** a
+> concept wherever it sits, which is exactly how the in-place bundles work and why the build
+> refuses to mirror a file that is already one.
+>
+> No code action: this note records the divergence, the implementation stands.
 
 ### 13.6 Runtime independence
 
@@ -981,17 +1052,17 @@ implementer's side:
    before relying on a concept; update the concept and `log.md` after changes; validate
    before committing. Weaker than injection, and portable to any agent tool the adopter
    already has.
-3. **Inside a harness** — *level 4*. Workflows call the implementation directly; injection
+3. **Inside a harness** — *level 3, credentialed*. Workflows call the implementation directly; injection
    is a hook. The reference integration.
 
 Mode 2 is not a fallback. It is the mode most adopters will use, because it requires
 nothing they do not already have — and it is the reason **OKFM itself never holds a
-credential below level 4.** In mode 2 the adopter's agent drives OKFM; only in mode 3 does
+credential outside the credentialed variant.** In mode 2 the adopter's agent drives OKFM; only in mode 3 does
 OKFM drive a provider.
 
 The implementation therefore depends on no specific agent runtime, no LLM provider, and no
 MCP server. Adapters may; core may not. A harness integration is one worked example of mode
-3, never a requirement — the CLI path must remain a complete way to use level 4.
+3, never a requirement — the CLI path must remain a complete way to use the credentialed variant.
 
 ### 13.7 What an adopter does
 
@@ -1004,7 +1075,7 @@ documentation about scoping.
 
 ```shell
 cp -r okfm/dropin my-project/.okfm && cd my-project
-python .okfm/okfm.py         # one OKF per docs folder, plus the master OKF
+python .okfm/okfm.py         # one OKF per docs folder, plus the mesh OKF
 ```
 
 Open `okfm-web-ui.html` and the mesh is there — unenriched, because no model was involved,
@@ -1162,7 +1233,7 @@ is a populated graph to explore rather than an empty screen and a README.
 statistics, the index budget (§8.5), benchmark corpora (§18), and any context
 assembled for an agent. It renders in the web UI; it counts toward nothing.
 
-`rm -rf okfm-guide/` is the entire removal procedure — nothing references it, and the
+`rm -rf .okfm/guide/` is the entire removal procedure — nothing references it, and the
 viewer falls back to its empty state. `okfm init --guide` restores it.
 
 ### 14.6 Three views

@@ -7,6 +7,12 @@ status: stable
 tags: [level-2, deterministic, drop-in]
 generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
 okfm_member:
+  answers:
+    - how do I build a mesh from my own docs
+    - what will the build write, and what will it never write
+    - what does it need installed
+    - how does drift detection work
+    - is it safe to re-run
   owner: "human:analytics206"
   aliases: ["level 2", "the drop-in", "the build"]
   agent: null

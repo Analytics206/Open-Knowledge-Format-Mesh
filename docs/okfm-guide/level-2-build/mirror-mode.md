@@ -1,6 +1,6 @@
 # Two places a concept can live
 
-**Mirror (the default).** Concepts are written into `bundle/`, each pointing back at the
+**Mirror (the default).** Concepts are written into `.okfm/`, each pointing back at the
 source file through `resource`. Your markdown is never opened for writing. Deleting the
 folder leaves the project exactly as it was.
 

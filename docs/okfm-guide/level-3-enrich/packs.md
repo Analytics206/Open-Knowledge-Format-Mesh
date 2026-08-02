@@ -27,7 +27,7 @@ reader can suspect.
 This component's needs set is `[]`, and the useful half of it runs at level 2. If someone
 wants domain vocabulary today, they add an overlay and nothing stops them.
 
-It sits at level 4 because that is where the pack *system* ships — discovery, layering,
+It sits in the credentialed variant because that is where the pack *system* ships — discovery, layering,
 installation, and the workflows a pack carries. But the level assignment is about a release,
 not about a capability boundary, and that is a weaker reason than the ones behind the other
 three levels.

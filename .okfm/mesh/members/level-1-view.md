@@ -7,6 +7,11 @@ status: stable
 tags: [level-1, viewer, no-install]
 generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
 okfm_member:
+  answers:
+    - what do I get without running anything
+    - how do I look at a mesh
+    - can I just point my own agent at this
+    - what does the web UI show
   owner: "human:analytics206"
   aliases: ["level 1", "the web UI level"]
   agent: null

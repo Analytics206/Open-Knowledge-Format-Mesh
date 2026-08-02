@@ -2,7 +2,7 @@
   "okfm": "0.2.1",
   "pack": "warehouse",
 
-  "_discover": "Every folder of documents under `root` gets its own OKF in `bundle`, plus one for the loose files at the top and a master OKF over all of them. This is the default with no config at all; the first run writes it out so the first thing you edit is a file the tool made for you.",
+  "_discover": "Every folder of documents under `root` gets its own OKF in `bundle`, plus one for the loose files at the top and a mesh OKF over all of them. This is the default with no config at all; the first run writes it out so the first thing you edit is a file the tool made for you.",
   "discover": {
     "root": "docs",
     "root_files": true,

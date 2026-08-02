@@ -1,9 +1,9 @@
 ---
 type: Document
 title: Mirror mode
-description: Concepts are written beside your files and point back at them. Your markdown is not touched unless you ask.
+description: "Concepts land in `.okfm/` and point back at your files, which are never opened for writing — the reversible default, with in-place as a flag you pass once you have seen what it produces."
 status: draft
-generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
+generated: { by: "agent:claude-opus-5", at: 2026-08-02T03:28:25Z }
 sources:
   - id: doc
     resource: ../../docs/okfm-guide/level-2-build/mirror-mode.md

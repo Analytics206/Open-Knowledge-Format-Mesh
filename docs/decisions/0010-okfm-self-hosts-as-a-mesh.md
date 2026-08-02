@@ -1,7 +1,7 @@
 ---
 type: Decision
 title: "DR-0010 — OKFM's own repository is the first mesh"
-description: "OKFM's own repository is the first mesh — one OKF per folder of documents under .okfm/, a generated master OKF over them, and federation's addressing half proven on real content. The master maps the mesh and deliberately does not run it."
+description: "OKFM's own repository is the first mesh — one OKF per folder of documents under .okfm/, a generated mesh OKF over them, and federation's addressing half proven on real content. It maps the members and deliberately does not run them."
 status: draft
 verified: { by: "human:analytics206", at: 2026-08-02T03:08:50Z }
 tags: [mesh, federation, self-hosting]
@@ -147,7 +147,7 @@ Real but small:
 size. It is by change cadence, which is a §12.1 criterion, and the alternative is a project
 about meshes that has never run one.
 
-**The guide gets harder to delete.** §14.5's `rm -rf okfm-guide/` currently has no
+**The guide gets harder to delete.** §14.5's `rm -rf .okfm/guide/` currently has no
 consequences. Under this record the registry would carry a dangling member. Mitigation: the
 registry treats a missing member as a resolvable condition, not an error — which is
 §6.7's tolerance requirement applied to the mesh level, and worth proving anyway.
@@ -171,7 +171,7 @@ they are about different things, and mirroring that arrangement needs no configu
 right. Loose files at the top of `docs/` become a bundle too, and both exclusions —
 a subtree, or the top-level files — are config keys.
 
-**The master OKF is generated.** `build.py` writes the mesh: one `OKF Member` concept per
+**The mesh OKF is generated.** `build.py` writes the mesh: one `OKF Member` concept per
 bundle plus the map. A map maintained by hand disagrees with its territory eventually, and the
 disagreement is silent — the same argument that already made the web UI index generated rather
 than checked.
@@ -208,9 +208,9 @@ decision records genuinely are this project's mesh. An adopter who vendors OKFM 
 proves addressing; transport is the thing a hosted member adds, and transport is Phase 4
 work per [DR-0003](0003-phase-ordering.md).
 
-## Amendment 2026-08-02 — the master OKF maps the mesh; it does not run it
+## Amendment 2026-08-02 — the mesh OKF maps the members; it does not run it
 
-Asked directly and answered: **no orchestrator.** The master OKF owns membership and nothing
+Asked directly and answered: **no orchestrator.** The mesh OKF owns membership and nothing
 else.
 
 Three things "running the mesh" could have meant, and where each landed:

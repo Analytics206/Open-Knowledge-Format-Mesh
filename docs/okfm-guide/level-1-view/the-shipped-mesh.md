@@ -1,6 +1,6 @@
 # What you get
 
-Six bundles registered in [`okfm-mesh/`](../../../.okfm/mesh/index.md): the four levels, the
+Seven bundles registered in [`okfm-mesh/`](../../../.okfm/mesh/index.md): the three levels, the
 guide, and the decision records. Every file in them is a legal OKF v0.2 concept.
 
 They are a working mesh rather than a demonstration of one. The split is by **change
@@ -20,7 +20,7 @@ source file can answer. See [prior art](../../../docs/prior-art.md) §21.1.
 
 # The guide is deletable
 
-`rm -rf okfm-guide/` is the entire removal procedure. Every concept in it carries
+`rm -rf .okfm/guide/` is the entire removal procedure. Every concept in it carries
 `okfm_scope: guide`, which the default config excludes — so the guide renders in the web UI
 and counts toward nothing: not health statistics, not the injected index, not a benchmark
 corpus.

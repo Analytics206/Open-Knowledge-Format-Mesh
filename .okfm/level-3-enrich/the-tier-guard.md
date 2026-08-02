@@ -1,9 +1,9 @@
 ---
 type: Document
 title: The tier guard
-description: Reads the diff after an edit pass and fails if fields were written that the editor does not own.
+description: "Reads the diff after an edit pass and fails on any field the editor does not own, naming the field and the reason. Scope it to the paths the pass touched, or it reports everything else in flight."
 status: draft
-generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
+generated: { by: "agent:claude-opus-5", at: 2026-08-02T03:28:25Z }
 sources:
   - id: doc
     resource: ../../docs/okfm-guide/level-3-enrich/the-tier-guard.md

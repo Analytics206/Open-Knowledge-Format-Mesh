@@ -17,14 +17,14 @@ command is the one to remember.
 ## What the first run does
 
 With no configuration it finds `docs/`, gives **every folder of documents its own OKF**, adds
-one for the loose files at the top, and writes a master OKF over all of them:
+one for the loose files at the top, and writes a mesh OKF over all of them:
 
 ```text
 my-project/
   docs/guides/          →   .okfm/guides/
   docs/architecture/    →   .okfm/architecture/
   docs/*.md             →   .okfm/docs/
-                            .okfm/mesh/      ← the master OKF
+                            .okfm/mesh/      ← the mesh OKF — read this first
 ```
 
 Then it writes the config it used, so the first thing you edit is a file it made for you.
@@ -59,7 +59,7 @@ network, no secrets, no model.
 | File | Does |
 |---|---|
 | `okfm.py` | One entry point. Runs the pipeline, or dispatches a single step. |
-| `build.py` | Markdown → concepts, one bundle per folder, plus the master OKF. |
+| `build.py` | Markdown → concepts, one bundle per folder, plus the mesh OKF. |
 | `okfm_core.py` | Locating and frontmatter parsing. Knows nothing about where it was installed. |
 | `bootstrap.py` | Extraction — `title`, `description` — and in-place concept creation. |
 | `bake_web_ui.py` | Regenerates the web UI's index from the bundles. `--check` gates CI. |

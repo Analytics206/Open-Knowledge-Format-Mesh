@@ -18,8 +18,16 @@ cannot state. It is not a summary of the code.
 
 ## Before you act
 
-**Read `index.md` first.** Start at the mesh root, then the directory you are working in. It
-is a map, not the content — open only the concepts it points you to.
+**Read `.okfm/mesh/index.md` first**, then the `index.md` of whichever bundle it sends you
+to. Both are maps, not content — open only the concepts they point you at.
+
+The mesh is where routing happens. Each member concept carries `okfm_member.answers`, a list
+of the questions its bundle can answer, so *"where do I read about X?"* resolves to a path
+without you having to know what bundles exist. If there is no mesh — a single-bundle project —
+start at that bundle's `index.md`.
+
+Nothing dispatches for you. The mesh is a directory you read; deciding which member to open,
+and assembling an answer from more than one, is your job.
 
 **Weigh three signals before relying on a concept.** They are stored deliberately so you can
 judge, rather than being pre-judged for you:

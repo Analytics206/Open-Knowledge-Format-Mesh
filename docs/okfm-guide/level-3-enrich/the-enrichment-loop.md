@@ -36,4 +36,4 @@ fields at all, and [the human exit](the-human-exit.md) refuses a `process:` acto
 
 The loop does not run itself. There is no watcher, no schedule, and no automatic invocation
 of your agent, because every one of those requires deciding when a model gets to write into
-your repository unattended. That is a level 4 question, and it needs a key.
+your repository unattended. That is a credentialed-variant question, and it needs a key.

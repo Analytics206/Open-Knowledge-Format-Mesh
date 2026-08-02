@@ -7,6 +7,11 @@ status: stable
 tags: [decisions, rationale, loop-family]
 generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
 okfm_member:
+  answers:
+    - why is the project shaped this way
+    - why was X rejected
+    - what would reverse this decision
+    - when does a deferred thing come back
   owner: "human:analytics206"
   aliases: ["decisions", "DRs", "ADRs"]
   agent: null

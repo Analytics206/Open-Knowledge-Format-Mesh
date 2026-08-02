@@ -7,6 +7,11 @@ status: stable
 tags: [level-1, format, documentation]
 generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
 okfm_member:
+  answers:
+    - what is OKFM
+    - how do I write my first concept
+    - what should I not write down
+    - what is drift, trust, or an attested computation
   owner: "human:analytics206"
   aliases: ["the guide", "level 1"]
   agent: null
@@ -35,6 +40,6 @@ ownership seam separating this bundle from the others: not size, but blast radiu
 Every concept carries `okfm_scope: guide`, so the guide renders in the web UI and counts
 toward nothing — not health statistics, not the injected index, not a benchmark corpus.
 
-Deletable. `rm -rf okfm-guide/` is the whole procedure, and this member concept becomes a
+Deletable. `rm -rf .okfm/guide/` is the whole procedure, and this member concept becomes a
 dangling reference — which the registry must tolerate rather than error on, per §6.7 applied
 at the mesh level.

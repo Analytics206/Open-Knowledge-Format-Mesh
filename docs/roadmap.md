@@ -237,7 +237,7 @@ Scope: migrate to conformant v0.2 using an **existing migrator** rather than a h
 
 Also in Phase 1, per [DR-0003](decisions/0003-phase-ordering.md) and
 [DR-0010](decisions/0010-okfm-self-hosts-as-a-mesh.md): **federation's addressing half** —
-the master OKF, `OKF Member` concepts, cross-bundle references with commit pinning, and a
+the mesh OKF, `OKF Member` concepts, cross-bundle references with commit pinning, and a
 viewer that renders more than one bundle. It costs almost nothing because OKFM's own
 repository is a mesh of eight bundles, and it proves the project's central metaphor now
 rather than at the end.
