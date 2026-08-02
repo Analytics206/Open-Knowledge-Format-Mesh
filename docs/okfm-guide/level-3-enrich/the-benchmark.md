@@ -35,13 +35,25 @@ Eight, drawn from things that actually confused somebody working on this project
 its own provenance in a `from` field, so a reader can check the set was not reverse-engineered
 from the answers it wanted.
 
-Two are verbatim: *"I excluded a folder and re-ran the build and it still shows"*, and *"if it
-costs nothing and needs no key, why isn't it level 2?"* The rest come from design notes written
-after something went wrong, and from the objection each rule keeps attracting.
+Two were asked word for word while building this repository — one about the config seam between
+what the build reads and what the mesh is, one about where a free local model sits on the
+ladder. The rest come from design notes written after something went wrong, and from the
+objection each rule keeps attracting.
 
-The provenance rule is the point: never draw a question from a bundle's own table of contents,
-which flatters the bundle by construction. A question the bundle was written to answer proves
-only that somebody wrote an index.
+**The questions themselves live in `benchmark/questions.json` and are deliberately not
+reproduced here.** That directory is excluded from both arms; this file is not. Quoting a
+question in the corpus hands the answering agent the paper it is sitting — it does not favour
+either arm, since a doc file is in both, but an agent that reads *"this is one of the benchmark
+questions"* stops answering and starts performing.
+
+That is not hypothetical. This section quoted one verbatim, and the first run's answers cited
+it straight back. `--check` now fails when any question's text appears anywhere in the corpus,
+because excluding `benchmark/` was never sufficient: prose about the benchmark lives in `docs/`
+like all other prose, and a skip list only covers the paths somebody thought of.
+
+The provenance rule is the other half: never draw a question from a bundle's own table of
+contents, which flatters the bundle by construction. A question the bundle was written to
+answer proves only that somebody wrote an index.
 
 Every question must be answerable from source in **both** arms, because the bundle is meant to
 be a shortcut and not the only copy of a fact. That requirement is mechanical rather than

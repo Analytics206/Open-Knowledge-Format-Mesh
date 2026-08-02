@@ -62,16 +62,35 @@ def utf8_stdout() -> None:
             s.reconfigure(encoding="utf-8", errors="replace")
 
 
-def corpus() -> list[Path]:
-    """Every file a reader could reach, relative to the project root."""
-    out = set()
+# Prose that describes this harness is not part of the corpus under test, wherever it sits.
+# Excluding the `benchmark/` directory was the obvious half and it is not sufficient: a guide
+# concept explaining the benchmark lives in `docs/` like all other prose, is therefore in BOTH
+# arms, and tells an answering agent it is being benchmarked. It does not favour an arm — it
+# inflates both, because an agent that knows it is being tested stops answering and starts
+# performing.
+#
+# Detected by self-reference rather than a hand-kept list of paths: a file that names this
+# harness's own files is writing about the harness. A list would only ever cover the documents
+# somebody remembered.
+_SELF_REF = re.compile(r"benchmark/(run|grade|questions)\.(py|json)")
+
+
+def corpus() -> tuple[list[Path], list[Path]]:
+    """(files under test, files excluded for describing the harness)."""
+    out, meta = set(), set()
     for glob in CORPUS_GLOBS:
         for f in PROJECT.rglob(glob):
             rel = f.relative_to(PROJECT)
             if SKIP_DIRS & set(rel.parts) or rel.parts[0] == "benchmark":
                 continue
+            try:
+                if _SELF_REF.search(f.read_text(encoding="utf-8", errors="replace")):
+                    meta.add(rel)
+                    continue
+            except OSError:
+                pass
             out.add(rel)
-    return sorted(out)
+    return sorted(out), sorted(meta)
 
 
 def bundle_dirs() -> dict[str, Path]:
@@ -168,11 +187,16 @@ def main() -> int:
     questions = json.loads(qfile.read_text(encoding="utf-8"))["questions"]
 
     bundles = bundle_dirs()
-    files = corpus()
+    files, meta = corpus()
     treatment, control = split_arms(files, bundles)
     control_set = {p.as_posix() for p in control}
 
     print(f"corpus      {len(files)} files")
+    if meta:
+        # Named, not silently dropped. An exclusion nobody can see is one nobody can question,
+        # and this one decides what the answering agent is allowed to know about its own test.
+        print(f"excluded    {len(meta)} file(s) describing this harness: "
+              + ", ".join(m.as_posix() for m in meta))
     print(f"treatment   {len(treatment)}")
     print(f"control     {len(control)}  ({len(treatment) - len(control)} concepts removed)")
 
@@ -195,6 +219,31 @@ def main() -> int:
         # path bug took, so it is said out loud.
         notes.append(f"only {removed} concept(s) removed across {len(bundles)} bundles — "
                      f"verify every `bundles` path resolves")
+
+    # --- the corpus must not contain the test --------------------------------
+    # Documenting the question set inside the corpus hands the answering agent the paper it is
+    # sitting. It does not favour one arm — a doc file is in both — but an agent that reads
+    # "this is one of the benchmark questions" stops answering and starts performing, and both
+    # arms inflate together.
+    #
+    # Found the hard way: the guide concept describing this harness quoted a question verbatim,
+    # and the first run's answers cited it back. Excluding `benchmark/` from the corpus was
+    # never enough, because prose about the benchmark lives in `docs/` like any other prose.
+    # Hence a check rather than a longer skip list — the corpus is allowed to discuss the
+    # harness, and is not allowed to quote what it asks.
+    def flat(s: str) -> str:
+        return " ".join(s.split()).lower()
+
+    bodies = {rel: flat((PROJECT / rel).read_text(encoding="utf-8", errors="replace"))
+              for rel in files if rel.suffix in (".md", ".py", ".json", ".yaml")}
+    for q in questions:
+        needle = flat(q["text"])
+        for rel, body in bodies.items():
+            if needle in body:
+                errors.append(f"{q['id']}: its question text appears verbatim in "
+                              f"{rel.as_posix()} — the corpus is quoting the test. Describe "
+                              f"the question without reproducing it, or move that prose into "
+                              f"benchmark/, which is not part of either arm.")
 
     # --- §18.1 rule 1: every fact must be present in BOTH arms ---------------
     # The bundle is a shortcut, never the only source. A question whose evidence lives only

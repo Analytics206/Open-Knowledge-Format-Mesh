@@ -89,12 +89,42 @@ def packets(run: Path, key: dict, questions: dict, answers: dict) -> int:
     return 0
 
 
+def verdicts_of(run: Path) -> dict:
+    """`verdicts.json`, or every `verdicts-N.json` merged.
+
+    Grading gets split across several graders on purpose — no one of them may see both arms
+    of the same question, because a matched pair is the one comparison that gives the arm
+    away. So the normal case is several files, and merging them is this function's whole job.
+
+    A duplicate id across two files is an error rather than a last-write-wins: it means the
+    split was built wrong and somebody graded the same answer twice, which is exactly the
+    situation the split exists to prevent.
+    """
+    single = run / "verdicts.json"
+    files = [single] if single.is_file() else sorted(run.glob("verdicts-*.json"))
+    merged, seen = {}, {}
+    for f in files:
+        for oid, v in json.loads(f.read_text(encoding="utf-8")).items():
+            if oid in merged:
+                raise SystemExit(f"{oid} graded twice: {seen[oid].name} and {f.name}")
+            merged[oid], seen[oid] = v, f
+    return merged
+
+
 def score(run: Path, key: dict, questions: dict, answers: dict) -> int:
-    vfile = run / "verdicts.json"
-    if not vfile.is_file():
-        print(f"no verdicts at {vfile} — run with --packets first", file=sys.stderr)
+    verdicts = verdicts_of(run)
+    if not verdicts:
+        print(f"no verdicts in {run} — run with --packets first", file=sys.stderr)
         return 2
-    verdicts = json.loads(vfile.read_text(encoding="utf-8"))
+
+    # Scoring a partial set silently would report a gap computed from whichever answers
+    # happened to be graded, and an arm short a few answers scores lower for a reason that
+    # has nothing to do with the bundle.
+    ungraded = sorted(set(answers) - set(verdicts))
+    if ungraded:
+        print(f"{len(ungraded)} answer(s) have no verdict: {', '.join(ungraded)}",
+              file=sys.stderr)
+        return 2
 
     rows, arms = [], {"treatment": [0, 0, 0], "control": [0, 0, 0]}  # hit, total, false
     for oid, v in sorted(verdicts.items()):
