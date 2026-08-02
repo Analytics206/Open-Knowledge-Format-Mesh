@@ -12,7 +12,8 @@ Three states, never two:
 
     match      the source hashes to what `okfm_captured` recorded
     drifted    it does not
-    unknown    never observed, or observed longer ago than `max_age`
+    unknown    never observed, observed longer ago than `max_age`, or pinned to
+               no hash at all — the normal shape of a hand-written concept
 
 `unknown` renders as unknown. Defaulting it to `match` would be a stored opinion wearing a
 computed one's clothes, which is the failure spec 3.4 exists to prevent.
@@ -32,7 +33,8 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from okfm_core import HERE, PROJECT, configured_bundles, frontmatter, load_or_create_config, scalar
+from okfm_core import (HERE, PROJECT, configured_bundles, frontmatter,
+                       load_or_create_config, reject_unknown, scalar)
 
 CACHE = HERE / ".okfm-cache" / "observations.json"
 
@@ -93,6 +95,7 @@ def observe_file(path: Path, body_only: bool = False) -> str | None:
 
 
 def main() -> int:
+    reject_unknown(sys.argv[1:], ("--check",))
     check = "--check" in sys.argv
     _, cfg, _ = load_or_create_config(write=False)
     drift_cfg = cfg.get("drift", {})
@@ -102,7 +105,7 @@ def main() -> int:
     now = datetime.now(timezone.utc)
     cache = load_cache()
     counts = {"match": 0, "drifted": 0, "unknown": 0}
-    drifted, unresolvable = [], []
+    drifted, unresolvable, unpinned = [], [], []
 
     for bid, root in sorted(configured_bundles(cfg).items()):
         if not root.is_dir():
@@ -118,8 +121,19 @@ def main() -> int:
                 entry = m.group("rest")
                 res = _RESOURCE.search(entry)
                 cap = _HASH.search(entry)
-                if not res or not cap:
-                    continue               # no captured hash means nothing to compare
+                if not res:
+                    continue               # not a source pointer at all
+                if not cap:
+                    # A pointer with no captured hash is `unknown`, not nothing. It used to be
+                    # skipped entirely — counted in no bucket, invisible in the totals — which
+                    # contradicted this file's own promise of three states and no defaulting.
+                    #
+                    # It is the normal shape of a hand-authored concept: level 1 runs nothing,
+                    # so an author cannot compute a sha256, and a fabricated one would report
+                    # drift forever. Their bundle reported zero pointers and looked empty.
+                    counts["unknown"] += 1
+                    unpinned.append(f"{rid} → {res.group(1)}")
+                    continue
                 uri, captured = res.group(1), cap.group(1)
 
                 if uri.startswith(LIVE_SCHEMES):
@@ -163,6 +177,20 @@ def main() -> int:
         print(f"  unknown  {u}")
     if len(unresolvable) > 10:
         print(f"  unknown  … and {len(unresolvable) - 10} more")
+
+    if unpinned:
+        # Named separately from the unresolvable ones because the remedy is different and
+        # the cause is not a fault. These sources exist and were read; nothing has recorded
+        # what they looked like, so there is no baseline to drift from yet.
+        print(f"\n  {len(unpinned)} pointer(s) carry no captured hash — nothing to compare "
+              f"against yet.")
+        for u in unpinned[:5]:
+            print(f"  unpinned {u}")
+        if len(unpinned) > 5:
+            print(f"  unpinned … and {len(unpinned) - 5} more")
+        print("  This is normal for a hand-written concept: computing a hash means running "
+              "something,\n  and level 1 runs nothing. `revalidate <path> --by human:you` "
+              "pins one when you are ready.")
 
     # Only `stable` concepts fail the build. A draft is expected to be out of step with
     # its source; that is what draft means.

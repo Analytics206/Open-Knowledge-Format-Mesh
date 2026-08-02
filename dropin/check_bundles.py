@@ -16,7 +16,8 @@ import re
 import sys
 from pathlib import Path
 
-from okfm_core import PROJECT, configured_bundles, load_or_create_config, vocab_terms
+from okfm_core import (PROJECT, configured_bundles, load_or_create_config, parse_relations,
+                       vocab_terms)
 
 _FM = re.compile(r"\A---\r?\n(.*?)\r?\n---\r?\n", re.S)
 _OKFM_KEY = re.compile(r"^(okfm_[\w]+):", re.M)
@@ -135,39 +136,25 @@ def main() -> int:
                 pins[digest] = res
 
             # --- profile: controlled predicates (spec 7.3) --------------------
-            # Both YAML forms. This matched only the inline flow mapping, because the pattern
-            # required the comma between the two keys:
-            #
-            #     - { predicate: part_of, target: /index.md }     <- checked
-            #     - predicate: part_of                            <- silently skipped
-            #       target: /index.md
-            #
-            # Block form is equally legal YAML, and it is the form spec 7.3's own primary
-            # example uses — so the normative document taught the shape the validator ignored.
-            # A skipped relation is not a soft failure: the predicate goes unchecked against
-            # the vocabulary and the target unresolved, which is precisely the guessed-edge
-            # traversal reads as fact.
-            rel_block = re.search(r"^okfm_relations:\s*\n((?:[ \t]*[-{].*\n?|[ \t]+\w+:.*\n?)+)",
-                                  block, re.M)
-            if rel_block:
-                for pred, tgt in re.findall(
-                    r"predicate:\s*([\w_]+)\s*[,\n]\s*(?:[ \t]*)target:\s*([^\s},]+)",
-                    rel_block.group(1)
-                ):
-                    if pred not in predicates:
-                        errors.append(f"{rid}: predicate `{pred}` not in the vocabulary")
-                    # An absolute target whose first segment names a bundle is mesh-absolute;
-                    # anything else absolute is relative to its own bundle root. Without this
-                    # a concept cannot address another bundle at all, which would make a
-                    # mesh of six bundles unable to say how they relate.
-                    mesh_tgt = tgt
-                    if tgt.startswith("/"):
-                        head = tgt.lstrip("/").split("/", 1)[0]
-                        mesh_tgt = tgt if head in bundles else f"{root}{tgt}"
-                        if pred == "registers" and bid == registry:
-                            registered.add(head)
-                    if mesh_tgt not in mesh_paths:
-                        errors.append(f"{rid}: relation target {tgt} resolves to nothing")
+            # Both YAML forms, via the one parser in `okfm_core`. This had its own copy that
+            # required the comma between the keys, so block form was silently skipped here —
+            # and the viewer's bake had a second copy with the same flaw, so those edges were
+            # neither checked nor drawn. Spec 7.3's own primary example was block form.
+            for pred, tgt in parse_relations(block):
+                if pred not in predicates:
+                    errors.append(f"{rid}: predicate `{pred}` not in the vocabulary")
+                # An absolute target whose first segment names a bundle is mesh-absolute;
+                # anything else absolute is relative to its own bundle root. Without this
+                # a concept cannot address another bundle at all, which would make a
+                # mesh of six bundles unable to say how they relate.
+                mesh_tgt = tgt
+                if tgt.startswith("/"):
+                    head = tgt.lstrip("/").split("/", 1)[0]
+                    mesh_tgt = tgt if head in bundles else f"{root}{tgt}"
+                    if pred == "registers" and bid == registry:
+                        registered.add(head)
+                if mesh_tgt not in mesh_paths:
+                    errors.append(f"{rid}: relation target {tgt} resolves to nothing")
 
             # --- profile: controlled reason codes (spec 10.2) ------------------
             # A WARNING, not an error, until domain packs exist. Core carries only the

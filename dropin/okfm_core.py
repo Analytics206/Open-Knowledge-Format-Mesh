@@ -19,10 +19,17 @@ def utf8_stdout() -> None:
     Called at import here, and by every entry point — including the dispatcher, which does
     not otherwise depend on this module. It was reimplemented three times before being
     hoisted, which is a good sign it belongs in one place.
+
+    `line_buffering` matters more than it looks. Python block-buffers stdout when it is not a
+    terminal, while a subprocess writes to the same descriptor directly — so `okfm.py`'s stage
+    banners were flushed at exit and every one of them landed *after* the output it labelled.
+    Piped, redirected, in CI, or read by an agent, a traceback appeared above the banner naming
+    the stage that produced it. Fine in a live terminal and actively misleading everywhere
+    else, which is the half that gets debugged.
     """
     for s in (sys.stdout, sys.stderr):
         if hasattr(s, "reconfigure"):
-            s.reconfigure(encoding="utf-8", errors="replace")
+            s.reconfigure(encoding="utf-8", errors="replace", line_buffering=True)
 
 
 utf8_stdout()
@@ -30,6 +37,24 @@ utf8_stdout()
 # The folder this file lives in, and the project it was dropped into.
 HERE = Path(__file__).resolve().parent
 PROJECT = HERE.parent
+
+
+def reject_unknown(argv: list[str], allowed: tuple[str, ...]) -> None:
+    """Exit on a flag nothing reads, naming it and what is accepted.
+
+    Several scripts test `"--check" in sys.argv` and ignore the rest, so a mistyped or
+    invented flag did nothing and exited 0 — indistinguishable from having worked. The viewer
+    recommended `okfm view --serve` in two places; running it printed a success line and
+    served nothing, and there was no way to tell whether it had run, failed, or been ignored.
+
+    A flag that is silently swallowed is worse than one that errors, because the user believes
+    the thing they asked for happened.
+    """
+    unknown = [a for a in argv if a.startswith("-") and a.split("=", 1)[0] not in allowed]
+    if unknown:
+        print(f"unknown option: {' '.join(unknown)}", file=sys.stderr)
+        print(f"this command accepts: {', '.join(allowed) or '(no options)'}", file=sys.stderr)
+        raise SystemExit(2)
 
 RESERVED = {"index.md", "log.md", "README.md", "CHANGELOG.md", "CONTRIBUTING.md"}
 
@@ -43,6 +68,24 @@ SKIP_DIRS = {
 }
 
 FM = re.compile(r"\A---\r?\n(.*?)\r?\n---\r?\n", re.S)
+
+# `okfm_relations`, in both legal YAML forms. Lives here because it was written twice —
+# once in the validator, once in the viewer bake — and the validator's copy required the
+# comma between the two keys, so block form was checked by neither and drawn by neither.
+# Two implementations of one rule agree until somebody fixes one of them.
+_REL_BLOCK = re.compile(r"^okfm_relations:\s*\n((?:[ \t]*[-{].*\n?|[ \t]+\w+:.*\n?)+)", re.M)
+_REL_PAIR = re.compile(r"predicate:\s*([\w_]+)\s*[,\n]\s*(?:[ \t]*)target:\s*([^\s},]+)")
+
+
+def parse_relations(block: str) -> list[tuple[str, str]]:
+    """(predicate, target) for every typed edge in a frontmatter block.
+
+    Accepts the inline flow mapping and the indented block form. Both are legal YAML and
+    spec 7.3 shows both; a parser that reads only one silently drops edges, and a dropped
+    edge is invisible in exactly the place traversal treats edges as fact.
+    """
+    m = _REL_BLOCK.search(block)
+    return _REL_PAIR.findall(m.group(1)) if m else []
 
 
 def scalar(block: str, key: str):

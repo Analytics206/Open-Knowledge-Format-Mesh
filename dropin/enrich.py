@@ -37,7 +37,7 @@ import sys
 from pathlib import Path
 
 from okfm_core import (
-    HERE, configured_bundles, frontmatter, load_or_create_config, scalar, utf8_stdout,
+    HERE, configured_bundles, frontmatter, load_or_create_config, scalar, utf8_stdout, reject_unknown,
 )
 
 utf8_stdout()
@@ -117,6 +117,7 @@ def work_list():
 
 
 def main() -> int:
+    reject_unknown(sys.argv[1:], ("--brief",))
     full = "--brief" in sys.argv
     obs, items = work_list()
 

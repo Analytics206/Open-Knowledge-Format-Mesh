@@ -22,7 +22,8 @@ import sys
 from pathlib import Path
 
 import config_schema
-from okfm_core import HERE, PROJECT, configured_bundles, find_config, load_or_create_config
+from okfm_core import (HERE, PROJECT, configured_bundles, find_config,
+                       load_or_create_config, parse_relations, reject_unknown)
 
 ROOT = PROJECT
 CACHE = HERE / ".okfm-cache" / "observations.json"
@@ -80,11 +81,8 @@ def relations(block: str, bundle_root: str, bundle_ids: set[str] | None = None):
     same-bundle one -- and a mesh whose members cannot point at each other is a directory
     listing with extra steps.
     """
-    m = re.search(r"^okfm_relations:\s*\n((?:[ \t]*-.*\n?)+)", block, re.M)
-    if not m:
-        return []
     out = []
-    for pred, tgt in re.findall(r"predicate:\s*([\w_]+),\s*target:\s*([^\s}]+)", m.group(1)):
+    for pred, tgt in parse_relations(block):
         if tgt.startswith("/") and (tgt.lstrip("/").split("/", 1)[0] not in (bundle_ids or ())):
             tgt = f"{bundle_root}{tgt}"
         out.append([pred, tgt])
@@ -248,6 +246,7 @@ def current_config() -> dict:
 
 
 def main() -> int:
+    reject_unknown(sys.argv[1:], ("--check",))
     check = "--check" in sys.argv
     _, cfg = find_config()
     viewer = viewer_path(cfg or {})
