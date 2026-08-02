@@ -24,12 +24,21 @@
     --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
   *{box-sizing:border-box}
+  /* `hidden` is only `display:none` in the UA stylesheet, so ANY author rule setting
+     `display` silently beats it. `#graph` set `display:block`, which meant the graph was
+     never actually hidden — it kept rendering underneath every other view. One rule, so
+     switching pages cannot go wrong that way again. */
+  [hidden]{display:none !important}
   html,body{height:100%}
   body{
     margin:0; background:var(--paper); color:var(--ink);
     font-family:var(--sans); font-size:14px; line-height:1.45;
     -webkit-font-smoothing:antialiased;
+    /* A column, so `main` takes whatever the header leaves. The old rule guessed the
+       header's height in a `calc()` and was wrong the moment a page hid the gauges. */
+    display:flex; flex-direction:column; min-height:100vh;
   }
+  header{flex:none}
   /* ---------- masthead ---------- */
   header{
     border-bottom:1px solid var(--line);
@@ -63,22 +72,43 @@
   .bar{height:3px; background:var(--line-soft); margin-top:5px; position:relative; overflow:hidden}
   .bar i{position:absolute; inset:0 auto 0 0; background:var(--ink)}
   .bar.good i{background:var(--verified)} .bar.warn i{background:var(--stale)} .bar.bad i{background:var(--drift)}
-  /* tabs */
-  nav.views{display:flex; gap:2px; margin-top:12px}
-  nav.views button{
+  /* ---------- pages ----------
+     Links, not buttons, and the hash is what decides which page you are on. That buys the
+     back button, bookmarkable pages, and middle-click for free — and it is the honest
+     description of what these are. The old version styled the selected tab `--paper` on a
+     `--panel` header: a 2% difference, so nothing ever looked selected. */
+  nav.views{display:flex; gap:3px; margin-top:14px; align-items:center}
+  nav.views a{
     font-family:var(--mono); font-size:11px; letter-spacing:.09em; text-transform:uppercase;
-    background:none; border:1px solid transparent; border-bottom:none; color:var(--slate);
-    padding:8px 15px; cursor:pointer; border-radius:3px 3px 0 0; margin-bottom:-1px;
+    color:var(--slate); text-decoration:none; padding:8px 15px; border-radius:2px 2px 0 0;
+    border:1px solid transparent; border-bottom:none;
   }
-  nav.views button[aria-selected="true"]{
-    background:var(--paper); border-color:var(--line); color:var(--ink); font-weight:600;
+  nav.views a:hover{color:var(--ink); background:var(--paper)}
+  nav.views a[aria-current="page"]{
+    background:var(--ink); color:var(--paper); font-weight:700; border-color:var(--ink);
   }
-  nav.views button:focus-visible{outline:2px solid var(--machine); outline-offset:1px}
+  nav.views a:focus-visible{outline:2px solid var(--machine); outline-offset:1px}
+  nav.views .lede{
+    margin-left:auto; font-size:11.5px; color:var(--slate); padding-bottom:6px;
+    max-width:52ch; text-align:right; line-height:1.4;
+  }
+  @media (max-width:760px){ nav.views .lede{display:none} }
   /* ---------- shell ---------- */
-  main{display:grid; grid-template-columns:212px 1fr 268px; height:calc(100vh - 168px); min-height:440px}
+  main{display:grid; grid-template-columns:212px 1fr 268px; flex:1 1 auto; min-height:0}
+  main > *{min-height:0}
   aside{border-right:1px solid var(--line); overflow-y:auto; padding:16px 14px}
   aside.detail{border-right:none; border-left:1px solid var(--line); background:var(--panel)}
   section.stage{overflow:hidden; position:relative}
+
+  /* Each page shows only the chrome it uses. Health reads the whole mesh, so filtering it
+     would be a lie; Config is not about concepts at all. */
+  body[data-page="health"] main,
+  body[data-page="config"] main{grid-template-columns:1fr}
+  body[data-page="health"] aside,
+  body[data-page="config"] aside{display:none}
+  body[data-page="health"] section.stage,
+  body[data-page="config"] section.stage{overflow-y:auto}
+  body[data-page="config"] .gauges{display:none}
   h2.grp{
     font-family:var(--mono); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase;
     color:var(--slate-dim); margin:0 0 8px; font-weight:600;
@@ -92,9 +122,6 @@
   /* Level 2's config, edited from level 1's page. It writes nothing on its own: the file
      goes back to disk through the browser's own save dialog, and the build is run from a
      terminal. That keeps this one file with no server behind it. */
-  body.cfg main{grid-template-columns:1fr}
-  body.cfg aside{display:none}
-  body.cfg section.stage{overflow-y:auto}
   .cfg-wrap{max-width:1080px; margin:0 auto; padding:20px 24px 48px}
   .cfg-note{
     border:1px solid var(--line); border-left:3px solid var(--machine);
@@ -294,11 +321,12 @@
     <span class="badge" id="genAt">derived view</span>
   </div>
   <div class="gauges" id="gauges"></div>
-  <nav class="views" role="tablist">
-    <button role="tab" aria-selected="true"  data-view="graph">Graph</button>
-    <button role="tab" aria-selected="false" data-view="chains">Closure</button>
-    <button role="tab" aria-selected="false" data-view="stats">Health</button>
-    <button role="tab" aria-selected="false" data-view="config">Config</button>
+  <nav class="views" aria-label="Pages">
+    <a href="#graph"   data-view="graph">Graph</a>
+    <a href="#closure" data-view="chains">Closure</a>
+    <a href="#health"  data-view="stats">Health</a>
+    <a href="#config"  data-view="config">Config</a>
+    <span class="lede" id="lede"></span>
   </nav>
 </header>
 
@@ -2010,7 +2038,7 @@ window.addEventListener("mouseup", ()=>{
    Zooming about the centre instead is the version everyone builds first and nobody
    likes — the thing you were aiming at slides away as you zoom toward it. */
 svg.addEventListener("wheel", e=>{
-  if(svg.hidden) return;
+  if(svg.hasAttribute("hidden")) return;   // not `.hidden` — SVGElement does not have it
   e.preventDefault();
   const r = svg.getBoundingClientRect();
   // A collapsed or not-yet-laid-out pane reports a zero-sized rect, and dividing by it
@@ -2139,8 +2167,13 @@ function buildStats(){
 
 /* ---------- detail ---------- */
 function select(p){
-  state.selected = p; state.body = null; detail();
-  if(state.view==="graph") drawGraph();
+  state.selected = p; state.body = null;
+  // Health has no detail pane — it reads the whole mesh, so a per-concept sidebar would be
+  // beside the point. Clicking a concept there means "show me this one", so go where that
+  // can be answered rather than selecting something nobody can see.
+  if(pageFromHash()==="health") location.hash = "graph";
+  detail();
+  if(pageFromHash()==="graph") drawGraph();
   loadBody(p);
 }
 
@@ -2683,31 +2716,63 @@ function cDownload(text){
 /* ---------- view switching ---------- */
 let MESH_EMPTY = false;
 
+/* Four pages in one file. The URL hash decides which, so the back button, a bookmark, and
+   a link someone pastes into a chat all work — `okfm-web-ui.html#config` opens the config.
+   Nothing here listens for clicks: the links change the hash, and `hashchange` renders. */
+const PAGES = {
+  graph:   { view:"graph",  label:"Graph",
+             lede:"Every concept, sized by inbound references, with the typed edges between them." },
+  closure: { view:"chains", label:"Closure",
+             lede:"Goal → evaluation → decision → experiment → outcome. Open loops are the point." },
+  health:  { view:"stats",  label:"Health",
+             lede:"Trust, staleness and drift across the whole mesh. Unfiltered, deliberately." },
+  config:  { view:"config", label:"Config",
+             lede:"The level 2 build's okfm.json — edited here, run from a terminal." },
+};
+const DEFAULT_PAGE = "graph";
+
+function pageFromHash(){
+  const key = (location.hash || "").replace(/^#\/?/, "").toLowerCase();
+  return PAGES[key] ? key : DEFAULT_PAGE;
+}
+
+/** Show or hide a view container. Works on SVG and HTML alike; `.hidden` does not. */
+function show(id, on){
+  const el = document.getElementById(id);
+  if(el) el.toggleAttribute("hidden", !on);
+}
+
 function render(){
-  const cf = state.view==="config";
+  const page = pageFromHash();
+  state.view = PAGES[page].view;
+  const cf = page==="config";
+
+  document.body.dataset.page = page;
+  document.title = "OKFM — " + PAGES[page].label;
+  document.getElementById("lede").textContent = PAGES[page].lede;
+  document.querySelectorAll("nav.views a").forEach(a=>{
+    const mine = a.getAttribute("href") === "#" + page;
+    if(mine) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+  });
+
   // With no concepts there is nothing to graph, but there is still a config to fix — which
   // is the whole reason an empty mesh is usually empty.
   const live = !cf && !MESH_EMPTY;
-  const g = live && state.view==="graph", ch = live && state.view==="chains",
-        st = live && state.view==="stats";
-  const es = document.getElementById("emptyState");
-  if(es) es.hidden = cf;
-  svg.hidden = !g; document.getElementById("legendNote").hidden = !g;
-  document.getElementById("chains").hidden = !ch;
-  document.getElementById("stats").hidden = !st;
-  document.getElementById("config").hidden = !cf;
-  document.body.classList.toggle("cfg", cf);
+  const g = live && page==="graph", ch = live && page==="closure", st = live && page==="health";
+  // `toggleAttribute`, never the `.hidden` property. `svg` is an SVGElement, and SVGElement
+  // does not implement `hidden` — `svg.hidden = false` sets a meaningless JS property and
+  // leaves the attribute exactly where it was. The graph carried `hidden` from the markup
+  // for the whole life of this file; nobody noticed because `#graph{display:block}` was
+  // beating the UA rule anyway, so it rendered under every other view instead of behind it.
+  show("graph", g); show("legendNote", g);
+  show("chains", ch); show("stats", st); show("config", cf);
+  if(document.getElementById("emptyState")) show("emptyState", !cf);
   if(g) buildGraph(); if(ch) buildChains(); if(st) buildStats();
   if(cf && !CFG.text) cLoad(JSON.stringify(CONFIG, null, 2), "okfm.json", "baked into this page", null);
   else if(cf) cRender();
 }
-document.querySelectorAll('nav.views button').forEach(b=>{
-  b.addEventListener("click", ()=>{
-    document.querySelectorAll('nav.views button').forEach(x=>x.setAttribute("aria-selected", x===b));
-    state.view = b.dataset.view; render();
-  });
-});
-window.addEventListener("resize", ()=>{ if(state.view==="graph") buildGraph(); });
+window.addEventListener("hashchange", render);
+window.addEventListener("resize", ()=>{ if(pageFromHash()==="graph") buildGraph(); });
 
 /* ---------- empty state ---------- */
 function showEmpty(){

@@ -4,6 +4,33 @@
 build step, no network request. It carries a baked index of the mesh: every concept's path,
 type, status, trust inputs, relations, and drift state.
 
+# Four pages, one file
+
+Graph, Closure, Health, Config. The **URL hash** decides which — `#graph`, `#closure`,
+`#health`, `#config` — so the browser's back button works, a page can be bookmarked, and a
+link somebody pastes into a chat opens where they meant. `okfm-web-ui.html#config` opens the
+config.
+
+The navigation is links rather than buttons, which is the honest description of what they
+are and means no click handler decides anything: the link changes the hash, and the hash
+changes the page. An unrecognised hash falls back to the graph rather than showing nothing.
+
+Each page shows only the chrome it uses. Health reads the whole mesh, so filtering it would
+be a lie and the filter sidebar is not there; Config is not about concepts at all, so neither
+sidebar nor the mesh gauges appear. Giving Health the full width is the reason its four
+panels fit side by side instead of stacking in a middle column.
+
+Two bugs were found in doing this, and both had been shipping:
+
+- The selected tab was styled `--paper` on a `--panel` header — a 2% difference, so nothing
+  ever looked selected. The active page is now near-black on light, which cannot be missed.
+- The graph SVG was never actually hidden. `hidden` on an `<svg>` does nothing when set
+  through the `.hidden` property, because `SVGElement` does not implement it — the attribute
+  from the markup stayed put for the life of the file, and `#graph { display: block }` beat
+  the browser's own `[hidden]` rule anyway. So the graph rendered underneath every other
+  view. Views are toggled with `toggleAttribute` now, and one CSS rule makes `[hidden]`
+  win everywhere.
+
 # Why it never contains the prose
 
 The index holds pointers and metadata. It does not hold concept bodies, and that is a
