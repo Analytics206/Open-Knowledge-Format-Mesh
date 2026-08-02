@@ -225,7 +225,7 @@ def main() -> int:
         print("markdown, or list folders explicitly under `sources`.")
         return 0
 
-    total, built = 0, []
+    total, built, targets = 0, [], {}
     for entry in sources:
         rel = entry["path"] if isinstance(entry, dict) else entry
         ctype = (entry.get("type") if isinstance(entry, dict) else None) or "Document"
@@ -239,6 +239,13 @@ def main() -> int:
         name = (entry.get("bundle") if isinstance(entry, dict) else None) \
             or ("root" if rel == "." else rel.replace("/", "-"))
         out_dir = out_root / name
+        # Two source folders resolving to one bundle is not a data-loss risk -- concepts
+        # this build does not own are never written -- but a bundle fed from two places is
+        # confusing enough to say out loud rather than let someone discover later.
+        if name in targets:
+            print(f"  note  {rel} and {targets[name]} both build `{name}` — "
+                  f"rename one folder, or name the bundle in `sources`")
+        targets[name] = rel
         names = mirror(src, out_dir, ctype, stamp, a.apply)
         if names and _owned(out_dir / "index.md"):
             write_index(out_dir, name, names, stamp, a.apply)

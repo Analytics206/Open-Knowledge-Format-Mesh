@@ -6,7 +6,7 @@ status: draft
 generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
 sources:
   - id: doc
-    resource: ../../docs/levels/level-2-build/the-pipeline.md
+    resource: ../../docs/guide/level-2-build/the-pipeline.md
     okfm_role: subject
     okfm_captured: { hash: "sha256:b3f1e4ba75ec26341354120d6d026bef7fdbe6d9432b51784c38340a27d9a2f0", at: 2026-08-01 }
   - id: implementation
@@ -22,6 +22,6 @@ okfm_relations:
 
 # The pipeline
 
-The text is in [`docs/levels/level-2-build/the-pipeline.md`](../../docs/levels/level-2-build/the-pipeline.md). This concept
+The text is in [`docs/guide/level-2-build/the-pipeline.md`](../../docs/guide/level-2-build/the-pipeline.md). This concept
 records what that document is, what it needs to run, and where it sits in the
 level ladder — none of which the document itself states.

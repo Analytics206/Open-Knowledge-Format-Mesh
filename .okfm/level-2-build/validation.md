@@ -6,7 +6,7 @@ status: draft
 generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
 sources:
   - id: doc
-    resource: ../../docs/levels/level-2-build/validation.md
+    resource: ../../docs/guide/level-2-build/validation.md
     okfm_role: subject
     okfm_captured: { hash: "sha256:29bb0c347252f77b0b5904246bf28a2a4cdb5c05ea47dd2baea8977a66661b2f", at: 2026-08-01 }
   - id: implementation
@@ -22,6 +22,6 @@ okfm_relations:
 
 # Validation
 
-The text is in [`docs/levels/level-2-build/validation.md`](../../docs/levels/level-2-build/validation.md). This concept
+The text is in [`docs/guide/level-2-build/validation.md`](../../docs/guide/level-2-build/validation.md). This concept
 records what that document is, what it needs to run, and where it sits in the
 level ladder — none of which the document itself states.

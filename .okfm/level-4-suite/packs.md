@@ -6,7 +6,7 @@ status: draft
 generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
 sources:
   - id: doc
-    resource: ../../docs/levels/level-4-suite/packs.md
+    resource: ../../docs/guide/level-4-suite/packs.md
     okfm_role: subject
     okfm_captured: { hash: "sha256:c46cdb29c9de7309f29f965459fb84e8dfe25f362e09a476c6d5ab2d762800af", at: 2026-08-01 }
   - id: implementation
@@ -22,6 +22,6 @@ okfm_relations:
 
 # Packs
 
-The text is in [`docs/levels/level-4-suite/packs.md`](../../docs/levels/level-4-suite/packs.md). This concept
+The text is in [`docs/guide/level-4-suite/packs.md`](../../docs/guide/level-4-suite/packs.md). This concept
 records what that document is, what it needs to run, and where it sits in the
 level ladder — none of which the document itself states.

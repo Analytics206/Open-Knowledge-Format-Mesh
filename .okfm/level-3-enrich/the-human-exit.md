@@ -6,7 +6,7 @@ status: draft
 generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
 sources:
   - id: doc
-    resource: ../../docs/levels/level-3-enrich/the-human-exit.md
+    resource: ../../docs/guide/level-3-enrich/the-human-exit.md
     okfm_role: subject
     okfm_captured: { hash: "sha256:f591ce8889868b30d4e867630d95c9962b3d1a269688d8d768046afd89990255", at: 2026-08-01 }
   - id: implementation
@@ -23,6 +23,6 @@ okfm_relations:
 
 # The human exit
 
-The text is in [`docs/levels/level-3-enrich/the-human-exit.md`](../../docs/levels/level-3-enrich/the-human-exit.md). This concept
+The text is in [`docs/guide/level-3-enrich/the-human-exit.md`](../../docs/guide/level-3-enrich/the-human-exit.md). This concept
 records what that document is, what it needs to run, and where it sits in the
 level ladder — none of which the document itself states.

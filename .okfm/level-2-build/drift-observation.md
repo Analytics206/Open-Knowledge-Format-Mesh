@@ -6,7 +6,7 @@ status: draft
 generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
 sources:
   - id: doc
-    resource: ../../docs/levels/level-2-build/drift-observation.md
+    resource: ../../docs/guide/level-2-build/drift-observation.md
     okfm_role: subject
     okfm_captured: { hash: "sha256:ab2beeee5e3dc5e44d57c07af6a7c6e9cee75fdc44e4c1d85b1cc5cc98d2804c", at: 2026-08-01 }
   - id: implementation
@@ -22,6 +22,6 @@ okfm_relations:
 
 # Drift observation
 
-The text is in [`docs/levels/level-2-build/drift-observation.md`](../../docs/levels/level-2-build/drift-observation.md). This concept
+The text is in [`docs/guide/level-2-build/drift-observation.md`](../../docs/guide/level-2-build/drift-observation.md). This concept
 records what that document is, what it needs to run, and where it sits in the
 level ladder — none of which the document itself states.

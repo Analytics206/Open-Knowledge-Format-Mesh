@@ -861,7 +861,7 @@ okfm/
     rationale.md             # §0-2, §22 — why the system is shaped this way      ✓
     roadmap.md               # §4, §11, §15-17, §19-20 — assets, phases, measures ✓
     prior-art.md             # §21 — ecosystem, and the evidence against          ✓
-    levels/                  # raw material for the four level bundles            ✓
+    guide/                   # raw material for the four level bundles            ✓
     decisions/               # dated decision records — an IN-PLACE bundle        ✓
   templates/
     bundle/                  # index.md, log.md, one starter concept     ✓

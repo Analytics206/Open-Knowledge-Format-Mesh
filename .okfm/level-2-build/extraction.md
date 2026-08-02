@@ -6,7 +6,7 @@ status: draft
 generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
 sources:
   - id: doc
-    resource: ../../docs/levels/level-2-build/extraction.md
+    resource: ../../docs/guide/level-2-build/extraction.md
     okfm_role: subject
     okfm_captured: { hash: "sha256:9f1ad22c3d536d88f4ea48e5e0a873b64916e737e708ced2de4f18214402fe88", at: 2026-08-01 }
   - id: implementation
@@ -22,6 +22,6 @@ okfm_relations:
 
 # Extraction
 
-The text is in [`docs/levels/level-2-build/extraction.md`](../../docs/levels/level-2-build/extraction.md). This concept
+The text is in [`docs/guide/level-2-build/extraction.md`](../../docs/guide/level-2-build/extraction.md). This concept
 records what that document is, what it needs to run, and where it sits in the
 level ladder — none of which the document itself states.

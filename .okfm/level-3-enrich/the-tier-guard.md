@@ -6,7 +6,7 @@ status: draft
 generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
 sources:
   - id: doc
-    resource: ../../docs/levels/level-3-enrich/the-tier-guard.md
+    resource: ../../docs/guide/level-3-enrich/the-tier-guard.md
     okfm_role: subject
     okfm_captured: { hash: "sha256:4c46f7d397be9d48b18fe0642726604f765e9ed7bd58216d1940e4a4cd0969ef", at: 2026-08-01 }
   - id: implementation
@@ -23,6 +23,6 @@ okfm_relations:
 
 # The tier guard
 
-The text is in [`docs/levels/level-3-enrich/the-tier-guard.md`](../../docs/levels/level-3-enrich/the-tier-guard.md). This concept
+The text is in [`docs/guide/level-3-enrich/the-tier-guard.md`](../../docs/guide/level-3-enrich/the-tier-guard.md). This concept
 records what that document is, what it needs to run, and where it sits in the
 level ladder — none of which the document itself states.

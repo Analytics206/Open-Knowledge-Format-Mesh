@@ -6,7 +6,7 @@ status: draft
 generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
 sources:
   - id: doc
-    resource: ../../docs/levels/level-2-build/the-viewer-bake.md
+    resource: ../../docs/guide/level-2-build/the-viewer-bake.md
     okfm_role: subject
     okfm_captured: { hash: "sha256:7877ee60478b23a7e1509b951d019e81b1008628532ba7bf8c6ac1716a430c8a", at: 2026-08-01 }
   - id: implementation
@@ -23,6 +23,6 @@ okfm_relations:
 
 # The viewer bake
 
-The text is in [`docs/levels/level-2-build/the-viewer-bake.md`](../../docs/levels/level-2-build/the-viewer-bake.md). This concept
+The text is in [`docs/guide/level-2-build/the-viewer-bake.md`](../../docs/guide/level-2-build/the-viewer-bake.md). This concept
 records what that document is, what it needs to run, and where it sits in the
 level ladder — none of which the document itself states.
