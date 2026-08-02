@@ -84,4 +84,33 @@ arriving, and it should say something rather than nothing.
 
 Ollama defaults to a 2048-token context and truncates in silence — so a long document gets a
 description of its first half and nothing says so. `enrich.num_ctx` defaults to 8192 here for
-that reason, and the run reports when a source was still too long to fit.
+that reason, and the run reports when a source was still too long to fit. Raise it for a
+corpus of long documents; it costs memory on the machine running the model.
+
+# Thinking is off, deliberately
+
+Reasoning models are the wrong tool for this and it is not close. The answer is in the
+document; a reasoning trace re-derives what one read already gives you. Measured against a
+trivial prompt on a real box: 2.8k characters of thinking on a 4B model and 6k on a 9B, taking
+15 and 89 seconds — against **1 to 2 seconds** with thinking disabled. Same answer.
+
+On a work list of any size that is the difference between a queue that drains and one that
+times out, so the request sets `think: false` and does not offer a knob for it.
+
+It also buys the property `temperature: 0` was chosen for. With both set, two runs return
+byte-identical text, which is what makes a second pass a no-op instead of a rewrite.
+
+# What it is good at, and what it is not
+
+Enrichment earns its place where extraction has nothing good to copy. Extraction takes the
+first blockquote or paragraph, so a corpus whose documents open with a summary line extracts
+*well* — and a local model will not beat it. Measured on this repository, whose documents do
+open that way, the drafts came back honest, on-shape and slightly worse than what was there.
+
+That is not a defect, it is the comparison being unfavourable. The case this is for is the
+corpus that opens with a wall of prose, where the extracted description is a torn-off sentence
+and anything written from the whole document beats it.
+
+Either way nothing is published on a model's say-so: output lands `status: draft`, the guard
+checks what it wrote, and drift stands until a person clears it. A weaker draft costs a slower
+review, not a wrong bundle.

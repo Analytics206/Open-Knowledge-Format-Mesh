@@ -44,7 +44,7 @@
   "_enrich": "Level 3's local variant. Nothing in the pipeline reads this — only `okfm.py enrich-local`, which is the one component declaring `needs: [model]`. No key, because the model runs here; the endpoint being loopback is what makes that claim checkable rather than asserted.",
   "enrich": {
     "base_url": "http://localhost:11434",
-    "model": "llama3.2",
+    "model": "qwen3.5:9b",
     "num_ctx": 8192,
     "timeout_s": 120
   },

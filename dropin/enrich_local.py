@@ -73,10 +73,22 @@ You write one-sentence descriptions for an index of technical documents.
 Return ONLY a JSON object, nothing else:
   {"description": "...", "tags": ["...", "..."]}
 
-description: one sentence, under 300 characters, saying what the document CLAIMS or
-  DECIDES rather than what it is about. "Drift is observed at build time and never at read
-  time" is a description; "discusses drift" is not. Write it so somebody choosing what to
-  read can choose. No markdown, no line breaks, no surrounding quotes.
+description: state the document's main point in its own voice, as its author would if
+  asked to put it in one line. Under 300 characters. No markdown, no line breaks, no
+  surrounding quotes.
+
+  Never write ABOUT the document. "This document explains...", "The document claims...",
+  "A guide to...", "Covers..." all describe the container instead of the content, and the
+  reader can already see the container.
+
+    RIGHT  Drift is observed at build time and never at read time.
+    WRONG  This document explains how drift is observed.
+
+    RIGHT  Two adapters cover the field, because nearly every provider speaks one of them.
+    WRONG  A discussion of provider adapter design.
+
+  If the document argues for something, the description is the argument's conclusion.
+
 tags: zero to six lowercase topics, single words or hyphenated. Omit rather than guess.
 
 Every word must be supported by the document. Do not invent, and do not describe what the
@@ -112,6 +124,12 @@ def ask(cfg: dict, title: str, desc: str, text: str) -> str:
                                                              text=text)}],
         "stream": False,
         "format": "json",
+        # Off for the same reason temperature is 0: the answer is in the document, and a
+        # reasoning trace re-derives what one read already gives you. Measured on a reasoning
+        # model over a trivial prompt: 2.8k characters of thinking on a 4B and 6k on a 9B,
+        # taking 15s and 89s against 1-2s with this set. On a real work list that is the
+        # difference between a queue that drains and one that times out.
+        "think": False,
         # Extraction-shaped work has one right answer sitting in the source. Sampling for
         # variety would only make a second run disagree with the first, which turns a queue
         # that should drain into one that regenerates its own work.

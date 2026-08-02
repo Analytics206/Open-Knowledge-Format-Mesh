@@ -112,8 +112,16 @@ holding the model. An adopter reads one row of a table.
 models and some corpora. It does not matter as much as it sounds like it should, because
 nothing here is published on a model's say-so: output lands `status: draft`, the guard checks
 what it wrote, and drift stands until a person clears it. A weaker draft costs a slower review,
-not a wrong bundle. And a description drafted from the document beats one extracted from its
-first paragraph, which is the actual comparison.
+not a wrong bundle. And a description drafted from the whole document beats one extracted from
+its first paragraph, which is the actual comparison.
+
+Measured, on first contact with real hardware — a 4B, an 8B and a 9B over this repository:
+the drafts came back honest, deterministic and *slightly worse than what was there*. That is
+the comparison being unfavourable rather than the claim being wrong. This corpus opens its
+documents with summary lines, which is precisely the case
+[DR-0009](0009-adoption-levels.md) names as extracting well. The claim stands where it was
+made — a corpus that opens with a wall of prose — and this repository is not that corpus, so
+it cannot be the evidence either way.
 
 **"This will grow into a provider abstraction."** It may, and
 [providers and keys](../okfm-guide/level-3-enrich/providers-and-keys.md) already says what that
@@ -121,6 +129,29 @@ looks like — two adapters, one of them OpenAI-compatible. Deliberately not bui
 one adapter because there is one endpoint that needs no key, and a second arrives with the
 credentialed variant that needs it. A `provider` config key was considered and left out for the
 same reason: a key whose only legal value is the default can only be got wrong.
+
+## Settled on first contact with hardware
+
+Two things the design got wrong, found by running it against a real Ollama rather than a stub.
+
+**Reasoning models are the wrong tool, and thinking is disabled outright.** The task is *read
+one document, write one sentence it already supports*. A reasoning trace re-derives what a
+single read gives you: 2.8k characters of thinking on a 4B and 6k on a 9B for a trivial
+prompt, 15 and 89 seconds against 1–2 with `think: false`, same answer. At that cost a work
+list of any size times out instead of draining. Not offered as a knob — a setting whose right
+value is the same for every corpus is a setting nobody should have to find.
+
+It also delivers what `temperature: 0` was chosen for. With both, two runs return
+byte-identical text, so a second pass over an already-drafted concept is a no-op rather than
+a rewrite.
+
+**The prompt has to forbid describing the document.** Every model tried, across two families,
+opened with *"This document explains…"* — the container instead of the content, and the reader
+can already see the container. Naming the failure with right/wrong pairs fixed it on short
+sources. It returns on long ones, which is a known limit rather than a solved problem.
+
+Worth recording because neither is about Ollama. Both are about what enrichment *is*, and
+both would have been got wrong the same way by a hosted provider.
 
 ## Re-entry triggers
 
