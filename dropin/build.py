@@ -32,7 +32,7 @@ from pathlib import Path
 
 from okfm_core import (
     HERE, PROJECT, RESERVED, bundle_root, configured_bundles, frontmatter,
-    load_or_create_config, resolve_sources, scalar,
+    load_or_create_config, reserved_only_dirs, resolve_sources, scalar,
 )
 from bootstrap import _extract_description, _title, _yaml_str
 
@@ -328,6 +328,14 @@ def main() -> int:
         print("Nothing was written. Point `discover.root` at a directory that holds")
         print("markdown, or list folders explicitly under `sources`.")
         return 0
+
+    # Folders the scan reached and dropped for holding nothing but reserved filenames.
+    # Said before the build output rather than after, because it explains a bundle an adopter
+    # may be expecting and will otherwise go looking for.
+    bare = reserved_only_dirs(PROJECT, cfg)
+    if bare:
+        print(f"  note   no bundle for {', '.join(bare)} — only reserved filenames inside "
+              f"(README.md, index.md, log.md), so no documents to mirror")
 
     mirrored, indexes, built, targets = 0, 0, [], {}
     for entry in sources:

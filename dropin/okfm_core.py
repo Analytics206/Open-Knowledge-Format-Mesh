@@ -255,6 +255,39 @@ def discover_sources(root: Path, cfg: dict | None = None, limit: int = 60) -> li
     return _name_bundles(found, root)
 
 
+def reserved_only_dirs(root: Path, cfg: dict | None = None) -> list[str]:
+    """Folders under a scan root whose only markdown is a reserved filename.
+
+    They hold no documents, so `discover_sources` never makes them bundles — which is right: a
+    directory containing one `README.md` is a signpost, not knowledge. But it is dropped a
+    level *above* the per-file skip note, so nothing said anything at all, and a folder
+    silently absent is indistinguishable from one the scan never reached.
+
+    `docs/api/README.md` is an ordinary shape. Naming it lets an adopter decide whether that
+    README is a nav page they are happy to lose or the summary they most wanted indexed.
+    """
+    cfg = cfg or {}
+    d = cfg.get("discover") or {}
+    excluded = [x.strip("/") for x in d.get("exclude", [])]
+    out = []
+    for base in scan_roots(cfg, root):
+        for directory in sorted(base.rglob("*")):
+            if not directory.is_dir():
+                continue
+            rel = directory.relative_to(base)
+            if set(rel.parts) & SKIP_DIRS or len(rel.parts) > MAX_DEPTH:
+                continue
+            forms = {rel.as_posix(), "/".join(_project_parts(directory, root))}
+            if any(f == x or f.startswith(x + "/") for f in forms for x in excluded):
+                continue
+            if directory.resolve() == HERE or HERE in directory.resolve().parents:
+                continue
+            md = list(directory.glob("*.md"))
+            if md and all(f.name in RESERVED for f in md):
+                out.append(directory.relative_to(root, walk_up=True).as_posix())
+    return out
+
+
 def resolve_sources(cfg: dict, root: Path = PROJECT) -> list[dict]:
     """The source folders this build will read.
 
