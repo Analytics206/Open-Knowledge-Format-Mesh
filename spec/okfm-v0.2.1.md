@@ -90,7 +90,9 @@ A reader never has to ask which OKF version a given OKFM release speaks. Documen
 1. **Conformance first.** Anything expressible in official OKF v0.2 is expressed that way. Invention requires a stated reason. Every OKFM addition must survive being read by an official consumer that ignores it.
 2. **Memory before learning.** At solo scale, feedback volume cannot train rankers; it can absolutely power organizational memory. Design every record to be queryable first.
 3. **Files are the substrate.** Anything that fits in files lives in files. Anything that does not — a million papers, raw API history — lives in its native store and is referenced.
-4. **Record signals, not verdicts.** (Adopted from official OKF §5.1.) Store the objective facts that support a judgement; let consumers derive the judgement. Scores are subjective, unportable, and go stale. This applies to OKFM's own flags — none of trust tier, staleness, drift, or reconciliation status is ever frozen into a file. A stored verdict is a stored opinion with an expiry date.
+4. **Record signals, not verdicts.** (Adopted from official OKF §5.1.) Store the objective facts that support a judgement; let consumers derive the judgement. Scores are subjective, unportable, and go stale. This applies to OKFM's own flags — none of trust tier, staleness, or drift is ever frozen into a file. A stored verdict is a stored opinion with an expiry date.
+
+   **`okfm_reconciliation.status` is the deliberate exception, and §11.3 stores it.** The others are *derivable* — trust from `verified`, staleness from `stale_after`, drift from a hash comparison — so storing them duplicates a computation. Whether a written policy and the query claiming to implement it actually agree is not derivable from either: somebody has to read both and say. That makes it a human judgement with an author, which is a fact about a review rather than an opinion about freshness, and the validator's stored-verdict check excludes it on purpose. This clause said otherwise for some time while §11.3 and the implementation agreed with each other.
     **Where they are derived differs by cost.** Trust tier, staleness, and reconciliation are pure functions of frontmatter already in hand, so they are computed on every read. Drift requires re-resolving a pointer against the outside world, so it is **observed during the build and cached**, and nothing on the read path resolves it (§8.3). Caching an observation is not storing a verdict: *this pointer hashed to X at time T* does not become false later, and the verdict is still derived from it.
 5. **Evidence pointers reach into systems, not just files.** A source may be a file span, another concept, an external store record, a database column, a query, or a captured payload.
 6. **Drift detection is the refresh workflow, generalized.** When the pointed-at thing changes, dependent concepts go stale.
@@ -182,13 +184,62 @@ UTF-8 markdown: YAML frontmatter + body. `type` is the only always-required key,
 
 ### 6.5 Links
 
-Standard markdown links, bundle-relative (`/path.md`, recommended) or relative. Links are **untyped** — the relationship kind lives in surrounding prose. Consumers must tolerate broken links.
+Standard markdown links. Official OKF permits bundle-relative (`/path.md`) or relative, and
+recommends the former. **OKFM body links are relative, and that is a deliberate divergence.**
+
+> This section recommended `/path.md` for body links until a first-time author followed the
+> recommendation and every link failed. Validators resolve a body link as `(file.parent / target)`,
+> and in `pathlib` a leading `/` discards the parent — so bundle-relative body links resolve to
+> the filesystem root and none of them exist. The rule most likely to be got wrong had the least
+> forgiving failure, and the only place it was written down correctly was a decision record.
+
+Three path forms, three jobs. Getting these mixed up is the commonest authoring error:
+
+| Where | Form | Example target |
+|---|---|---|
+| **Body links** | relative to the file — **never** a leading `/` | `../guide/admission-test.md` |
+| `okfm_relations[].target` | bundle-relative — `/` is the bundle root | `/index.md` |
+| `sources[].resource` | relative to the file | `../../docs/rationale.md` |
+| Generated index only | mesh-relative | `/guide/index.md` |
+
+A relation target whose first path segment names another bundle is **mesh-absolute** and
+addresses that bundle; anything else beginning with `/` is relative to the concept's own bundle
+root. That is what lets one bundle say how it relates to another.
+
+Links are **untyped** — the relationship kind lives in surrounding prose, or in
+`okfm_relations` where it needs to be machine-readable. Consumers must tolerate broken links.
+
+Rationale and the alternatives considered: [DR-0005](../docs/decisions/0005-path-resolution.md).
 
 ### 6.6 Attested Computation
 
 A concept type carrying a sanctioned way to compute a value: `runtime`, typed `parameters`, the computation (inline under `# Computation` or a `computation` file path), an `executor` (run instructions + declared `receipt` fields), and an `attester` (deterministic, no-LLM code that inspects a receipt and returns a verdict). See §9.
 
 ### 6.7 Conformance
+
+#### What a bundle must contain
+
+Four facts. They were previously spread across §6.1 ("reserved", which is not "required"),
+§6.2, this section, a template README that overstated them, a shipped bundle that contradicted
+it, and an error string inside a Python file — so an author who read only the normative
+document could not learn them.
+
+| | Required? | Notes |
+|---|---|---|
+| `index.md` | **yes** | The bundle's directory map. A mesh points every member at one. |
+| `log.md` | no | Convention, not obligation. Build-generated bundles ship without it. |
+| `type:` on each concept | **yes** | The only always-required key (§6.2). |
+| everything else | no | `title`, `description`, `status`, `sources`, `okfm_*` — all optional. |
+
+**Reserved files carry a `type:` like anything else** — `Index` and `Log`. The clause below
+scopes the requirement to non-reserved files, which reads as an exemption and is not one:
+validators check every `.md`, and every shipped reserved file declares its type.
+
+A hand-written bundle is validated by naming it in `bundles` in your config. A bundle sitting
+in the output directory is in neither `bundles` nor the discovery path, so nothing will check
+it until you say it exists.
+
+#### The rule
 
 Conformant if every non-reserved `.md` file has parseable frontmatter with a non-empty `type`, and reserved files follow their structure. Consumers must not reject bundles for missing optional fields, unknown types, unknown keys, broken links, or missing indexes.
 
@@ -251,11 +302,22 @@ Official links are untyped by design. OKFM needs typed edges for impact analysis
 
 ```yaml
 okfm_relations:
-  - predicate: evaluates
-    target: /evidence/paper-2607-01234.md
-  - predicate: serves
-    target: /goals/spec-decode-latency.md
+  - { predicate: evaluates, target: /evidence/paper-2607-01234.md }
+  - { predicate: serves,    target: /goals/spec-decode-latency.md }
 ```
+
+Both YAML forms are legal and both are validated. The inline flow mapping is shown because
+every shipped concept uses it and it keeps one edge on one line. Block form —
+`- predicate: x` then an indented `target: y` — means the same thing.
+
+> This example was block form while the validator's pattern required the comma between the
+> two keys, so the shape the normative document taught was the one silently skipped: predicate
+> unchecked against the vocabulary, target never resolved. A guessed edge that nothing checks
+> is exactly the edge traversal treats as fact.
+
+`target` is **bundle-relative** — `/` is the bundle root, not the filesystem root — unless its
+first segment names another bundle, which makes it mesh-absolute. Body links are *relative*
+instead; see §6.5, because mixing the two up is the commonest authoring error.
 
 ...alongside ordinary markdown links in the body. An official consumer sees links; an OKFM consumer sees predicates. Predicates come from the tooling's `vocab/predicates.yaml`, grouped into families with defined domain and range. **Vocabularies are tool configuration, not bundle content** — putting them inside a bundle would make a validator's rules depend on which bundle it was pointed at. A pack contributes more by naming overlay files in config; they merge by family, and a pack may add a predicate but never redefine one:
 
@@ -308,6 +370,27 @@ Official `type` values, Title Case, following official convention. Two families.
 | `Metric` | The meaning of a measurable; links to its Attested Computation |
 | `Source System` | A registered system — the anchor for `sys://` pointers |
 | `OKF Member` | A bundle registered in the federation registry (§12.2) |
+
+**Structural family** — what a bundle is made of when it points at documents rather than
+modelling a domain. These are what the deterministic build emits, so they are the types a
+first-time adopter sees first:
+
+| `type` | Records |
+|---|---|
+| `Document` | A pointer concept over a source file — **the build's default** |
+| `Runbook` | A procedure |
+| `Index` | A directory map. Reserved filename, `index.md` |
+| `Log` | A changelog. Reserved filename, `log.md` |
+
+> `Document` and `Runbook` appeared in no table here for some time, while `Document` was the
+> type every generated concept carried. An author reading these tables would reasonably have
+> concluded the tool's own default output was illegal.
+
+**These tables are not the closed list.** [`dropin/vocab/types.yaml`](../dropin/vocab/types.yaml)
+is, and a pack may overlay more. Official §6.2 says `type` is not centrally registered and
+consumers must tolerate unknown values, so **an unknown type is a warning, never an error** —
+the list catches typos (`Decison`), not the vocabulary your domain needs. Predicates are the
+opposite and are rejected outright, because traversal reads an edge as fact.
 
 Domain packs (research acquisition, subscription business, software engineering) add reason codes and body conventions. They do not add frontmatter families.
 
@@ -1368,7 +1451,7 @@ wrong things at scale.
 
 | Earlier draft | OKFM v0.2.1 | Notes |
 |---|---|---|
-| `okf: "2.0"` | `okf_version: "0.2"` in root `index.md` | Official location |
+| `okf: "2.0"` | `okf_version: "0.2"` in root `index.md` | Official location. **Permitted there, not required** — no OKFM bundle carries one, and conformance (§6.7) does not ask for it. |
 | `id` | file path minus `.md` | Official; `okfm_key` for stability across moves |
 | `type` | `type` | Title Case, official convention |
 | `version` (integer) | git history | Cross-bundle refs pin commits (§12.3) |

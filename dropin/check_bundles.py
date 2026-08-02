@@ -135,10 +135,24 @@ def main() -> int:
                 pins[digest] = res
 
             # --- profile: controlled predicates (spec 7.3) --------------------
-            rel_block = re.search(r"^okfm_relations:\s*\n((?:[ \t]*-.*\n?)+)", block, re.M)
+            # Both YAML forms. This matched only the inline flow mapping, because the pattern
+            # required the comma between the two keys:
+            #
+            #     - { predicate: part_of, target: /index.md }     <- checked
+            #     - predicate: part_of                            <- silently skipped
+            #       target: /index.md
+            #
+            # Block form is equally legal YAML, and it is the form spec 7.3's own primary
+            # example uses — so the normative document taught the shape the validator ignored.
+            # A skipped relation is not a soft failure: the predicate goes unchecked against
+            # the vocabulary and the target unresolved, which is precisely the guessed-edge
+            # traversal reads as fact.
+            rel_block = re.search(r"^okfm_relations:\s*\n((?:[ \t]*[-{].*\n?|[ \t]+\w+:.*\n?)+)",
+                                  block, re.M)
             if rel_block:
                 for pred, tgt in re.findall(
-                    r"predicate:\s*([\w_]+),\s*target:\s*([^\s}]+)", rel_block.group(1)
+                    r"predicate:\s*([\w_]+)\s*[,\n]\s*(?:[ \t]*)target:\s*([^\s},]+)",
+                    rel_block.group(1)
                 ):
                     if pred not in predicates:
                         errors.append(f"{rid}: predicate `{pred}` not in the vocabulary")

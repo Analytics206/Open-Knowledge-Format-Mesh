@@ -17,13 +17,24 @@ relations, leave the human gate to the human.
 Weaker than injection, and portable to any agent tool you already have. That trade is the
 point — see spec §13.6 mode 2.
 
-## `bundle/` is three files
+## `bundle/` is three files, one of which is required
 
 `index.md` (the map), `log.md` (the changelog), and `first-concept.md` — a `Decision`
 template whose sections are chosen to make the admission test hard to fail: *what was
 decided*, *why*, *what was rejected*, *what would change this*.
 
-Replace the angle-bracket placeholders. Delete the HTML comment once you have read it.
+**Only `index.md` is required.** `log.md` is convention — build-generated bundles ship
+without one — and `first-concept.md` is an example to replace. This section said "three
+files" for a while, which reads as a requirement and made a first-time author believe a
+bundle without a changelog was illegal. §6.7 has the full list.
+
+Replace the angle-bracket placeholders — including `<you>` in `generated.by`, which must name
+whoever actually wrote the file. The templates ship `status: draft` and **no `verified` entry**
+on purpose: promotion and verification are things you assert after review, not things a
+starting point hands you. Copying a template that already claimed `stable` is how an author
+publishes a trust nobody granted.
+
+Delete the HTML comment once you have read it.
 
 **You usually will not need this.** The drop-in build writes bundles for you, one per folder
 of documents, and hand-authoring is for the case where a bundle has no source documents —

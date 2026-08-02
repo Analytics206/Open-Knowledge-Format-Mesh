@@ -3,7 +3,7 @@ type: Decision
 title: DR-0005 — Bundle-relative in files, mesh-relative in the index
 description: "Bundle-relative inside a concept, plain relative in body links, and mesh-relative only in the generated index — the transformation is one-way and lives entirely in the index builder, so nothing inside a bundle ever stores a path that names its own bundle."
 status: draft
-verified: { by: "human:analytics206", at: 2026-08-02T03:08:50Z }
+verified: { by: "human:analytics206", at: 2026-08-02T08:45:00Z }
 generated: { by: "agent:claude-opus-5", at: 2026-08-02T03:28:25Z }
 sources:
   - id: self
