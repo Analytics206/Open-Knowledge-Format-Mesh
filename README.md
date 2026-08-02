@@ -141,14 +141,14 @@ OKFM, which is why a key appears here and nowhere earlier.
 .okfm/                   the mesh — every bundle this repository publishes
   mesh/                  the master OKF: one OKF Member concept per bundle
   level-1-view/          ┐
-  level-2-build/         │ one OKF per adoption level, built from docs/guide/
+  level-2-build/         │ one OKF per adoption level, built from docs/okfm-guide/
   level-3-enrich/        │
   level-4-suite/         ┘
   docs/                  the loose documents at the top of docs/
   guide/                 the format, and a bundle that demonstrates it
 
 docs/                    the documents the mesh is built from
-  guide/                 raw material for the four level bundles
+  okfm-guide/            raw material for the four level bundles
   rationale.md           why the system is shaped this way
   roadmap.md             phases, open questions, success measures
   prior-art.md           the ecosystem, and the measurements that went against us

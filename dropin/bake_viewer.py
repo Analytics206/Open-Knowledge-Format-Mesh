@@ -42,14 +42,22 @@ def scalar(block: str, key: str):
     return v.replace('\\"', '"') or None
 
 
-def relations(block: str, bundle_root: str):
-    """Bundle-relative in the file, mesh-relative in the index (decisions/0005)."""
+def relations(block: str, bundle_root: str, bundle_ids: set[str] | None = None):
+    """Bundle-relative in the file, mesh-relative in the index (decisions/0005).
+
+    An absolute target whose first segment names a bundle is already mesh-absolute and must
+    be left alone. Prefixing it would rewrite every cross-bundle edge into a dangling
+    same-bundle one -- and a mesh whose members cannot point at each other is a directory
+    listing with extra steps.
+    """
     m = re.search(r"^okfm_relations:\s*\n((?:[ \t]*-.*\n?)+)", block, re.M)
     if not m:
         return []
     out = []
     for pred, tgt in re.findall(r"predicate:\s*([\w_]+),\s*target:\s*([^\s}]+)", m.group(1)):
-        out.append([pred, tgt if not tgt.startswith("/") else f"{bundle_root}{tgt}"])
+        if tgt.startswith("/") and (tgt.lstrip("/").split("/", 1)[0] not in (bundle_ids or ())):
+            tgt = f"{bundle_root}{tgt}"
+        out.append([pred, tgt])
     return out
 
 
@@ -99,8 +107,10 @@ def collect():
     _, cfg, _ = load_or_create_config(write=False)
     obs = load_observations()
     bundles, concepts = [], []
+    all_bundles = configured_bundles(cfg)
+    bundle_ids = set(all_bundles)
 
-    for bundle_id, src in configured_bundles(cfg).items():
+    for bundle_id, src in all_bundles.items():
         root = f"/{bundle_id}"
         if not src.is_dir():
             print(f"  warn: bundle '{bundle_id}' -> {src} does not exist", file=sys.stderr)
@@ -128,7 +138,7 @@ def collect():
                 "sa": scalar(block, "stale_after"),
                 "src": len(re.findall(r"^\s+- id:", block, re.M)),
                 "drift": drift_of(block, f"{bundle_id}/{f.relative_to(src).as_posix()}", obs),
-                "r": relations(block, root),
+                "r": relations(block, root, bundle_ids),
                 "scope": scalar(block, "okfm_scope"),
             })
             found += 1

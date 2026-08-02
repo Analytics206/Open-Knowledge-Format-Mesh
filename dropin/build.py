@@ -113,13 +113,20 @@ def mirror(src_dir: Path, out_dir: Path, ctype: str, stamp: str, apply: bool) ->
     return written
 
 
-def write_index(out_dir: Path, name: str, names: list[str], stamp: str, apply: bool) -> None:
+def write_index(out_dir: Path, name: str, names: list[str], stamp: str, apply: bool,
+                mesh_id: str | None = None) -> None:
     lines = [
         "---", "type: Index", f"title: {_yaml_str(name)}",
         f"description: Concepts derived from {name}.", "status: draft",
-        f'generated: {{ by: "process:okfm-build", at: {stamp} }}', "---", "",
-        f"# {name}", "",
+        f'generated: {{ by: "{MINE}", at: {stamp} }}',
     ]
+    if mesh_id:
+        # The other half of the edge the mesh writes. Either direction alone would draw the
+        # graph; both are true, and a bundle that cannot name the mesh it belongs to is
+        # findable only from outside.
+        lines += ["okfm_relations:",
+                  f"  - {{ predicate: registered_by, target: /{mesh_id}/index.md }}"]
+    lines += ["---", "", f"# {name}", ""]
     for n in names:
         lines.append(f"- [{n[:-3]}]({n})")
     lines.append("")
@@ -128,7 +135,20 @@ def write_index(out_dir: Path, name: str, names: list[str], stamp: str, apply: b
         (out_dir / "index.md").write_text("\n".join(lines), encoding="utf-8", newline="\n")
 
 
-def write_mesh(out_root: Path, mesh_name: str, built: list[tuple[str, str, int]],
+def _bundle_id(cfg: dict, out_dir: Path, fallback: str) -> str:
+    """The id this bundle is known by across the mesh.
+
+    Usually the folder name. A config with an explicit `bundles` map may call it something
+    else, and relation targets are resolved against the id -- so writing the folder name into
+    a cross-bundle edge would produce one that resolves to nothing.
+    """
+    for bid, rel in (cfg.get("bundles") or {}).items():
+        if (PROJECT / rel.removeprefix("./")).resolve() == out_dir.resolve():
+            return bid
+    return fallback
+
+
+def write_mesh(cfg: dict, out_root: Path, mesh_name: str, built: list[tuple[str, str, int]],
                stamp: str, apply: bool) -> int:
     """Write the master OKF: one `OKF Member` concept per bundle, plus the map.
 
@@ -160,6 +180,12 @@ def write_mesh(out_root: Path, mesh_name: str, built: list[tuple[str, str, int]]
             "  sync_policy: pull",
             "okfm_relations:",
             "  - { predicate: part_of, target: /index.md }",
+            # Mesh-absolute, and the reason this edge exists at all: without it the mesh
+            # knows its members and the graph does not. Filter a viewer to the registry and
+            # one member bundle and nothing connects them -- which is the single
+            # relationship a mesh is for.
+            f"  - {{ predicate: registers, "
+            f"target: /{_bundle_id(cfg, out_root / name, name)}/index.md }}",
             "---",
             "",
             f"# {name}",
@@ -248,7 +274,9 @@ def main() -> int:
         targets[name] = rel
         names = mirror(src, out_dir, ctype, stamp, a.apply)
         if names and _owned(out_dir / "index.md"):
-            write_index(out_dir, name, names, stamp, a.apply)
+            write_index(out_dir, name, names, stamp, a.apply,
+                        _bundle_id(cfg, out_root / cfg.get("mesh", "mesh"),
+                                   cfg.get("mesh", "mesh")))
         shown = out_dir.relative_to(PROJECT) if out_dir.is_relative_to(PROJECT) else out_dir
         print(f"  {'wrote' if a.apply else 'would'}  {len(names):>3}  {rel}  →  {shown}")
         total += len(names)
@@ -258,7 +286,7 @@ def main() -> int:
 
     mesh_name = cfg.get("mesh", "mesh")
     if mesh_name and built:
-        n = write_mesh(out_root, mesh_name, sorted(built), stamp, a.apply)
+        n = write_mesh(cfg, out_root, mesh_name, sorted(built), stamp, a.apply)
         print(f"  {'wrote' if a.apply else 'would'}  {n:>3}  the mesh  →  "
               f"{(out_root / mesh_name).relative_to(PROJECT)}")
 

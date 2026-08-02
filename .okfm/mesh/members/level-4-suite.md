@@ -15,6 +15,7 @@ okfm_scope: project
 okfm_level: 4
 okfm_relations:
   - { predicate: part_of, target: /index.md }
+  - { predicate: registers, target: /okfm-level-4/index.md }
 ---
 
 # Scope

@@ -6,7 +6,7 @@ status: draft
 generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
 sources:
   - id: doc
-    resource: ../../docs/guide/level-4-suite/the-benchmark.md
+    resource: ../../docs/okfm-guide/level-4-suite/the-benchmark.md
     okfm_role: subject
     okfm_captured: { hash: "sha256:a69ee059b02c504c51cd0dc73fb41a86c615eb301d191721f81e52abccd8f18b", at: 2026-08-01 }
   - id: implementation
@@ -23,7 +23,7 @@ okfm_relations:
 
 # The benchmark
 
-The text is in [`docs/guide/level-4-suite/the-benchmark.md`](../../docs/guide/level-4-suite/the-benchmark.md).
+The text is in [`docs/okfm-guide/level-4-suite/the-benchmark.md`](../../docs/okfm-guide/level-4-suite/the-benchmark.md).
 This concept records what that document is, what it needs to run, and where it sits in the
 level ladder — none of which the document itself states.
 

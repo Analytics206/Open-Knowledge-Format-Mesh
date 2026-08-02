@@ -7,6 +7,9 @@ generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
 okfm_scope: project
 okfm_level: 3
 okfm_needs: [model, human]
+okfm_relations:
+  - { predicate: registered_by, target: /okfm-mesh/index.md }
+  - { predicate: depends_on, target: /okfm-level-2/index.md }
 ---
 
 # What this level is

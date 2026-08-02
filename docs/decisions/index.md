@@ -5,6 +5,8 @@ description: What was decided about OKFM, why, and what would reverse it.
 status: stable
 generated: { by: "human:analytics206", at: 2026-08-01T00:00:00Z }
 okfm_scope: project
+okfm_relations:
+  - { predicate: registered_by, target: /okfm-mesh/index.md }
 ---
 
 # Decision records

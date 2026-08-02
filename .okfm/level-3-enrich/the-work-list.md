@@ -6,7 +6,7 @@ status: draft
 generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
 sources:
   - id: doc
-    resource: ../../docs/guide/level-3-enrich/the-work-list.md
+    resource: ../../docs/okfm-guide/level-3-enrich/the-work-list.md
     okfm_role: subject
     okfm_captured: { hash: "sha256:2d7f9af67d6bd1b32a1880a8ab906d46c9ab1fa9eb30214e35caf3799331189c", at: 2026-08-01 }
   - id: implementation
@@ -23,6 +23,6 @@ okfm_relations:
 
 # The work list
 
-The text is in [`docs/guide/level-3-enrich/the-work-list.md`](../../docs/guide/level-3-enrich/the-work-list.md). This concept
+The text is in [`docs/okfm-guide/level-3-enrich/the-work-list.md`](../../docs/okfm-guide/level-3-enrich/the-work-list.md). This concept
 records what that document is, what it needs to run, and where it sits in the
 level ladder — none of which the document itself states.

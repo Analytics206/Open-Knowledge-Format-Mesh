@@ -161,7 +161,7 @@ guessed at.
 each with an obvious owner, and `rm -rf .okfm` returns the project to what it was. The naming
 below is superseded: `okfm-process` / `okfm-enrich` / `okfm-suite` became
 `.okfm/level-2-build` / `level-3-enrich` / `level-4-suite`, matching the folders in
-`docs/guide/` they are built from.
+`docs/okfm-guide/` they are built from.
 
 **One OKF per folder of documents, not per level.** The level split was a special case of a
 better default: any folder that holds documents is a unit somebody already decided to

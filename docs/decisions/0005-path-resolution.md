@@ -53,7 +53,7 @@ For a mesh not read on a code host, follow the recommendation instead.
 
 ## Consequence
 
-Bundles stay portable. Moving `okfm-guide/` to `docs/guide/` changes only the index that
+Bundles stay portable. Moving `okfm-guide/` to `docs/okfm-guide/` changes only the index that
 `okfm view` regenerates, and no concept file needs editing — which is the property that
 makes §13.5 discovery-by-convention work at all.
 

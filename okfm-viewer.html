@@ -217,7 +217,8 @@
     <div class="legend-note" id="legendNote" hidden>
       <b>ring</b> solid = human-verified · dashed = machine · none = unverified<br>
       <b>halo</b> amber = past stale_after · rust = source drifted<br>
-      <b>size</b> = inbound references
+      <b>size</b> = inbound references<br>
+      <b>scroll</b> to zoom · drag the background to pan · double-click to reset
     </div>
     <div class="chains" id="chains" hidden></div>
     <div class="stats" id="stats" hidden></div>
@@ -351,7 +352,7 @@ const BOOTSTRAP = {
    "v": null,
    "sa": null,
    "src": 1,
-   "drift": 0,
+   "drift": 1,
    "r": [],
    "scope": "project"
   },
@@ -443,7 +444,12 @@ const BOOTSTRAP = {
    "sa": null,
    "src": 0,
    "drift": 0,
-   "r": [],
+   "r": [
+    [
+     "registered_by",
+     "/okfm-mesh/index.md"
+    ]
+   ],
    "scope": "project"
   },
   {
@@ -456,7 +462,12 @@ const BOOTSTRAP = {
    "sa": null,
    "src": 0,
    "drift": 0,
-   "r": [],
+   "r": [
+    [
+     "registered_by",
+     "/okfm-mesh/index.md"
+    ]
+   ],
    "scope": null
   },
   {
@@ -616,7 +627,12 @@ const BOOTSTRAP = {
    "sa": null,
    "src": 0,
    "drift": 0,
-   "r": [],
+   "r": [
+    [
+     "registered_by",
+     "/okfm-mesh/index.md"
+    ]
+   ],
    "scope": "guide"
   },
   {
@@ -682,7 +698,12 @@ const BOOTSTRAP = {
    "sa": null,
    "src": 0,
    "drift": 0,
-   "r": [],
+   "r": [
+    [
+     "registered_by",
+     "/okfm-mesh/index.md"
+    ]
+   ],
    "scope": "project"
   },
   {
@@ -798,7 +819,16 @@ const BOOTSTRAP = {
    "sa": null,
    "src": 0,
    "drift": 0,
-   "r": [],
+   "r": [
+    [
+     "registered_by",
+     "/okfm-mesh/index.md"
+    ],
+    [
+     "depends_on",
+     "/okfm-level-1/index.md"
+    ]
+   ],
    "scope": "project"
   },
   {
@@ -918,7 +948,16 @@ const BOOTSTRAP = {
    "sa": null,
    "src": 0,
    "drift": 0,
-   "r": [],
+   "r": [
+    [
+     "registered_by",
+     "/okfm-mesh/index.md"
+    ],
+    [
+     "depends_on",
+     "/okfm-level-2/index.md"
+    ]
+   ],
    "scope": "project"
   },
   {
@@ -1068,7 +1107,16 @@ const BOOTSTRAP = {
    "sa": null,
    "src": 0,
    "drift": 0,
-   "r": [],
+   "r": [
+    [
+     "registered_by",
+     "/okfm-mesh/index.md"
+    ],
+    [
+     "depends_on",
+     "/okfm-level-3/index.md"
+    ]
+   ],
    "scope": "project"
   },
   {
@@ -1137,7 +1185,7 @@ const BOOTSTRAP = {
     ],
     [
      "evaluates",
-     "/okfm-level-4/okfm-mesh/index.md"
+     "/okfm-mesh/index.md"
     ]
    ],
    "scope": "project"
@@ -1159,7 +1207,7 @@ const BOOTSTRAP = {
     ],
     [
      "differs_from",
-     "/okfm-level-4/okfm-level-1/the-viewer.md"
+     "/okfm-level-1/the-viewer.md"
     ]
    ],
    "scope": "project"
@@ -1204,6 +1252,10 @@ const BOOTSTRAP = {
     [
      "part_of",
      "/okfm-mesh/index.md"
+    ],
+    [
+     "registers",
+     "/okfm-decisions/index.md"
     ]
    ],
    "scope": "project"
@@ -1222,6 +1274,10 @@ const BOOTSTRAP = {
     [
      "part_of",
      "/okfm-mesh/index.md"
+    ],
+    [
+     "registers",
+     "/okfm-docs/index.md"
     ]
    ],
    "scope": null
@@ -1240,6 +1296,10 @@ const BOOTSTRAP = {
     [
      "part_of",
      "/okfm-mesh/index.md"
+    ],
+    [
+     "registers",
+     "/okfm-guide/index.md"
     ]
    ],
    "scope": "project"
@@ -1258,6 +1318,10 @@ const BOOTSTRAP = {
     [
      "part_of",
      "/okfm-mesh/index.md"
+    ],
+    [
+     "registers",
+     "/okfm-level-1/index.md"
     ]
    ],
    "scope": "project"
@@ -1276,6 +1340,10 @@ const BOOTSTRAP = {
     [
      "part_of",
      "/okfm-mesh/index.md"
+    ],
+    [
+     "registers",
+     "/okfm-level-2/index.md"
     ]
    ],
    "scope": "project"
@@ -1294,6 +1362,10 @@ const BOOTSTRAP = {
     [
      "part_of",
      "/okfm-mesh/index.md"
+    ],
+    [
+     "registers",
+     "/okfm-level-3/index.md"
     ]
    ],
    "scope": "project"
@@ -1312,6 +1384,10 @@ const BOOTSTRAP = {
     [
      "part_of",
      "/okfm-mesh/index.md"
+    ],
+    [
+     "registers",
+     "/okfm-level-4/index.md"
     ]
    ],
    "scope": "project"
@@ -1531,9 +1607,15 @@ function tick(alpha){
 
 const radius = n => 6 + Math.min(n.c.inb, 6) * 1.9;
 
+/* Pan and zoom live entirely in the viewBox. The simulation keeps working in the same
+   coordinate space it always did, so nothing downstream — layout, drag, hit-testing —
+   has to know the view moved. */
+const view = { x:0, y:0, k:1 };
+const clampK = k => Math.max(0.35, Math.min(9, k));
+
 function drawGraph(){
   const W = svg.clientWidth||800, H = svg.clientHeight||500;
-  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.setAttribute("viewBox", `${view.x} ${view.y} ${W/view.k} ${H/view.k}`);
   const edge = links.map(l=>{
     const dashed = ["differs_from","supersedes"].includes(l.pred);
     return `<line x1="${l.s.x}" y1="${l.s.y}" x2="${l.t.x}" y2="${l.t.y}"
@@ -1548,7 +1630,7 @@ function drawGraph(){
       : c.trust==="machine"
       ? `<circle cx="${n.x}" cy="${n.y}" r="${r+1.6}" fill="none" stroke="#16191d" stroke-width="1.1" stroke-dasharray="2.5 2.5" opacity=".65"/>` : "";
     const selRing = sel ? `<circle cx="${n.x}" cy="${n.y}" r="${r+8}" fill="none" stroke="#16191d" stroke-width="1" opacity=".45"/>` : "";
-    const lbl = (r>8 || sel) ? `<text x="${n.x}" y="${n.y+r+11}" text-anchor="middle"
+    const lbl = (r>8 || sel || view.k>1.6) ? `<text x="${n.x}" y="${n.y+r+11}" text-anchor="middle"
         font-family="ui-monospace,monospace" font-size="9" fill="#5c6672">${esc(c.title.slice(0,26))}</text>` : "";
     return `<g class="nd" data-p="${esc(c.p)}" style="cursor:pointer">${halo}
       <circle cx="${n.x}" cy="${n.y}" r="${r}" fill="${color(c.t)}" opacity=".92"/>${ring}${selRing}${lbl}
@@ -1561,24 +1643,56 @@ function drawGraph(){
 }
 const esc = s => String(s).replace(/[&<>"]/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
 
-/* drag */
-let drag = null;
+/* drag a node, or pan the background */
+let drag = null, pan = null;
 svg.addEventListener("mousedown", e=>{
   const pt = mouse(e); let best=null, bd=1e9;
   nodes.forEach(n=>{ const d=Math.hypot(n.x-pt.x,n.y-pt.y); if(d<bd && d<radius(n)+6){bd=d;best=n;} });
   if(best){ drag=best; best.fixed=true; svg.classList.add("dragging"); }
+  else { pan = { sx:e.clientX, sy:e.clientY, ox:view.x, oy:view.y }; svg.classList.add("dragging"); }
 });
 window.addEventListener("mousemove", e=>{
-  if(!drag) return;
-  const pt = mouse(e); drag.x = pt.x; drag.y = pt.y; drawGraph();
+  if(drag){ const pt = mouse(e); drag.x = pt.x; drag.y = pt.y; drawGraph(); return; }
+  if(!pan) return;
+  const r = svg.getBoundingClientRect();
+  const W = svg.clientWidth||800, H = svg.clientHeight||500;
+  view.x = pan.ox - (e.clientX-pan.sx)/r.width  * (W/view.k);
+  view.y = pan.oy - (e.clientY-pan.sy)/r.height * (H/view.k);
+  drawGraph();
 });
 window.addEventListener("mouseup", ()=>{
   if(drag){ drag.fixed=false; drag=null; svg.classList.remove("dragging"); runSim(); }
+  if(pan){ pan=null; svg.classList.remove("dragging"); }
 });
+
+/* Zoom about the pointer: the graph point under the cursor stays under the cursor.
+   Zooming about the centre instead is the version everyone builds first and nobody
+   likes — the thing you were aiming at slides away as you zoom toward it. */
+svg.addEventListener("wheel", e=>{
+  if(svg.hidden) return;
+  e.preventDefault();
+  const r = svg.getBoundingClientRect();
+  // A collapsed or not-yet-laid-out pane reports a zero-sized rect, and dividing by it
+  // puts NaN into the viewBox — which does not throw, it just blanks the graph.
+  if(!r.width || !r.height) return;
+  const W = svg.clientWidth||800, H = svg.clientHeight||500;
+  const fx = (e.clientX-r.left)/r.width, fy = (e.clientY-r.top)/r.height;
+  const px = view.x + fx*(W/view.k), py = view.y + fy*(H/view.k);
+  // deltaMode 1 is lines rather than pixels; Firefox reports it and would otherwise
+  // zoom about forty times per notch.
+  const dy = e.deltaY * (e.deltaMode===1 ? 16 : e.deltaMode===2 ? H : 1);
+  view.k = clampK(view.k * Math.exp(-dy*0.0015));
+  view.x = px - fx*(W/view.k);
+  view.y = py - fy*(H/view.k);
+  drawGraph();
+}, { passive:false });
+
+svg.addEventListener("dblclick", ()=>{ view.x=view.y=0; view.k=1; drawGraph(); });
+
 function mouse(e){
   const r = svg.getBoundingClientRect();
-  return { x:(e.clientX-r.left) * ((svg.clientWidth||800)/r.width),
-           y:(e.clientY-r.top)  * ((svg.clientHeight||500)/r.height) };
+  return { x: view.x + (e.clientX-r.left)/(r.width ||1) * ((svg.clientWidth ||800)/view.k),
+           y: view.y + (e.clientY-r.top) /(r.height||1) * ((svg.clientHeight||500)/view.k) };
 }
 
 /* ---------- closure view ---------- */

@@ -6,7 +6,7 @@ status: draft
 generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
 sources:
   - id: doc
-    resource: ../../docs/guide/level-3-enrich/the-agent-contract.md
+    resource: ../../docs/okfm-guide/level-3-enrich/the-agent-contract.md
     okfm_role: subject
     okfm_captured: { hash: "sha256:1b042e6bf6cf092f20f069e70c92fd432ffe1bbc4d410c8385212070bdd429ec", at: 2026-08-01 }
   - id: implementation
@@ -23,6 +23,6 @@ okfm_relations:
 
 # The agent contract
 
-The text is in [`docs/guide/level-3-enrich/the-agent-contract.md`](../../docs/guide/level-3-enrich/the-agent-contract.md). This concept
+The text is in [`docs/okfm-guide/level-3-enrich/the-agent-contract.md`](../../docs/okfm-guide/level-3-enrich/the-agent-contract.md). This concept
 records what that document is, what it needs to run, and where it sits in the
 level ladder — none of which the document itself states.

@@ -22,6 +22,13 @@ structural:
   - implements        # a concrete realisation of the target
   - implemented_by    # inverse of implements
 
+federation:
+  # An `OKF Member` concept names a bundle. Without an edge saying so, the mesh knows its
+  # members and the GRAPH does not -- filter to the registry and a member bundle and
+  # nothing connects them, which is the one relationship a mesh exists to show.
+  - registers         # this concept registers the target bundle as a member (§12.2)
+  - registered_by     # inverse of registers
+
 semantic:
   - perspective_on    # a named viewpoint on the target concept
   - defines           # establishes the target's meaning
