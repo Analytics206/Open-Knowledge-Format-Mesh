@@ -3,11 +3,20 @@
 Copy this file into your project — as `AGENTS.md`, `CLAUDE.md`, a cursor rule, or whatever
 your tool reads. It is the whole contract. No installation, no runtime, no key.
 
-This is **Level 3**: your agent drives OKFM. OKFM never holds a credential.
+**This is the authoring contract, and it applies from Level 1.** Read it before writing a
+concept by hand, and hand it to whatever writes on your behalf. The rules are the same either
+way, because they are about what may be *claimed* rather than about who is typing.
 
-If nobody is pointing an agent at the mesh, `okfm.py enrich-local` does this same work with a
-model on the machine — same contract, same guard, same person at the end. This file stays the
-authority on what may be written either way.
+> It said "This is **Level 3**" at the top, and that one line was a real defect. A first-time
+> author hand-writing a bundle — Level 1's entire promise, nothing installed — had no reason
+> to open a file labelled for the level that requires a model. Meanwhile `templates/bundle/`
+> shipped `status: stable` and `generated.by: "human:<you>"`, so following the documented path
+> produced a concept claiming a review that never happened. This file was the only thing that
+> would have stopped it.
+
+What *is* Level 3 is who runs the model: your agent drives OKFM and OKFM holds no credential.
+`okfm.py enrich-local` does the same work with a model on your own machine. Neither changes a
+rule below.
 
 ---
 

@@ -36,7 +36,7 @@ publishes a trust nobody granted.
 
 Delete the HTML comment once you have read it.
 
-**Read [what you may claim](../.okfm/guide/authoring-rules.md) first.** It is four rules about
+**Read [AGENTS.md](AGENTS.md) first.** Despite the name it is four rules about
 not asserting something nobody did, and it is where hand-authoring actually goes wrong —
 not on syntax. Those rules used to live only in `AGENTS.md`, filed as Level 3 material,
 so an author writing a bundle by hand had no reason to open the one file that would have

@@ -22,7 +22,7 @@ mesh was found.
 
 - [What OKFM is](what-is-okfm.md) — the shape of the system in one page
 - [Your first concept](first-concept.md) — the smallest useful thing to write
-- [What you may claim](authoring-rules.md) — draft, never `verified`, never an invented edge
+- [The authoring contract](../../templates/AGENTS.md) — what you may claim: draft, never `verified`, never an invented edge
 - [The admission test](admission-test.md) — what *not* to write down
 - [The loop family](loop-family.md) — recording decisions, not just facts
 - [Attested computation](attested-computation.md) — numbers that prove themselves

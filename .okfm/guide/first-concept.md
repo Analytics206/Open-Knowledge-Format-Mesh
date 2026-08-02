@@ -87,8 +87,34 @@ okfm index
 `validate` tells you whether it is legal. `index` shows you what an agent would
 actually be handed, which is usually the more interesting answer.
 
+# You cannot hash a source by hand, and you do not have to
+
+Writing by hand means running nothing, so there is no way to compute a sha256 for a source you
+point at. **Do not invent one.** A fabricated `okfm_captured.hash` pins a value that will never
+match, and the pointer reports drift forever — worse than having no pointer at all.
+
+Leave it out, or record only when you looked:
+
+```yaml
+sources:
+  - id: design
+    resource: ../docs/system-design.md
+    okfm_role: subject
+    okfm_captured: { at: 2026-08-02 }
+```
+
+A pointer with no hash reads as **unknown** — not fresh, not drifted. That is the true answer,
+and the format carries a state for it precisely so you are never pushed into guessing. Run the
+build later and it fills one in.
+
 # The mistake to avoid
 
 Do not write a concept that summarizes a file you already have. Read
 [the admission test](admission-test.md) before writing your second one — it is the
 single rule that decides whether a mesh becomes useful or becomes overhead.
+
+And read [the authoring contract](../../templates/AGENTS.md) before you write anything you
+intend somebody to rely on. Despite living in `templates/` under a name that sounds like it is
+for robots, it is the four rules about what you may *claim* — land as `draft`, never write
+`verified` yourself, never invent a typed edge, copy before you summarise. They are the rules
+hand-authoring gets wrong, and they are the same ones you would hand an agent.
