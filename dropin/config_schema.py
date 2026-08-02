@@ -110,14 +110,21 @@ FIELDS = [
      "help": "Scopes kept out of health statistics and out of any context assembled for an "
              "agent — the bundled guide is the usual entry."},
 
+    {"path": "enrich.enabled", "kind": "bool", "default": False,
+     "label": "Use a local model (Ollama)",
+     "help": "Turn on Level 2+ — OKFM drafts descriptions itself, using a model on hardware "
+             "you control. Off by default: nothing should start calling a model because a "
+             "config file mentioned one."},
     {"path": "enrich.base_url", "kind": "string", "default": "http://localhost:11434",
-     "label": "Model endpoint",
-     "help": "Where a local model answers. Ollama's default is http://localhost:11434. "
-             "Nothing in the pipeline calls it; only `okfm.py enrich-local` does."},
+     "label": "Ollama address",
+     "help": "Where Ollama answers. http://localhost:11434 when it runs on this machine; "
+             "http://<host>:11434 for a box on your network — that host needs "
+             "OLLAMA_HOST=0.0.0.0 to accept anything but its own loopback."},
     {"path": "enrich.model", "kind": "string", "default": None, "nullable": True,
      "label": "Model",
-     "help": "The model tag to draft with — `ollama pull` it first. null means the local "
-             "variant is not configured, which is a normal state and not a missing answer."},
+     "help": "The model tag to draft with. It must ALREADY be pulled on that Ollama "
+             "instance — nothing here downloads it. Avoid reasoning models: thinking is "
+             "disabled, and one that ignores that spends minutes per concept."},
     {"path": "enrich.num_ctx", "kind": "int", "min": 512, "max": 1000000, "default": 8192,
      "label": "Context window",
      "help": "Tokens the model may hold. Ollama defaults to 2048, which silently truncates "
@@ -141,12 +148,22 @@ BY_PATH = {f["path"]: f for f in FIELDS}
 OPEN_KINDS = {"pathmap", "stores", "any"}
 OPEN_PATHS = {f["path"] for f in FIELDS if f["kind"] in OPEN_KINDS}
 
+# (prefix, title, blurb) — plus an optional fourth entry, a note the form renders as a
+# callout above the fields. For the one group where getting it wrong costs a confusing
+# runtime failure rather than a validation message.
 GROUPS = [
     ("", "Profile", "What this file is."),
     ("build", "Build", "What gets read, and what gets written."),
     ("bundles", "Bundles", "Name them and discovery stops. Usually leave this empty."),
     ("read", "Read", "Consuming a mesh rather than producing one."),
-    ("enrich", "Enrich", "A local model, if you use one. Level 3, and never in the pipeline."),
+    ("enrich", "Enrich — Level 2+",
+     "A model on hardware you control drafts the descriptions extraction cannot write. "
+     "No key, no account, no bill — the same terms as Level 2, plus a model you already have.",
+     "The model must already be pulled on that Ollama instance: `ollama pull <model>`. "
+     "Nothing here downloads it, and this page cannot check — a page opened from file:// "
+     "cannot see your machine, let alone another one on your network. A name that is not "
+     "there fails at run time with a 404 naming the model. Nothing in the build reads any of "
+     "this; only `okfm.py enrich-local` does."),
     ("stores", "Stores", "External data. Handles only."),
     ("federation", "Federation", "Who registers whom."),
 ]
@@ -408,6 +425,18 @@ def _cross_checks(cfg: dict) -> list[dict]:
     # What separates level 3's local variant from its credentialed one is not the model, it
     # is where the model runs and whether reaching it costs a secret. The config is the only
     # place that fact is written down, so this is the only place it can be checked.
+    enabled, _ = dig(cfg, "enrich.enabled")
+    model, _ = dig(cfg, "enrich.model")
+    # The switch says intent, the model says which — so the two are not redundant, and this
+    # is the only combination that means nothing. The reverse, a model named while switched
+    # off, is deliberately silent: that is the normal state of every config nobody has turned
+    # this on in yet, and a check that fires on the common case is one people learn to ignore.
+    if enabled is True and not (isinstance(model, str) and model.strip()):
+        out.append(_finding("error", "enrich.model",
+                            "the local model is switched on and no model is named",
+                            "name one you have already pulled — `ollama list` on that host "
+                            "says which — or set `enrich.enabled` to false"))
+
     base_url, _ = dig(cfg, "enrich.base_url")
     if isinstance(base_url, str) and base_url.strip():
         host = urlsplit(base_url).hostname

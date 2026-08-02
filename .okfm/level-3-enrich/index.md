@@ -29,7 +29,7 @@ It is the last level. There is nothing to graduate to.
 |---|---|---|
 | [The enrichment loop](the-enrichment-loop.md) | the whole cycle, end to end | `model`, `human` |
 | [The agent contract](the-agent-contract.md) | what an agent may and may not write | `model` |
-| [A local model](a-local-model.md) | OKFM drafts it, on your machine, with no key | `model` |
+| [A local model](a-local-model.md) | **Level 2+** — OKFM drafts it, on your hardware, no key | `model` |
 | [The work list](the-work-list.md) | what needs enriching, and why | — |
 | [The tier guard](the-tier-guard.md) | did the edit pass write only what it owns | — |
 | [The human exit](the-human-exit.md) | review clears drift; nothing else does | `human` |
@@ -46,7 +46,7 @@ network call.
 | Variant | Who drives | Who holds a key | Exposure |
 |---|---|---|---|
 | your agent | your agent drives OKFM | your agent | `model` |
-| [local](a-local-model.md) | OKFM drives a model on your machine | nobody | `model` |
+| [local — **2+**](a-local-model.md) | OKFM drives a model you host | nobody | `model` |
 | credentialed | OKFM drives a hosted provider | OKFM | `model`, `secrets` |
 
 The last two reverse the direction — **OKFM drives the model** — and only the third pays for

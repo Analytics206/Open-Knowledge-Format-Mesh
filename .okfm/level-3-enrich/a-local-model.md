@@ -1,10 +1,10 @@
 ---
 type: Document
 title: A local model
-description: "OKFM drafts descriptions itself using Ollama on the adopter's own machine — level 3's local variant, which removes the key without removing the model and so sits at `needs-model` with no `needs-secrets`."
+description: "Level 2+ — OKFM drafts descriptions itself with Ollama on hardware the adopter owns, keeping level 2's no-key-no-bill terms while the component still declares `needs-model` and the checked 2/3 boundary stays where it was."
 status: draft
 tags: [needs-model]
-generated: { by: "agent:claude-opus-5", at: 2026-08-02T06:55:00Z }
+generated: { by: "agent:claude-opus-5", at: 2026-08-02T08:10:00Z }
 sources:
   - id: source
     resource: ../../docs/okfm-guide/level-3-enrich/a-local-model.md
@@ -15,7 +15,7 @@ okfm_relations:
   - { predicate: part_of, target: /index.md }
 ---
 
-# A local model
+# A local model — Level 2+
 
 The text is in [`docs/okfm-guide/level-3-enrich/a-local-model.md`](../../docs/okfm-guide/level-3-enrich/a-local-model.md).
 This concept records what that document is, what it needs to run, and where it sits in the

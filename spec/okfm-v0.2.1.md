@@ -850,8 +850,13 @@ Level 3 has three variants, split on who drives the model and who holds the key
 | Variant | Adopter supplies | Who holds a key |
 |---|---|---|
 | your agent | their own agent, LLM, or MCP | the adopter's tool — OKFM holds none |
-| local | a model on their own machine | nobody |
+| **local — "Level 2+"** | a model on hardware they own | nobody |
 | credentialed | a key, a provider, `okfm.json` | OKFM |
+
+The local variant is named **Level 2+** for what it costs an adopter: level 2's terms — no
+key, no account, no bill — plus the enrichment loop. That is a name, not a relocation. Its
+component declares `needs: [model]` and sits in the level 3 bundle, and the boundary below
+still admits nothing at level 2 that requires a model.
 
 A fourth level was collapsed into the third: who holds the key reverses the *direction* —
 OKFM driving a provider instead of a provider's client driving OKFM — and a reversal is not

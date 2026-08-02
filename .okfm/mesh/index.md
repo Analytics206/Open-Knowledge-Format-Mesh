@@ -25,7 +25,7 @@ and the questions it answers. Nothing else lives here: membership is all this bu
 | What I get by downloading this and running nothing | [okfm-level-1](members/level-1-view.md) | [`.okfm/level-1-view/`](../level-1-view/index.md) |
 | How to build a mesh from my own docs, and what the build will and will not write | [okfm-level-2](members/level-2-build.md) | [`.okfm/level-2-build/`](../level-2-build/index.md) |
 | How to point **my own agent** at it — the contract, the work list, the guard | [okfm-level-3](members/level-3-enrich.md) | [`.okfm/level-3-enrich/`](../level-3-enrich/index.md) |
-| How to run the loop with **no key at all**, on a model of my own | [okfm-level-3](members/level-3-enrich.md) | [a local model](../level-3-enrich/a-local-model.md) |
+| How to run the loop with **no key and no bill** — Level 2+ | [okfm-level-3](members/level-3-enrich.md) | [a local model](../level-3-enrich/a-local-model.md) |
 | How to use **my own key and provider** | [okfm-level-3](members/level-3-enrich.md) | [providers and keys](../level-3-enrich/providers-and-keys.md) |
 | Whether a CLI exists yet, and what it will be | [okfm-level-3](members/level-3-enrich.md) | [the console app](../level-3-enrich/the-console-app.md) |
 | Whether curated knowledge actually helps, and how that gets measured | [okfm-level-3](members/level-3-enrich.md) | [the benchmark](../level-3-enrich/the-benchmark.md) |

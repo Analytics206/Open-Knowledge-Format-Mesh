@@ -1,19 +1,19 @@
 ---
 type: Decision
-title: DR-0013 — A local model is a variant of level 3, not a level between 2 and 3
-description: "Running the model on your own machine removes the key, not the model — so it lands where `needs-model` without `needs-secrets` already sat, and the level 2/3 line stays exactly on the `model` boundary that CI checks."
+title: DR-0013 — Level 2+ — a local model, on level 2's terms
+description: "Running the model on your own machine removes the key, not the model — so it is called Level 2+ for what it costs an adopter while its component still declares `needs-model` and the 2/3 line stays exactly on the boundary CI checks."
 status: draft
 tags: [levels, adoption, boundaries, local-models]
-generated: { by: "agent:claude-opus-5", at: 2026-08-02T06:40:00Z }
+generated: { by: "agent:claude-opus-5", at: 2026-08-02T08:10:00Z }
 sources:
   - id: self
     resource: /0013-the-local-model-variant.md
     okfm_role: subject
 okfm_scope: project
 ---
-# DR-0013 — A local model is a variant of level 3, not a level between 2 and 3
+# DR-0013 — Level 2+ — a local model, on level 2's terms
 
-- **Status:** accepted 2026-08-02
+- **Status:** accepted 2026-08-02 — **amended same day: named Level 2+**
 - **Date:** 2026-08-02
 - **Affects:** [DR-0009](0009-adoption-levels.md) level 3; [DR-0008](0008-build-pipeline.md)
   `needs` vocabulary; `dropin/enrich_local.py`, `dropin/config_schema.py`
@@ -32,13 +32,21 @@ is why the fee is not what the ladder measures.
 **Level 3, local variant.** Level 3 now has three, distinguished by who drives and who holds
 the key:
 
+> **Amended the same day: it is called Level 2+.** The mechanics below are unchanged and still
+> govern — `needs: [model]`, the level-3 bundle, the check untouched. What changed is the name
+> an adopter reads, and the argument for it is at the foot of this record. The original
+> reasoning is kept because it is what the amendment had to answer.
+
 | Variant | Who drives | Who holds a key | Exposure | Built |
 |---|---|---|---|---|
 | your agent | your agent drives OKFM | your agent — OKFM holds none | `needs-model` on the loop, `[]` on every OKFM component | yes |
 | **local** | OKFM drives a model on your machine | nobody | `needs-model` | **this record** |
 | credentialed | OKFM drives a hosted provider | OKFM | `needs-model`, `needs-secrets` | no |
 
-## Why not 2+
+## Why not 2+ — the original argument, and what survived it
+
+Superseded on the name, upheld on everything else: each paragraph below is still true, and
+none of them turned out to require calling it level 3.
 
 **The level 2/3 line is the `model` line, exactly, and it is a check rather than a claim.**
 [DR-0009](0009-adoption-levels.md) states it and `dev/check_levels.py` enforces it: nothing in
@@ -152,6 +160,54 @@ sources. It returns on long ones, which is a known limit rather than a solved pr
 
 Worth recording because neither is about Ollama. Both are about what enrichment *is*, and
 both would have been got wrong the same way by a hosted provider.
+
+## Amendment 2026-08-02 — it is called **Level 2+**
+
+Named by the steward, over this record's original argument that a variant name was enough.
+Recorded rather than quietly applied, because the reasoning above went the other way and a
+reader deserves to see that it was overruled and on what grounds.
+
+**What the name says, and it is the true thing.** Level 2's promise to an adopter is *no key,
+no account, no bill*. This keeps every word of it and adds drafting. "Level 3, local variant"
+described the machinery correctly and told an adopter nothing about what it would cost them —
+and cost is the question the ladder exists to answer.
+
+**What the name does not change, at all:**
+
+| | |
+|---|---|
+| `enrich_local.py` declares | `needs: [model]` |
+| It lives in | the `level-3-enrich` bundle |
+| `dev/check_levels.py` | unchanged — `ALLOWED[2]` still admits only `human` |
+| The 2/3 boundary | still exactly the `model` line, still mechanically checked |
+
+So both statements hold, and they are about different things. **The ladder measures what OKFM
+asks of you before you can start; the name measures what it costs you.** Those were the same
+number for as long as a model meant an API key. This is the first thing that pulled them
+apart, and "2+" is the honest way to write a component that sits above the line on one axis
+and at level 2 on the other.
+
+The `+` is doing real work: it is not level 2, and pretending otherwise would make level 2's
+"never needs a model" false. It is level 2's terms with something extra you supply.
+
+**What moving it for real would take**, if the name is ever meant to be the location:
+`ALLOWED[2]` in `dev/check_levels.py` gains `model`, the level 2 bundle takes the concept, and
+the promise that nothing at level 2 requires a model stops being true. That is the trade, and
+it is not being made — the check is the only thing keeping the promise honest as the
+implementation grows, and a name is not worth spending it.
+
+## Amendment 2026-08-02 — proof of concept, and the hardware it was proved on
+
+The measurements above were taken on **8 GB of VRAM**, which is what bounds the model: 4B and
+9B at 4-bit, and an 8B. A 16 GB card runs a materially better model, and this record should
+not be read as saying local models write mediocre descriptions — it says *these* models did,
+on a corpus that extracts well, on that hardware.
+
+**This is a proof of concept and is labelled one.** What it proves is that the loop closes
+with no key and no bill: config, request, refusal handling, write, guard, human exit. What it
+does not attempt is a defensible claim about enrichment quality, which needs a corpus that
+extracts badly, a model that fits the machine, and the benchmark (§18.4) rather than three
+descriptions read by eye.
 
 ## Re-entry triggers
 

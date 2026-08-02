@@ -1,11 +1,20 @@
-# The whole loop, no key
+# Level 2 terms, with drafting
+
+Level 2's promise is *no key, no account, no bill*. **Level 2+ keeps every word of it and adds
+the enrichment loop**, by running the model on hardware you already own.
 
 ```bash
-ollama pull llama3.2
+ollama pull qwen3.5:9b
 ```
 
+Turn it on in `okfm.json`, or on the **Config** page of the web UI:
+
 ```json
-"enrich": { "base_url": "http://localhost:11434", "model": "llama3.2" }
+"enrich": {
+  "enabled": true,
+  "base_url": "http://localhost:11434",
+  "model": "qwen3.5:9b"
+}
 ```
 
 ```bash
@@ -13,27 +22,53 @@ python okfm/okfm.py enrich-local             # what it would write
 python okfm/okfm.py enrich-local --apply     # write it
 ```
 
-Then the rest is unchanged — `guard` checks what it wrote, and you clear the drift yourself.
-That is the point: the model moved onto your machine, and nothing else moved at all.
+Then `guard` and `revalidate` exactly as before. The model moved onto your machine and nothing
+else moved at all.
 
-# Why this is still level 3
+**The model must already be pulled on that Ollama instance.** Nothing here downloads one, and
+the config page cannot check — a page opened from `file://` cannot see your machine, let alone
+another one on your network. A name that is not there fails at run time with a 404 naming it.
+`ollama list` says what you have.
 
-The level 2/3 line is the `model` line, and `dev/check_levels.py` enforces it. A component
-that calls a model is level 3 whether the model runs in a data centre or on the laptop calling
-it — the output is still nondeterministic, still a draft, still guarded, and still waiting on a
-person.
+Two keys, not one, because they say different things: `model` names which one, `enabled` says
+to call it. A config that mentions a model should not start making requests because it
+mentions one.
 
-What running it locally removes is the key, and that distinction already sits one rung up the
-same ladder: this is `needs-model` **without** `needs-secrets`. Level 3 has three variants and
-only the last one holds a credential.
+# On your network, not just this machine
 
-| Variant | Who drives | Who holds a key |
+`base_url` takes any host. A box on your LAN is still your hardware and still holds no key:
+
+```json
+"base_url": "http://10.0.0.42:11434"
+```
+
+That host needs `OLLAMA_HOST=0.0.0.0` — Ollama binds to its own loopback by default, so a
+remote box refuses every connection until it is told not to. `okfm.py config` warns that the
+address is not loopback. That is the check working, not a problem: it is the only place the
+line between *your hardware* and *somebody's paid API* is written down in a form something can
+read, and a distinction nothing checks decays into one nothing means.
+
+# Why the `+` and not level 3
+
+The component is `needs: [model]`, lives in the level 3 bundle, and
+[`dev/check_levels.py`](../../../dev/check_levels.py) is untouched — nothing at level 2 may
+declare `model`, and nothing does.
+
+Both are true because they measure different things. **The ladder measures what OKFM asks of
+you before you can start; the name measures what it costs you.** Those were the same number
+for as long as a model meant an API key. This is the first thing that pulled them apart.
+
+The `+` is load-bearing. This is not level 2 — pretending so would make level 2's *never needs
+a model* false. It is level 2's terms plus something you supply.
+
+| | Who drives | Who holds a key |
 |---|---|---|
-| your agent | your agent drives OKFM | your agent — OKFM holds none |
-| local | OKFM drives a model on your machine | nobody |
-| credentialed | OKFM drives a hosted provider | OKFM |
+| level 3, your agent | your agent drives OKFM | your agent — OKFM holds none |
+| **level 2+** | OKFM drives a model you host | **nobody** |
+| level 3, credentialed | OKFM drives a hosted provider | OKFM |
 
-See [DR-0013](../../decisions/0013-the-local-model-variant.md) for why it is not a level 2+.
+See [DR-0013](../../decisions/0013-the-local-model-variant.md), including the argument that
+lost.
 
 # The one component that is not `needs: []`
 
@@ -69,16 +104,18 @@ A malformed answer is not a worse version of a good one, it is a sentence nobody
 answer is rejected rather than repaired, and the output names the rule it broke: not JSON, no
 description, empty, or past the length cap. Nothing is written by default; `--apply` writes.
 
-# The endpoint is checked, and why that is not fussiness
+# Thinking is off, deliberately
 
-`okfm.py config` warns when `enrich.base_url` is not loopback. Not because your own hardware on
-your own network is wrong — nothing holds a key either way — but because the config is the only
-place the local/credentialed boundary is written down in a form something can read.
+Reasoning models are the wrong tool for this and it is not close. The answer is in the
+document; a reasoning trace re-derives what one read already gives you. Measured against a
+trivial prompt on real hardware: 2.8k characters of thinking on a 4B model and 6k on a 9B,
+taking 15 and 89 seconds — against **1 to 2 seconds** with thinking disabled. Same answer.
 
-[DR-0008](../../decisions/0008-build-pipeline.md) rejected a `network` value on the exposure
-ladder because nothing needed the open internet without a credential. This is the closest
-anything has come. Pointing the endpoint at a public host is that rejected fifth value
-arriving, and it should say something rather than nothing.
+On a work list of any size that is the difference between a queue that drains and one that
+times out, so the request sets `think: false` and does not offer a knob for it.
+
+It also buys the property `temperature: 0` was chosen for. With both set, two runs return
+byte-identical text, which is what makes a second pass a no-op instead of a rewrite.
 
 # Context, which is the footgun
 
@@ -87,29 +124,21 @@ description of its first half and nothing says so. `enrich.num_ctx` defaults to 
 that reason, and the run reports when a source was still too long to fit. Raise it for a
 corpus of long documents; it costs memory on the machine running the model.
 
-# Thinking is off, deliberately
+# This is a proof of concept, and what it proves
 
-Reasoning models are the wrong tool for this and it is not close. The answer is in the
-document; a reasoning trace re-derives what one read already gives you. Measured against a
-trivial prompt on a real box: 2.8k characters of thinking on a 4B model and 6k on a 9B, taking
-15 and 89 seconds — against **1 to 2 seconds** with thinking disabled. Same answer.
+**It proves the loop closes with no key and no bill**: config, request, refusal handling,
+write, guard, human exit, all the way through on hardware you own.
 
-On a work list of any size that is the difference between a queue that drains and one that
-times out, so the request sets `think: false` and does not offer a knob for it.
+**It does not yet prove enrichment is worth it.** That needs three things this does not have —
+a corpus that extracts *badly*, a model that fits the machine, and [the
+benchmark](the-benchmark.md) rather than a few descriptions read by eye.
 
-It also buys the property `temperature: 0` was chosen for. With both set, two runs return
-byte-identical text, which is what makes a second pass a no-op instead of a rewrite.
-
-# What it is good at, and what it is not
-
-Enrichment earns its place where extraction has nothing good to copy. Extraction takes the
-first blockquote or paragraph, so a corpus whose documents open with a summary line extracts
-*well* — and a local model will not beat it. Measured on this repository, whose documents do
-open that way, the drafts came back honest, on-shape and slightly worse than what was there.
-
-That is not a defect, it is the comparison being unfavourable. The case this is for is the
-corpus that opens with a wall of prose, where the extracted description is a torn-off sentence
-and anything written from the whole document beats it.
+The first reading, taken on **8 GB of VRAM** — which bounds it to 4B and 9B models at 4-bit,
+and an 8B — was that the drafts came back honest, deterministic, and slightly worse than the
+descriptions already there. Read that as *the comparison was unfavourable*, not as *local
+models write badly*. This repository opens its documents with summary lines, which is exactly
+the case extraction handles well; 16 GB runs a materially better model; and neither fact was
+tested against the other.
 
 Either way nothing is published on a model's say-so: output lands `status: draft`, the guard
 checks what it wrote, and drift stands until a person clears it. A weaker draft costs a slower

@@ -116,7 +116,7 @@ so listing it in the default run would take the whole thing out of CI on a fork'
 | `check_bundles.py` | Conformance, profile, strip test, predicates, links, footnotes. |
 | `refresh.py` | Observes pointers, writes the observation cache, reports drift. `--check` gates CI. |
 | `enrich.py` | What needs enriching and the brief for doing it. Prints work; calls no model. |
-| `enrich_local.py` | Drafts it with a model on your machine. The one `needs: [model]` file. |
+| `enrich_local.py` | Level 2+ — drafts with a model you host. The one `needs: [model]` file. |
 | `guard.py` | Checks a diff wrote only fields a `[model]` pass owns. |
 | `revalidate.py` | The human end: refresh a capture, add `verified`, clear the drift. |
 | `telemetry.py` | Writes one run record per pipeline run. |
@@ -212,23 +212,34 @@ python okfm/okfm.py guard                                # 3. did it stay in its
 python okfm/okfm.py revalidate <path> --by human:you     # 4. you sign off
 ```
 
-**Or run step 2 here, with a model on your own machine.** `ollama pull llama3.2`, put it in
-`okfm.json`, and OKFM drafts instead of printing:
+**Or run step 2 here — Level 2+.** `ollama pull` a model, switch it on in `okfm.json` (or on
+the web UI's Config page), and OKFM drafts instead of printing:
+
+```json
+"enrich": { "enabled": true, "base_url": "http://localhost:11434", "model": "qwen3.5:9b" }
+```
 
 ```bash
 python okfm/okfm.py enrich-local --apply
 ```
 
-Same steps 3 and 4, unchanged. This is level 3's **local variant** — OKFM drives the model
-rather than your agent, and still holds no key, which is `needs-model` without `needs-secrets`
-([DR-0013](../docs/decisions/0013-the-local-model-variant.md)). It writes `description` and
-`tags` and restamps `generated.by`; it may not write a `needs-*` tag, because those are the
-level ladder and CI reads them as fact. Nothing is written without `--apply`, and a malformed
-answer is refused rather than repaired.
+Same steps 3 and 4, unchanged. **Level 2's terms — no key, no account, no bill — plus the
+enrichment loop**, because OKFM drives a model you host rather than your agent driving OKFM.
+Mechanically it is `needs-model` without `needs-secrets`, still in the level 3 bundle, and the
+checked 2/3 boundary has not moved ([DR-0013](../docs/decisions/0013-the-local-model-variant.md)).
 
-The config says where the model runs, and `okfm.py config` warns when that stops being
-loopback — the local and credentialed variants differ by exactly that, and a distinction
-nothing checks decays into one nothing means.
+The model must already be pulled on that instance — nothing here downloads one. `base_url`
+takes any host, so a box on your network works; that box needs `OLLAMA_HOST=0.0.0.0`, and
+`okfm.py config` notes when the address stops being loopback, since that is exactly where the
+local and credentialed cases part company.
+
+It writes `description` and `tags` and restamps `generated.by`; it may not write a `needs-*`
+tag, because those are the level ladder and CI reads them as fact. Nothing is written without
+`--apply`, and a malformed answer is refused rather than repaired. Thinking is off and
+temperature is 0, so two runs return identical text — a second pass is a no-op, not a rewrite.
+
+A proof of concept, and labelled one: it proves the loop closes with no key, not yet that
+enrichment pays for itself.
 
 **Step 3 is what makes the human gate real.** `guard` reads the diff and fails if the pass
 touched `verified`, `okfm_relations`, `status`, `type`, `title`, `sources`, or

@@ -34,7 +34,7 @@ the implementation disagree, the implementation is right and a record here says 
 | [0010](0010-okfm-self-hosts-as-a-mesh.md) | OKFM's own repository is the first mesh | accepted | §12, §14.5, §21.5 |
 | [0011](0011-viewer-and-console.md) | Viewer stays read-only; a console is separate | accepted, built last | §14.3, §14.7 |
 | [0012](0012-reach-is-configured.md) | Reach is configured, not discovered | accepted | §13.4, §13.5, §21.4 |
-| [0013](0013-the-local-model-variant.md) | A local model is a variant of level 3, not a level between 2 and 3 | accepted | DR-0008, DR-0009 |
+| [0013](0013-the-local-model-variant.md) | Level 2+ — a local model, on level 2's terms | accepted, amended | DR-0008, DR-0009 |
 
 ## Two different axes, easily confused
 
@@ -87,11 +87,12 @@ OKFM driving a provider instead of your agent driving OKFM — so the credential
 *variant* of level 3 and not another step up.
 
 **0013** — level 3 has three variants, split on who drives and who holds the key: your agent,
-a model on your own machine, a hosted provider. Local Ollama is the middle one. It is not a
-level 2+, because the ladder measures what OKFM asks of you before you can start — *something
-has to reason* — and that is equally true of a model on a laptop. Exposure records the part
-that did change: `needs-model` without `needs-secrets`, a set legal since 0008 and until now
-unoccupied.
+a model on hardware you own, a hosted provider. The middle one is named **Level 2+**, because
+what it costs an adopter is level 2's price — no key, no account, no bill — plus the loop.
+Amended to that name after this record argued the other way. The name is not a relocation:
+the component still declares `needs-model`, still sits in the level 3 bundle, and
+`dev/check_levels.py` is untouched. The ladder measures what OKFM asks of you before you can
+start; the name measures what it costs. Those were the same number until a model became free.
 
 **0012** — a concept is recognised anywhere, but read only where the config says. `exclude`
 drops a folder inside a scan root; `include` adds a tree outside one. No project-wide sweep:

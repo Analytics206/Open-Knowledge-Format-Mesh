@@ -149,6 +149,10 @@
     color:var(--slate-dim); margin:0 0 3px; font-weight:600;
   }
   .cfg-group > p.blurb{margin:0 0 10px; font-size:12px; color:var(--slate)}
+  /* For the one thing this page cannot check for you. */
+  .cfg-group > p.cfg-note{margin:0 0 12px; padding:9px 11px; font-size:12px; line-height:1.5;
+    border:1px solid var(--line-soft); border-left:3px solid var(--stale);
+    background:var(--panel); color:var(--ink)}
   .cfg-field{
     display:grid; grid-template-columns:210px 1fr; gap:12px; align-items:start;
     padding:8px 0; border-top:1px solid var(--line-soft);
@@ -412,8 +416,9 @@ const CONFIG_SCHEMA = {
   ],
   [
    "enrich",
-   "Enrich",
-   "A local model, if you use one. Level 3, and never in the pipeline."
+   "Enrich — Level 2+",
+   "A model on hardware you control drafts the descriptions extraction cannot write. No key, no account, no bill — the same terms as Level 2, plus a model you already have.",
+   "The model must already be pulled on that Ollama instance: `ollama pull <model>`. Nothing here downloads it, and this page cannot check — a page opened from file:// cannot see your machine, let alone another one on your network. A name that is not there fails at run time with a 404 naming the model. Nothing in the build reads any of this; only `okfm.py enrich-local` does."
   ],
   [
    "stores",
@@ -586,11 +591,18 @@ const CONFIG_SCHEMA = {
    "help": "Scopes kept out of health statistics and out of any context assembled for an agent — the bundled guide is the usual entry."
   },
   {
+   "path": "enrich.enabled",
+   "kind": "bool",
+   "default": false,
+   "label": "Use a local model (Ollama)",
+   "help": "Turn on Level 2+ — OKFM drafts descriptions itself, using a model on hardware you control. Off by default: nothing should start calling a model because a config file mentioned one."
+  },
+  {
    "path": "enrich.base_url",
    "kind": "string",
    "default": "http://localhost:11434",
-   "label": "Model endpoint",
-   "help": "Where a local model answers. Ollama's default is http://localhost:11434. Nothing in the pipeline calls it; only `okfm.py enrich-local` does."
+   "label": "Ollama address",
+   "help": "Where Ollama answers. http://localhost:11434 when it runs on this machine; http://<host>:11434 for a box on your network — that host needs OLLAMA_HOST=0.0.0.0 to accept anything but its own loopback."
   },
   {
    "path": "enrich.model",
@@ -598,7 +610,7 @@ const CONFIG_SCHEMA = {
    "default": null,
    "nullable": true,
    "label": "Model",
-   "help": "The model tag to draft with — `ollama pull` it first. null means the local variant is not configured, which is a normal state and not a missing answer."
+   "help": "The model tag to draft with. It must ALREADY be pulled on that Ollama instance — nothing here downloads it. Avoid reasoning models: thinking is disabled, and one that ignores that spends minutes per concept."
   },
   {
    "path": "enrich.num_ctx",
@@ -682,8 +694,9 @@ const CONFIG = {
    "guide"
   ]
  },
- "_enrich": "Level 3's local variant. Nothing in the pipeline reads this — only `okfm.py enrich-local`, which is the one component declaring `needs: [model]`. No key, because the model runs here; the endpoint being loopback is what makes that claim checkable rather than asserted.",
+ "_enrich": "Level 2+ — a model on hardware you control, so no key and no bill, but OKFM does the drafting. Nothing in the pipeline reads this; only `okfm.py enrich-local`, which is the one component declaring `needs: [model]`. `enabled` is separate from `model` because naming a model is saying which one, not saying to call it. The model must already be pulled on that Ollama instance.",
  "enrich": {
+  "enabled": false,
   "base_url": "http://localhost:11434",
   "model": "qwen3.5:9b",
   "num_ctx": 8192,
@@ -1240,7 +1253,7 @@ const BOOTSTRAP = {
    "b": "level-3-enrich",
    "t": "Document",
    "title": "A local model",
-   "d": "OKFM drafts descriptions itself using Ollama on the adopter's own machine — level 3's local variant, which removes the key without removing the model and so sits at `needs-model` with no `needs-secrets`.",
+   "d": "Level 2+ — OKFM drafts descriptions itself with Ollama on hardware the adopter owns, keeping level 2's no-key-no-bill terms while the component still declares `needs-model` and the checked 2/3 boundary stays where it was.",
    "v": null,
    "sa": null,
    "src": 1,
@@ -2323,6 +2336,17 @@ function cCross(cfg){
   // What separates level 3's local variant from its credentialed one is not the model, it is
   // where the model runs and whether reaching it costs a secret. The config is the only place
   // that is written down, so this is the only place it can be checked.
+  // The switch says intent, the model says which — not redundant, and this is the only
+  // combination that means nothing. The reverse, a model named while switched off, is
+  // deliberately silent: it is the normal state of every config nobody has turned this on in
+  // yet, and a check that fires on the common case is one people learn to ignore.
+  const [enabled] = cdig(cfg,"enrich.enabled"), [emodel] = cdig(cfg,"enrich.model");
+  if(enabled===true && !(typeof emodel==="string" && emodel.trim()))
+    out.push({level:"error", path:"enrich.model",
+      msg:"the local model is switched on and no model is named",
+      hint:"name one you have already pulled — `ollama list` on that host says which — or set "
+          +"`enrich.enabled` to false"});
+
   const [baseUrl] = cdig(cfg,"enrich.base_url");
   if(typeof baseUrl==="string" && baseUrl.trim()){
     let host="";
@@ -2426,12 +2450,13 @@ function cRenderForm(findings){
   // `bundles` and `stores` are top-level AND groups of their own, so the catch-all group has
   // to know which top-level keys are somebody else's.
   const claimed = new Set((SCHEMA.groups||[]).map(([p])=>p).filter(Boolean));
-  return (SCHEMA.groups||[]).map(([prefix, title, blurb])=>{
+  return (SCHEMA.groups||[]).map(([prefix, title, blurb, note])=>{
     const fields = CFIELDS.filter(f =>
       prefix==="" ? (!f.path.includes(".") && !claimed.has(f.path))
                   : (f.path===prefix || f.path.startsWith(prefix+".")));
     if(!fields.length) return "";
     return `<div class="cfg-group"><h3>${esc(title)}</h3><p class="blurb">${esc(blurb)}</p>`
+      + (note ? `<p class="cfg-note">${esc(note)}</p>` : "")
       + fields.map(f=>{
           const [value, present] = cdig(CFG.data, f.path);
           const mine = (byPath[f.path]||[]).concat(

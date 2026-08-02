@@ -61,7 +61,7 @@ from okfm_core import PROJECT, find_config, frontmatter, scalar, utf8_stdout
 
 utf8_stdout()
 
-DEFAULTS = {"base_url": "http://localhost:11434", "model": None,
+DEFAULTS = {"enabled": False, "base_url": "http://localhost:11434", "model": None,
             "num_ctx": 8192, "timeout_s": 120}
 
 MAX_DESC = 400        # characters, not tokens — this is a YAML line, not a budget
@@ -107,10 +107,13 @@ Document:
 
 
 def settings() -> dict:
+    """The `enrich` block over the defaults. `enabled` is separate from `model` on purpose:
+    naming a model is saying which one, and turning this on is saying to call it. A config
+    that mentions a model should not start making requests because it mentions one.
+    """
     _, cfg = find_config()
-    out = dict(DEFAULTS) | {k: v for k, v in (cfg.get("enrich") or {}).items()
-                            if v is not None}
-    return out
+    return dict(DEFAULTS) | {k: v for k, v in (cfg.get("enrich") or {}).items()
+                             if v is not None}
 
 
 # ── talking to the model ───────────────────────────────────────────────────────
@@ -252,11 +255,18 @@ def main() -> int:
             limit = int(a.split("=", 1)[1])
 
     cfg = settings()
-    if not cfg["model"]:
-        print("No model configured. Add one to okfm.json:\n", file=sys.stderr)
-        print('  "enrich": { "base_url": "http://localhost:11434", "model": "llama3.2" }\n',
+    if not cfg["enabled"] or not cfg["model"]:
+        why = ("switched off" if not cfg["enabled"] else "switched on, but no model is named")
+        print(f"Local model {why}. In okfm.json, or the Config page of the web UI:\n",
               file=sys.stderr)
-        print("Then `ollama pull llama3.2`. Nothing here needs a key — that is the point.",
+        print('  "enrich": {\n'
+              '    "enabled": true,\n'
+              '    "base_url": "http://localhost:11434",\n'
+              '    "model": "qwen3.5:9b"\n'
+              '  }\n', file=sys.stderr)
+        print("The model must already be pulled on that Ollama instance — `ollama list` says",
+              file=sys.stderr)
+        print("which. No key and no account either way; that is the point of Level 2+.",
               file=sys.stderr)
         return 2
 

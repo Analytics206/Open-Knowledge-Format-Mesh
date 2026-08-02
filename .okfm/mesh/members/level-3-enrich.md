@@ -51,7 +51,7 @@ because a level assignment that cannot explain itself is a level assignment nobo
 
 By default **your agent drives OKFM**: no network call, no key, no provider choice.
 
-The **local variant** has OKFM drive a model on your own machine — the direction reverses, the
+The **local variant, called Level 2+**, has OKFM drive a model on hardware you own — the direction reverses, the
 key does not appear, and the level does not move. `model` without `secrets` had been a legal
 exposure set since [DR-0008](../../../docs/decisions/0008-build-pipeline.md) and nothing
 occupied it until this did.

@@ -41,8 +41,9 @@
       "guide"
     ]
   },
-  "_enrich": "Level 3's local variant. Nothing in the pipeline reads this — only `okfm.py enrich-local`, which is the one component declaring `needs: [model]`. No key, because the model runs here; the endpoint being loopback is what makes that claim checkable rather than asserted.",
+  "_enrich": "Level 2+ — a model on hardware you control, so no key and no bill, but OKFM does the drafting. Nothing in the pipeline reads this; only `okfm.py enrich-local`, which is the one component declaring `needs: [model]`. `enabled` is separate from `model` because naming a model is saying which one, not saying to call it. The model must already be pulled on that Ollama instance.",
   "enrich": {
+    "enabled": false,
     "base_url": "http://localhost:11434",
     "model": "qwen3.5:9b",
     "num_ctx": 8192,
