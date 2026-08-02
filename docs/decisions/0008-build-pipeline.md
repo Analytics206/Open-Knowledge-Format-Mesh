@@ -1,9 +1,10 @@
 ---
 type: Decision
 title: DR-0008 — What each component requires, and what the rebuild actually does
-description: "**§8.4's refresh workflow mixes work that needs a model with work that does not.** Re-resolving a pointer and comparing a hash is arithmetic. Rewriting a concept's description because its source…"
+description: "Workflows are classified by what they expose — nothing, a human, a model, secrets — and a composite inherits the union of its steps, which is what puts the model-dependent half of the refresh loop at level 3 and keeps the rest runnable on a pull request from a fork."
 status: draft
-generated: { by: "process:okfm-bootstrap", at: 2026-08-01T00:00:00Z }
+tags: [workflows, tiers, ci]
+generated: { by: "agent:claude-opus-5", at: 2026-08-02T02:07:15Z }
 sources:
   - id: self
     resource: /0008-build-pipeline.md

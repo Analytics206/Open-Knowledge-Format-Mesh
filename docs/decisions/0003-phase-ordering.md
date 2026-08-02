@@ -1,10 +1,11 @@
 ---
 type: Decision
 title: DR-0003 — Where federation sits in the delivery order
-description: Federation's negotiation half lands after the SugarPaws3d port; its addressing half moved into Phase 1 because the repository is already a mesh.
+description: "Federation's negotiation half lands after the credentialed phase while its addressing half moved into Phase 1, because the repository is already a mesh; amended to take the proving-ground projects out of the phase plan entirely — they are the feedback loop, not steps this repository performs."
 status: draft
 verified: { by: "human:analytics206", at: 2026-08-01T22:35:38Z }
-generated: { by: "claude-opus-5/level3-enrich", at: 2026-08-01T00:00:00Z }
+tags: [phases, federation, sequencing]
+generated: { by: "agent:claude-opus-5", at: 2026-08-02T02:07:15Z }
 sources:
   - id: self
     resource: /0003-phase-ordering.md
@@ -104,13 +105,13 @@ measurable payoff.
 |---|---|
 | **1** | Baseline adoption, the Level 2 build, the Level 3 loop, **federation's addressing half** — registry, `OKF Member` concepts, cross-bundle refs, commit pinning, multi-bundle viewer |
 | **2** | Extraction into a distributable project: core/packs/config split, the three runtime modes, the distribution tests |
-| **3** | **SugarPaws3d port** — `sys://` resolvers, meaning-family curation, attested computations, golden-report reconciliation |
+| **3** | **The credentialed half** — `sys://` resolvers, meaning-family curation, attested computations, reconciliation against a report its owner already trusts |
 | **4** | **Federation's negotiation half** — agent interfaces, transport, the feedback inbox/outbox ledger, cross-owner routing |
 
-Phase 3 builds the two SugarPaws3d domains as sibling directories with an explicit seam:
-no concept in the rules domain reads a file in the data domain directly, even though
-nothing yet enforces it. That convention is what keeps the eventual split mechanical, and
-it is the mitigation for the first counter-argument above.
+Phase 3 builds a domain's data and rules as sibling bundles with an explicit seam: no
+concept in the rules bundle reads a file in the data bundle directly, even though nothing
+yet enforces it. That convention is what keeps the eventual split mechanical, and it is the
+mitigation for the first counter-argument above.
 
 By Phase 4 there are two real bundles with a real disagreement history to federate, which
 is a better test than a toy pair.

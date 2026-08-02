@@ -1,9 +1,10 @@
 ---
 type: Decision
 title: DR-0011 — The viewer stays read-only; a console is a separate artifact
-description: A web UI at Level 3 or 4 that can edit configuration, and view at minimum.
+description: "The read-only viewer stays one file that opens from disk and configuration editing goes to a separate served console, because write access would turn a browser-openable file into an install — and the CLI falls out of building the console rather than being designed against an imagined user."
 status: draft
-generated: { by: "process:okfm-bootstrap", at: 2026-08-01T00:00:00Z }
+tags: [viewer, console, cli]
+generated: { by: "agent:claude-opus-5", at: 2026-08-02T02:07:15Z }
 sources:
   - id: self
     resource: /0011-viewer-and-console.md

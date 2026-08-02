@@ -1,9 +1,10 @@
 ---
 type: Decision
 title: "DR-0007 — Two layers: a base that installs nothing, and an optional implementation"
-description: "The specification treats OKFM as one thing that an adopter installs and runs. §13.2's four layers — core, domain pack, config, bundle — are all *implementation* layers, and §13.3's repository tree…"
+description: "OKFM is two layers — a base that is a specification, a guide and a viewer, and an optional reference implementation — and CI proves the base stands alone by deleting the implementation and validating anyway."
 status: draft
-generated: { by: "process:okfm-bootstrap", at: 2026-08-01T00:00:00Z }
+tags: [architecture, layering, distribution]
+generated: { by: "agent:claude-opus-5", at: 2026-08-02T02:07:15Z }
 sources:
   - id: self
     resource: /0007-two-layers.md

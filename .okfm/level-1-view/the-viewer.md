@@ -12,7 +12,7 @@ sources:
   - id: implementation
     resource: ../../okfm-viewer.html
     okfm_role: subject
-    okfm_captured: { hash: "sha256:91abfbfe602cc9a8ecd69a6aef9b90611ab4ec9ed37d97b6c6bd05572441c6c8", at: 2026-08-01 }
+    okfm_captured: { hash: "sha256:8a9435bd7fe535d0e897df4de6e7fca5d09ead504ad8cd5f49ac75d8a571b89c", at: 2026-08-01 }
 okfm_scope: project
 okfm_level: 1
 okfm_needs: []

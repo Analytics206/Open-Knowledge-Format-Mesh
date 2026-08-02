@@ -1,9 +1,10 @@
 ---
 type: Decision
 title: "DR-0010 — OKFM's own repository is the first mesh"
-description: "§21.5 names federation as the least-evidenced thing in the design: *\"Nothing in the ecosystem so far covers the loop family, federation, content-based drift, perspectives, or declared-versus-observed…"
+description: "OKFM's own repository is the first mesh: one OKF per folder of documents under `.okfm/`, a generated master OKF over them, and federation's addressing half proven against real content rather than a demonstration built to be looked at."
 status: draft
-generated: { by: "process:okfm-bootstrap", at: 2026-08-01T00:00:00Z }
+tags: [mesh, federation, self-hosting]
+generated: { by: "agent:claude-opus-5", at: 2026-08-02T02:07:15Z }
 sources:
   - id: self
     resource: /0010-okfm-self-hosts-as-a-mesh.md

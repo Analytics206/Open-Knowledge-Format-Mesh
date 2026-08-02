@@ -19,6 +19,17 @@ enrichment trigger. One mechanism, two uses (DR-0008).
 
 Never a stored `stale: true` flag. The work list is derived every time, so fixing a concept
 removes it from the queue with nothing to clear.
+
+## Drift alone is not enough to decide whose work it is
+
+Drift says the source moved. It does not say whether anybody has responded, and `generated.by`
+does: a description still owned by an extraction process has never been drafted, while one
+stamped by a model or a person has.
+
+So the queue is split. **Drafting** is the agent's; **review** is not, and only a human
+revalidation clears drift. Printing both under one heading sends an agent to rewrite prose it
+wrote an hour ago — and to rewrite it differently every run, because nothing in a second pass
+converges. A queue that regenerates its own work looks busy and drains never.
 """
 import json
 import re
@@ -84,6 +95,10 @@ def work_list():
                 if not entry:
                     continue
                 if not entry["observed"].removeprefix("sha256:").startswith(captured):
+                    raw = scalar(block, "generated") or ""
+                    actor = re.search(r'by:\s*"?([^",}]+)', raw)
+                    by = actor.group(1).strip() if actor else ""
+                    drafted = bool(by) and not by.startswith("process:")
                     items.append({
                         "rid": rid,
                         "path": f,
@@ -91,7 +106,11 @@ def work_list():
                         "title": scalar(block, "title") or f.stem,
                         "desc": scalar(block, "description") or "(empty)",
                         "status": scalar(block, "status") or "stable",
-                        "why": "source changed since the description was extracted",
+                        "drafted": drafted,
+                        "by": by,
+                        "why": ("a draft exists and the source has moved since it was captured"
+                                if drafted else
+                                "source changed since the description was extracted"),
                     })
                     break
     return obs, items
@@ -108,18 +127,36 @@ def main() -> int:
         print("Nothing to enrich. Every observed pointer matches what its concept captured.")
         return 0
 
-    print(f"{len(items)} concept(s) need enrichment\n")
-    for it in items:
-        if full:
-            print(BRIEF.format(**it, forbidden=", ".join(FORBIDDEN)))
-        else:
-            print(f"  {it['status']:<6} {it['rid']}")
-            print(f"         {it['desc'][:88]}")
+    todo = [i for i in items if not i["drafted"]]
+    waiting = [i for i in items if i["drafted"]]
 
-    if not full:
-        print(f"\nRun with --brief for instructions per concept.")
-    print("Writable by a model: " + ", ".join(WRITABLE))
-    print("After editing:  python okfm/okfm.py guard")
+    if todo:
+        print(f"{len(todo)} concept(s) to draft\n")
+        for it in todo:
+            if full:
+                print(BRIEF.format(**it, forbidden=", ".join(FORBIDDEN)))
+            else:
+                print(f"  {it['status']:<6} {it['rid']}")
+                print(f"         {it['desc'][:88]}")
+        if not full:
+            print("\nRun with --brief for instructions per concept.")
+        print("Writable by a model: " + ", ".join(WRITABLE))
+        print("After editing:  python okfm/okfm.py guard")
+    else:
+        print("Nothing to draft. Every drifted concept already has one.")
+
+    if waiting:
+        # Not agent work, and saying so is the point. A second drafting pass over an
+        # existing draft produces different prose, not better prose, and the concept stays
+        # exactly as drifted as it was.
+        print(f"\n{len(waiting)} concept(s) waiting on you — a draft exists, drift stands\n")
+        for it in waiting:
+            print(f"  {it['status']:<6} {it['rid']}")
+            print(f"         drafted by {it['by'] or 'unknown'}")
+        print("\nRead the source, then clear the drift:")
+        print("  python okfm/okfm.py revalidate <path> --by human:you")
+        print("\nOnly a person can. Refreshing a capture automatically would erase the signal")
+        print("drift exists to carry — see revalidate.py.")
     return 0
 
 

@@ -8,11 +8,11 @@ sources:
   - id: doc
     resource: ../../docs/guide/level-3-enrich/the-work-list.md
     okfm_role: subject
-    okfm_captured: { hash: "sha256:dd061ac308cb54835b62a8fadc21e86e9dda3391647d79d2fcdf551e0d3fdd22", at: 2026-08-01 }
+    okfm_captured: { hash: "sha256:2d7f9af67d6bd1b32a1880a8ab906d46c9ab1fa9eb30214e35caf3799331189c", at: 2026-08-01 }
   - id: implementation
     resource: ../../dropin/enrich.py
     okfm_role: subject
-    okfm_captured: { hash: "sha256:a0273b3da6e0385bb354dfbed18f1fdb2164d858f2bb23f28b877c64929a7936", at: 2026-08-01 }
+    okfm_captured: { hash: "sha256:f33f5b1c4edf6a121e226cf000016b648d78622c2bbd25dc4096e4fe9824752e", at: 2026-08-01 }
 okfm_scope: project
 okfm_level: 3
 okfm_needs: []

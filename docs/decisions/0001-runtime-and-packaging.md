@@ -1,9 +1,10 @@
 ---
 type: Decision
 title: DR-0001 — Runtime and packaging for the reference implementation
-description: "[DR-0007](0007-two-layers.md) splits OKFM in two: a **base** that is a specification, a guide, and a viewer, and a **reference implementation** that is optional. This record is about the…"
+description: "Python 3.13 and the standard library only, so levels 1 and 2 have no install step — a dependency here would make the first thing a stranger hits a package-resolution problem in a language they may not use."
 status: draft
-generated: { by: "process:okfm-bootstrap", at: 2026-08-01T00:00:00Z }
+tags: [runtime, packaging, zero-dependency]
+generated: { by: "agent:claude-opus-5", at: 2026-08-02T02:07:15Z }
 sources:
   - id: self
     resource: /0001-runtime-and-packaging.md

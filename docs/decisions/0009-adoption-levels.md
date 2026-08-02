@@ -1,9 +1,10 @@
 ---
 type: Decision
 title: DR-0009 — Four adoption levels
-description: Worth stating plainly, because the two were conflated during drafting.
+description: "Four adoption levels, each usable on its own, with the boundary between 2 and 3 sitting exactly on the model line and credentials appearing only at 4 — because that is where the direction reverses and OKFM drives a provider instead of an agent driving OKFM."
 status: draft
-generated: { by: "process:okfm-bootstrap", at: 2026-08-01T00:00:00Z }
+tags: [levels, adoption, boundaries]
+generated: { by: "agent:claude-opus-5", at: 2026-08-02T02:07:15Z }
 sources:
   - id: self
     resource: /0009-adoption-levels.md
