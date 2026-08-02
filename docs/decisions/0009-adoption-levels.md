@@ -3,13 +3,14 @@ type: Decision
 title: DR-0009 — Four adoption levels
 description: "Four adoption levels, each usable on its own, with the boundary between 2 and 3 sitting exactly on the model line and credentials appearing only at 4 — because that is where the direction reverses and OKFM drives a provider instead of an agent driving OKFM."
 status: draft
+verified: { by: "human:analytics206", at: 2026-08-02T02:54:00Z }
 tags: [levels, adoption, boundaries]
 generated: { by: "agent:claude-opus-5", at: 2026-08-02T02:07:15Z }
 sources:
   - id: self
     resource: /0009-adoption-levels.md
     okfm_role: subject
-    okfm_captured: { hash: "sha256:1efbd92c95dbcb33...", at: 2026-08-01 }
+    okfm_captured: { hash: "sha256:b9e5773950cde18e04098f5fede61a644e99b3ed13ec6ef44282ec09206e1d9b", at: 2026-08-01 }
 okfm_scope: project
 ---
 # DR-0009 — Four adoption levels

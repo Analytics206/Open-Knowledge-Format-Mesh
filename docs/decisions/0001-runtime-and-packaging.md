@@ -1,15 +1,16 @@
 ---
 type: Decision
 title: DR-0001 — Runtime and packaging for the reference implementation
-description: "Python 3.13 and the standard library only, so levels 1 and 2 have no install step — a dependency here would make the first thing a stranger hits a package-resolution problem in a language they may not use."
+description: "Python 3.13 at every level rather than a floor that rises, with the drop-in standard-library-only — the line worth holding is not \"OKFM installs nothing\" but \"the level you start at installs nothing.\""
 status: draft
+verified: { by: "human:analytics206", at: 2026-08-02T02:54:19Z }
 tags: [runtime, packaging, zero-dependency]
 generated: { by: "agent:claude-opus-5", at: 2026-08-02T02:07:15Z }
 sources:
   - id: self
     resource: /0001-runtime-and-packaging.md
     okfm_role: subject
-    okfm_captured: { hash: "sha256:1370fb0a7bb871bc...", at: 2026-08-01 }
+    okfm_captured: { hash: "sha256:d616bfb82e1786aefdba0e253a1e497c4ed9d43551019c0b0bf4260ee5af5207", at: 2026-08-01 }
 okfm_scope: project
 ---
 # DR-0001 — Runtime and packaging for the reference implementation
@@ -32,14 +33,19 @@ have different dependency rules — which is the whole answer.
 
 ## Decision
 
-**Python 3.13.**
+**Python 3.13, at every level.** Not a floor that higher levels may raise: the same version
+throughout. Levels 3 and 4 will use packages that want a recent Python, and a project that
+runs on 3.13 at one level and 3.11 at another has two runtimes to explain and two sets of
+instructions to keep true.
 
 **`dropin/` (Level 2) is standard library only.** No `requirements.txt`, no install step
 beyond having Python. It is a folder you paste into a project and run, and every dependency
 added to it is friction on the one level whose promise is that there is none.
 
-**`tools/` (Levels 3–4) may take dependencies freely.** An adopter at those levels has
-already chosen to install something.
+**Levels 3–4 may take dependencies freely.** An adopter at those levels is customizing —
+they have already chosen a model, a client, or a provider, and installing packages is part of
+that choice rather than an imposition on it. The line worth holding is not "OKFM installs
+nothing" but "the level you start at installs nothing."
 
 ## Why Level 2 holds the line
 
@@ -57,11 +63,18 @@ this — and the answer would be a vendored parser, not a dependency.
 
 ## On 3.13
 
-Nothing in `dropin/` currently uses anything newer than Python 3.9. Pinning 3.13 narrows the
-audience more than the code requires, and the floor can drop later without changing a line if
-adoption ever argues for it. CI runs 3.13 so the supported version is the tested one.
-2. **Attesters are Python already.** §6.6 and §9 put deterministic, LLM-free attesters
-   in the bundle. A Python core runs them without a bridge.
+Nothing in `dropin/` currently uses anything newer than Python 3.9, so the pin is not
+technical — it is a decision to have **one** supported version rather than a floor per level.
+
+The alternative was a low floor at level 2 and a higher one above, on the reasoning that the
+drop-in should run anywhere. It buys a slightly wider audience for the one level that matters
+least to gate, and costs two runtimes to document, two CI matrices, and a class of bug that
+only appears on the version nobody tests. Levels 3 and 4 will want packages that expect a
+recent Python, and the version an adopter installs should not depend on how far up the ladder
+they intend to go.
+
+CI runs 3.13, so the supported version is the tested one.
+
 ## Why Python
 
 Attesters are Python by specification (§6.6, §9), so a Python implementation runs them

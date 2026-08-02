@@ -29,12 +29,12 @@ The assets in hand, the two proving grounds, the delivery phases, what is delibe
 | 8 | Evidence, Drift, and Staleness | [`spec/okfm-v0.2.1.md`](../spec/okfm-v0.2.1.md) |
 | 9 | Governed Numbers: Attested Computation | [`spec/okfm-v0.2.1.md`](../spec/okfm-v0.2.1.md) |
 | 10 | Workflow Instrumentation | [`spec/okfm-v0.2.1.md`](../spec/okfm-v0.2.1.md) |
-| 11 | Proving Ground B: SugarPaws3d Patron Analytics | *this document* |
+| 11 | Adoption Profile: an Analytics Domain | *this document* |
 | 12 | Federation — the OKF Mesh | [`spec/okfm-v0.2.1.md`](../spec/okfm-v0.2.1.md) |
 | 13 | Drop-In Instantiation and Distribution | [`spec/okfm-v0.2.1.md`](../spec/okfm-v0.2.1.md) |
 | 14 | The Mesh Viewer | [`spec/okfm-v0.2.1.md`](../spec/okfm-v0.2.1.md) |
 | 15 | Roadmap | *this document* |
-| 16 | Proving Ground A: arXiv Loop Retrofit | *this document* |
+| 16 | Adoption Profile: retrofitting a loop that already runs | *this document* |
 | 17 | Deferred — Parking Lot with Re-entry Triggers | *this document* |
 | 18 | Evaluating the Bundle | [`spec/okfm-v0.2.1.md`](../spec/okfm-v0.2.1.md) |
 | 19 | Open Questions | *this document* |
@@ -63,25 +63,27 @@ The assets in hand, the two proving grounds, the delivery phases, what is delibe
 
 ## 4. Existing Assets
 
-### 4.1 The harness (project_template)
+What OKFM was designed against, described by shape rather than by name. The projects behind these are the author's and are not part of this repository — see [DR-0003](decisions/0003-phase-ordering.md) on why naming them here was a mistake.
 
-Python harness engine wrapping AI/MCP tools with hooks, workflows, loops, and logging. Multiple "2nd brain" projects act as UIs over the same engine. A shared workflow library is planned; the loop defined here should become one of its reusable workflows.
+### 4.1 A harness
 
-### 4.2 arxiv_pipeline
+A Python engine wrapping AI and MCP tools with hooks, workflows, loops, and logging, with several project UIs over the same engine. A shared workflow library is planned; the loop defined here should become one of its reusable workflows.
 
-MongoDB + Qdrant + MCP. ~1M papers across selected categories, built from the bulk dump, the API, and parsed PDFs (text and images into Qdrant). Scale and data type are exactly why this lives in dedicated stores. Bundles reference its records; they never duplicate them.
+### 4.2 A large evidence store
 
-### 4.3 The current OKF
+Document database plus vector index behind an MCP server, holding roughly a million records. Scale and data type are exactly why this lives in a dedicated store: bundles reference its records and never duplicate them.
 
-A markdown-file graph: documents related down to the line level, with sidecar files describing each file so an agent need not read everything, plus a refresh workflow that flags files needing update. §7.4 and §8 describe how these map onto — and extend — official v0.2.
+### 4.3 A pre-OKF markdown graph
 
-### 4.4 The running research acquisition loop
+Documents related down to the line level, with sidecar files describing each file so an agent need not read everything, plus a refresh workflow that flags files needing update. §7.4 and §8 describe how these map onto — and extend — official v0.2.
 
-Topic in → arXiv MCP vector search → gather and rank → evaluate each paper against the active project's system docs → human-in-the-loop summary (reject / trial) → documentation updates → detailed per-paper feedback (score + reasons) back to the arXiv MCP → everything logged. This loop already runs; §15 formalizes what it emits.
+### 4.4 A running acquisition loop
 
-### 4.5 SugarPaws3d (port target)
+Topic in, vector search, gather and rank, evaluate each candidate against the active project's system docs, human-in-the-loop summary (reject / trial), documentation updates, per-candidate feedback with scores and reasons sent back to the source, everything logged. This loop already runs; §16 describes the shape of formalizing what it emits.
 
-Patron API data captured continuously for ~9 months. Curation in progress: system documentation, database schema and metadata, queries, business rules. Existing reports already produced for the business serve as a **golden answer set**. Target: an analytics chat system answering churn, acts, deacts, and revenue questions for a non-technical consumer. Details in §11.
+### 4.5 An analytics domain
+
+API data captured continuously for months. Curation in progress: system documentation, database schema and metadata, queries, business rules. Reports already produced for the business serve as a **golden answer set**. Target: a chat system answering loss, growth and revenue questions for a non-technical consumer. Details in §11.
 
 ---
 
@@ -111,97 +113,101 @@ Patron API data captured continuously for ~9 months. Curation in progress: syste
 
 > Moved to [`spec/okfm-v0.2.1.md`](../spec/okfm-v0.2.1.md).
 
-## 11. Proving Ground B: SugarPaws3d Patron Analytics
+## 11. Adoption Profile: an Analytics Domain
 
-Presented before the arXiv retrofit because it exercises the most profile surface. Delivery order remains §15.
+The shape of the adoption that exercises the most profile surface — a data domain with existing trusted reports, a non-technical consumer, and definitions that quietly disagree with each other.
+
+Written as a profile rather than a project. An earlier draft named a specific application here, which made a domain-free scaffolding read as one project's delivery plan; see the amendment in [DR-0003](decisions/0003-phase-ordering.md). What follows is what Phase 3 needs from whichever domain arrives first, and nothing about who that is.
 
 ### 11.1 The consumer
 
-The end user is a non-technical business owner who mostly wants answers, not reports. That drives three requirements:
+A non-technical owner who wants answers, not reports. Three requirements follow:
 
-1. **Actor-aware defaults.** Each actor has a steward-configured default perspective per concept. She is never asked to choose between "billing churn" and "engagement churn" in those terms; the answer states the resolved perspective in plain language, and alternatives surface only when they materially change the number.
+1. **Actor-aware defaults.** Each actor has a steward-configured default perspective per concept, so nobody is asked to choose between two definitions in the vocabulary of the definitions. The answer states the resolved perspective in plain language, and alternatives surface only when they materially change the number.
 2. **Legible trust.** Attestation verdicts, staleness, and claim classification render as sentences.
 3. **Attestation gating.** A failing attestation means no number displayed (§9.4).
 
 ### 11.2 Concepts and perspectives
 
-Illustrative; the curated business rules are authoritative.
+The pattern, not a vocabulary. Every domain has at least one metric whose name hides two definitions, and that metric is where to start.
 
-| Concept | Candidate perspectives | Question each answers |
+| Shape | Two perspectives | Question each answers |
 |---|---|---|
-| `churn` | billing (pledge ended / payment permanently failed) vs. engagement (no qualifying activity in N days) | "Who stopped paying?" vs. "Who stopped caring?" |
-| `activation` | new patron vs. reactivation | "How is the top of funnel?" |
-| `deactivation` | voluntary cancel vs. involuntary (payment failure) | "Why are we losing patrons?" |
-| `revenue` | gross pledge vs. net of platform fees; booked vs. collected | "What was committed?" vs. "What landed?" |
+| A **loss** metric | contractual end vs. behavioural end | "Who stopped paying?" vs. "Who stopped caring?" |
+| A **growth** metric | first-time vs. returning | "Where is the top of the funnel?" |
+| A **money** metric | gross vs. net; committed vs. collected | "What was promised?" vs. "What landed?" |
 
-Each `Perspective` concept names its owner-purpose and links to its `Rule`s, each of which links to an `Attested Computation`. Nobody owns churn; each perspective owns its view.
+Each `Perspective` names its owner-purpose and links to its `Rule`s, each of which links to an `Attested Computation`. Nobody owns the metric; each perspective owns its view.
 
 ### 11.3 Declared vs. observed
+
+The most valuable thing this profile exercises: a written policy and the query that supposedly implements it, held in one concept and reconciled.
 
 ```markdown
 ---
 type: Rule
-title: Churn — billing perspective
+title: Loss metric — contractual perspective
 status: stable
-generated: { by: curation_agent/claude-opus, at: 2026-07-20T10:00:00Z }
-verified: { by: "human:geminia", at: 2026-07-22T14:00:00Z }
+generated: { by: "agent:curation", at: 2026-07-20T10:00:00Z }
+verified: { by: "human:steward", at: 2026-07-22T14:00:00Z }
 sources:
   - id: policy
     resource: /systems/business-rules.md#L40-L55
     okfm_role: defines
     okfm_captured: { version: "git:abc1234", at: 2026-07-20 }
   - id: impl
-    resource: sys://sp3d-db/query/monthly_churn.sql
+    resource: sys://warehouse/query/monthly_loss.sql
     okfm_role: implementation
     okfm_captured: { hash: "sha256:4b1e...", at: 2026-07-28 }
 okfm_relations:
-  - { predicate: perspective_on, target: /perspectives/churn-billing.md }
-  - { predicate: implemented_by, target: /computations/churn-billing.md }
+  - { predicate: perspective_on, target: /perspectives/loss-contractual.md }
+  - { predicate: implemented_by, target: /computations/loss-contractual.md }
 okfm_declared: policy
 okfm_observed: impl
 okfm_reconciliation:
   status: unreviewed        # unreviewed | consistent | material_mismatch | acknowledged
-  method: run both variants over the same months; diff patron sets
+  method: run both variants over the same months; diff the resulting sets
 ---
 
 # Declared
 
-A patron churns when their pledge is cancelled or payment permanently fails.[^policy]
+An account is lost when its contract is cancelled or payment permanently fails.[^policy]
 
 # Observed
 
-The monthly query counts a patron as churned only after the final failed retry,
-and nets out same-month cancel-and-repledge.[^impl]
+The monthly query counts an account as lost only after the final failed retry,
+and nets out same-month cancel-and-resubscribe.[^impl]
 ```
 
 `okfm_declared` and `okfm_observed` are `sources[].id` references — the same keyed-join discipline official uses for footnotes, so reordering sources cannot silently misattribute.
 
-Nine months of raw captures make reconciliation **testable**: run both variants over the same history and characterize the difference patron by patron. This is deterministic verification on a dataset that already exists.
+A domain with months of raw captures makes reconciliation **testable**: run both variants over the same history and characterize the difference row by row. Deterministic verification against data that already exists.
 
 ### 11.4 Golden answer set
 
-The reports already produced for the business encode correct numbers under the steward's definitions. They are registered as concepts with `okfm_role: golden_reference`, and reconciliation targets them: a new Attested Computation must reproduce the trusted report before it is `verified`. The answer key and the exam both already exist.
+Reports the business already trusts encode correct numbers under the steward's definitions. They are registered as concepts with `okfm_role: golden_reference`, and reconciliation targets them: a new Attested Computation must reproduce the trusted report before it is `verified`.
+
+This is the requirement that decides which domain is worth porting first. The answer key and the exam both have to already exist; a domain without them can be built but not checked.
 
 ### 11.5 Question workflows
 
-**MRR bridge.** `new + reactivation + upgrades − downgrades − voluntary deacts − involuntary deacts`, each component an attested computation under a stated perspective. The bridge is *attested*; "the spring promo drove reactivations" is *inferred* and labeled.
+**A bridge question** — decompose a period-over-period change into named components, each an attested computation under a stated perspective. The decomposition is *attested*; any causal story about it is *inferred* and labeled as such.
 
-**Churn driver check.** Resolve perspective → check freshness and `data_gap` flags → decompose by voluntary/involuntary, tenure cohort, pledge tier → retrieve prior `Decision` and `Answer` precedents → rank explanations → record the resulting `Decision`, and later its `Outcome`.
+**A driver question** — resolve perspective, check freshness and `data_gap` flags, decompose by the domain's natural cuts, retrieve prior `Decision` and `Answer` precedents, rank explanations, then record the resulting `Decision` and later its `Outcome`.
 
 ### 11.6 Questions produce knowledge — the consumer is a curator
 
 The actor split is about **authority, not write access**. The steward authors and approves meaning-family concepts and is the only `human:` verifier; the consumer never edits a rule. But every consumer interaction writes to the bundle:
 
-1. **Gap-triggered curation.** A question landing on under-documented territory triggers derivation (schema introspection, query inventory, targeted analysis), producing concepts as `status: draft` with `generated.by` set to the agent and no `verified` entry — unverified by construction, per official trust tiers. They enter the steward's review queue; once verified and `stable`, the next such question answers from knowledge instead of derivation.
+1. **Gap-triggered curation.** A question landing on under-documented territory triggers derivation — schema introspection, query inventory, targeted analysis — producing concepts as `status: draft` with `generated.by` set to the agent and no `verified` entry. Unverified by construction, per official trust tiers. They enter the steward's review queue; once verified and `stable`, the next such question answers from knowledge instead of derivation.
 2. **Demand signal.** Question history is telemetry: which concepts get asked about, which answers draw follow-ups, which questions go unanswered. Curation priority follows demand.
 3. **Precedents.** Accepted answers persist as `Answer` concepts. Past facts become templates for future facts.
 
-Same loop as research acquisition: question = goal, gap-fill = discovery + evaluation, steward review = human gate, accepted answer = published knowledge, follow-up behavior = feedback.
+Same loop as any acquisition process: question = goal, gap-fill = discovery + evaluation, steward review = human gate, accepted answer = published knowledge, follow-up behaviour = feedback.
 
 ### 11.7 Discovery adapter
 
-The port's discovery step is not vector search but source understanding: schema introspection, query inventory, capture-coverage profiling (finding `data_gap`s across the 9-month history). It implements the same `DiscoveryAdapter` interface as the arXiv MCP (§13) — same loop, different evidence source.
-
+Discovery in a data domain is not search but **source understanding**: schema introspection, query inventory, and capture-coverage profiling to find `data_gap`s across the history. It implements the same `DiscoveryAdapter` interface as any other evidence source (§13) — same loop, different input.
 
 ---
 
@@ -223,7 +229,7 @@ The port's discovery step is not vector search but source understanding: schema 
 
 Four slices, each end-to-end. No phase builds platform without a user-visible query working at its end.
 
-> **The proving grounds are not phases.** §11 and §16 describe two real projects — a patron-analytics port and a retrofit of a running research loop — and neither is work this repository performs. They are the **feedback loop**: adopt OKFM somewhere real, find what breaks, bring the finding back. Writing them into the phase plan made a domain-free scaffolding look like a project with a domain, which is one step from having that domain's assumptions compiled into it. See the amendment in [DR-0003](decisions/0003-phase-ordering.md). Where a phase genuinely needs a domain, it names the capability and leaves the corpus unnamed until someone adopts it.
+> **The proving grounds are not phases.** §11 and §16 describe two real projects — a analytics port and a retrofit of a running research loop — and neither is work this repository performs. They are the **feedback loop**: adopt OKFM somewhere real, find what breaks, bring the finding back. Writing them into the phase plan made a domain-free scaffolding look like a project with a domain, which is one step from having that domain's assumptions compiled into it. See the amendment in [DR-0003](decisions/0003-phase-ordering.md). Where a phase genuinely needs a domain, it names the capability and leaves the corpus unnamed until someone adopts it.
 
 ### Phase 1 — Baseline adoption and the self-hosted mesh
 
@@ -278,7 +284,7 @@ Phase 2's exit rehearses Phase 3.
 
 Phase 4 follows the port rather than preceding it — see
 [DR-0003](decisions/0003-phase-ordering.md). The original plan put federation first, on the
-grounds that SugarPaws3d sits on two ownership seams and should be born federated. The
+grounds that an analytics domain sits on two ownership seams and should be born federated. The
 counter-argument won: §12.3 states that federation adds nothing *inside* a bundle, so
 splitting later is mechanical, while building a registry, transport, and a feedback ledger
 before knowing whether the meaning-family concepts are right is not. The port is also the
@@ -291,25 +297,26 @@ directly, even though nothing yet enforces it. That convention keeps the eventua
 mechanical, and by Phase 4 there are two real bundles with a real disagreement history to
 federate, which is a better test than a toy pair.
 
-**Reverse this** if the two SugarPaws3d domains turn out to have distinct accountable owners
+**Reverse this** if a domain's two halves turn out to have distinct accountable owners
 today. That is the §12.1 split criterion, and it beats sequencing convenience.
 
 ---
 
 ---
 
-## 16. Proving Ground A: arXiv Loop Retrofit
+## 16. Adoption Profile: retrofitting a loop that already runs
 
-Formalization, not new capability. The loop already runs; Phase 1 makes it write conformant concepts.
+Formalization, not new capability. Where a process already produces decisions, the work is making it write conformant concepts as a side effect.
 
-1. Inspect real logs; derive loop-family body conventions and reason codes from what the loop already emits.
+Written as a profile rather than a project, for the reason in §11 and in [DR-0003](decisions/0003-phase-ordering.md): this repository does not perform the retrofit. It is the shape the retrofit takes wherever someone does.
+
+1. Inspect real logs; derive loop-family body conventions and reason codes from what the process already emits, rather than inventing a vocabulary and asking the process to adopt it.
 2. Write `Goal`, `Evidence`, `Evaluation`, `Decision`, `Experiment`, `Outcome`, `Feedback` concepts during runs, with `generated` set to the agent actor and `verified` added only on human review.
-3. Telemetry record per run; concepts carry `okfm_run_id`.
-4. `Feedback` concepts become the payload sent to the arXiv MCP — same content as today, now stored and coded.
-5. `already_evaluated` guard: check the bundle before evaluating a returned paper.
-6. Optional backfill of recent runs from existing logs to seed the store. **Backfill honesty rule:** never synthesize a `verified` entry, and never attribute `generated.by` to a human for content written before the field existed. Use `process:okfm-backfill`, leaving backfilled concepts correctly *unverified* under official trust tiers. A faked human review is worse than an honest gap, because it silently promotes a trust tier that nobody earned.
+3. A telemetry record per run; concepts carry `okfm_run_id`.
+4. `Feedback` concepts become the payload sent back to whatever supplied the evidence — the same content as before, now stored and coded.
+5. An `already_evaluated` guard: check the bundle before evaluating a candidate a second time.
+6. Optional backfill of recent runs from existing logs. **Backfill honesty rule:** never synthesize a `verified` entry, and never attribute `generated.by` to a human for content written before the field existed. Use `process:okfm-backfill`, leaving backfilled concepts correctly *unverified* under official trust tiers. A faked human review is worse than an honest gap, because it silently promotes a trust tier nobody earned.
 7. Validator in CI: official conformance, OKFM vocab, pointer resolvability, and the strip test (§7.1 rule 4).
-
 ---
 
 ---
@@ -341,12 +348,12 @@ Formalization, not new capability. The loop already runs; Phase 1 makes it write
 1. **Sidecar audit outcome.** How many current sidecars are summary-only (collapse into `description` + `index.md`) versus carrying anchors and retrieval hints (keep as `okfm_sidecar`)?
 2. **Path IDs vs. reorganization.** Is `okfm_key` enough, or does a generated path↔key index in `references/` become necessary?
 3. **Attester language and location.** Python attesters in `references/attesters/`, run consumer-side by the harness — but who runs them in the chat app path, and what does a failed verdict look like to a non-technical reader?
-4. **Feedback consumption at the arXiv MCP.** Stored feedback is Phase 1; does the MCP *use* it (filter/boost) now, or store until volume justifies ranking changes?
+4. **Feedback consumption at the source.** Stored feedback is Phase 1; does the evidence source *use* it (filter/boost) now, or store until volume justifies ranking changes?
 5. **Telemetry granularity.** Full prompts/outputs per step, or hashes plus concept refs only? (Lean: refs and hashes; bodies are already concepts.)
 6. **Registry stewardship.** The registry is a bundle too — who owns the map when a second steward exists?
 7. **Transitive feedback.** When bundle A's feedback concerns B's concept that itself cites C, does A file to B only? (Lean: yes — ownership chains stay linear.)
 8. **Capture gaps as concepts.** Should `data_gap` be a concept (period + affected metrics) rather than only a reason code, so gaps propagate staleness like drift?
-9. **Effective dating.** Rules need `effective_from/to` for SugarPaws3d. Do metrics? Perspectives? Start with rules and see what breaks.
+9. **Effective dating.** Rules need `effective_from/to` in any domain whose policy changes. Do metrics? Perspectives? Start with rules and see what breaks.
 10. **Baseline version pinning.** The baseline moved v0.1 → v0.2 in weeks. Which OKF version does the validator gate against, and what triggers a baseline bump — an official release, or a feature we need?
 11. **Admission test enforcement.** Can "does this say something its sources cannot?" be checked mechanically at all (e.g. flagging a concept body that is largely a restatement of a cited file), or does it stay a review-time judgement?
 

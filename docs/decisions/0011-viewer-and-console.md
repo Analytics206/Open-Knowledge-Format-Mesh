@@ -3,13 +3,14 @@ type: Decision
 title: DR-0011 — The viewer stays read-only; a console is a separate artifact
 description: "The read-only viewer stays one file that opens from disk and configuration editing goes to a separate served console, because write access would turn a browser-openable file into an install — and the CLI falls out of building the console rather than being designed against an imagined user."
 status: draft
+verified: { by: "human:analytics206", at: 2026-08-02T02:54:00Z }
 tags: [viewer, console, cli]
 generated: { by: "agent:claude-opus-5", at: 2026-08-02T02:07:15Z }
 sources:
   - id: self
     resource: /0011-viewer-and-console.md
     okfm_role: subject
-    okfm_captured: { hash: "sha256:89fbb25f902c59c1...", at: 2026-08-01 }
+    okfm_captured: { hash: "sha256:304f764f22bfa64ae628a5024102babcefc298a45b925c31bc0aa32570ab2c46", at: 2026-08-01 }
 okfm_scope: project
 ---
 # DR-0011 — The viewer stays read-only; a console is a separate artifact

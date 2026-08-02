@@ -29,12 +29,12 @@ Why the system is shaped this way: what changed against earlier drafts, what the
 | 8 | Evidence, Drift, and Staleness | [`spec/okfm-v0.2.1.md`](../spec/okfm-v0.2.1.md) |
 | 9 | Governed Numbers: Attested Computation | [`spec/okfm-v0.2.1.md`](../spec/okfm-v0.2.1.md) |
 | 10 | Workflow Instrumentation | [`spec/okfm-v0.2.1.md`](../spec/okfm-v0.2.1.md) |
-| 11 | Proving Ground B: SugarPaws3d Patron Analytics | [`docs/roadmap.md`](../docs/roadmap.md) |
+| 11 | Adoption Profile: an Analytics Domain | [`docs/roadmap.md`](../docs/roadmap.md) |
 | 12 | Federation — the OKF Mesh | [`spec/okfm-v0.2.1.md`](../spec/okfm-v0.2.1.md) |
 | 13 | Drop-In Instantiation and Distribution | [`spec/okfm-v0.2.1.md`](../spec/okfm-v0.2.1.md) |
 | 14 | The Mesh Viewer | [`spec/okfm-v0.2.1.md`](../spec/okfm-v0.2.1.md) |
 | 15 | Roadmap | [`docs/roadmap.md`](../docs/roadmap.md) |
-| 16 | Proving Ground A: arXiv Loop Retrofit | [`docs/roadmap.md`](../docs/roadmap.md) |
+| 16 | Adoption Profile: retrofitting a loop that already runs | [`docs/roadmap.md`](../docs/roadmap.md) |
 | 17 | Deferred — Parking Lot with Re-entry Triggers | [`docs/roadmap.md`](../docs/roadmap.md) |
 | 18 | Evaluating the Bundle | [`spec/okfm-v0.2.1.md`](../spec/okfm-v0.2.1.md) |
 | 19 | Open Questions | [`docs/roadmap.md`](../docs/roadmap.md) |
@@ -158,7 +158,7 @@ The paper, the schema, the query result — none of these is the product. The pr
 Six months on, the system should answer from its own bundles, without re-searching:
 
 - "Why aren't we using speculative decoding?" → the papers evaluated, the trial, the regression, the rejection reasons.
-- "Why did patron churn rise in June?" → the perspective used, the rule, the attested numbers, the decision, and what happened after.
+- "Why did customer loss rise in June?" → the perspective used, the rule, the attested numbers, the decision, and what happened after.
 - "Who consumes this internal API?" → the registered consumers, why each exists, and what breaks if the contract changes.
 
 The first two work at any volume. Statistical learning from telemetry is a later, optional payoff — purchased cheaply now by schema discipline (§10.1).
@@ -199,7 +199,7 @@ The first two work at any volume. Statistical learning from telemetry is a later
 
 > Moved to [`spec/okfm-v0.2.1.md`](../spec/okfm-v0.2.1.md).
 
-## 11. Proving Ground B: SugarPaws3d Patron Analytics
+## 11. Adoption Profile: an Analytics Domain
 
 > Moved to [`docs/roadmap.md`](../docs/roadmap.md).
 
@@ -219,7 +219,7 @@ The first two work at any volume. Statistical learning from telemetry is a later
 
 > Moved to [`docs/roadmap.md`](../docs/roadmap.md).
 
-## 16. Proving Ground A: arXiv Loop Retrofit
+## 16. Adoption Profile: retrofitting a loop that already runs
 
 > Moved to [`docs/roadmap.md`](../docs/roadmap.md).
 
@@ -255,7 +255,7 @@ runs against knowledge this builder will never see. That constraint is the reaso
 core carries no domain words, why configuration is one small file, and why the
 success measure is a stranger with a README and an hour.
 
-The loop stays the same from arXiv papers to patron data. The source changes; the loop doesn't.
+The loop stays the same from research papers to business data. The source changes; the loop doesn't.
 
 
 ---

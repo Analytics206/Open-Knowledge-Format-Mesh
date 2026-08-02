@@ -1,18 +1,19 @@
 ---
 type: Decision
-title: "DR-0007 — Two layers: a base that installs nothing, and an optional implementation"
+title: "DR-0007 — Two layers: a portable base, and an optional implementation"
 description: "OKFM is two layers — a base that is a specification, a guide and a viewer, and an optional reference implementation — and CI proves the base stands alone by deleting the implementation and validating anyway."
 status: draft
+verified: { by: "human:analytics206", at: 2026-08-02T02:54:46Z }
 tags: [architecture, layering, distribution]
 generated: { by: "agent:claude-opus-5", at: 2026-08-02T02:07:15Z }
 sources:
   - id: self
     resource: /0007-two-layers.md
     okfm_role: subject
-    okfm_captured: { hash: "sha256:bbbf5722ce665975...", at: 2026-08-01 }
+    okfm_captured: { hash: "sha256:fd0c867f73ca9e90717b3613e31626a0d047438fe7517776ffb8f44188a5b3ce", at: 2026-08-01 }
 okfm_scope: project
 ---
-# DR-0007 — Two layers: a base that installs nothing, and an optional implementation
+# DR-0007 — Two layers: a portable base, and an optional implementation
 
 - **Status:** accepted 2026-08-01
 - **Date:** 2026-08-01
@@ -37,7 +38,7 @@ says OKFM must work with zero install. It just isn't built that way.
 
 Split into two layers with a hard boundary.
 
-### Base — the format contract. Installs nothing.
+### Base — the format contract. One folder and a format.
 
 ```text
 spec/okfm-v0.2.1.md      what makes a bundle legal
@@ -121,6 +122,26 @@ is now two, and the first one is much stronger:
 
 The first is the real portability claim. A format that needs a specific CLI to be
 understood is not a format.
+
+## Amendment 2026-08-02 — "installs nothing" was the wrong axis
+
+This record kept saying *install*, and install is not what separates the layers. Two
+corrections.
+
+**What you take is a folder, not the project.** An adopter who wants the implementation
+copies `dropin/` into their own repository as `.okfm/`. They do not clone this repository,
+vendor it, or depend on it. That is the distribution claim worth making, and "installs
+nothing" was standing in for it badly — the base is portable because it is *one folder and a
+format*, not because a package manager is uninvolved.
+
+**Customization brings installs, and that is fine.** Level 1 is download and look. Level 2 is
+where you start changing things, and changing things reasonably means a package or a client
+tool of your own choosing. What OKFM ships at level 2 stays standard-library-only, so the
+folder runs the moment it lands — see [DR-0001](0001-runtime-and-packaging.md). What you add
+on top is yours.
+
+The distinction that survives is **what OKFM asks of you**, not what ends up installed in
+your project. Those are different claims, and only the first is OKFM's to make.
 
 ## Against
 

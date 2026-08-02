@@ -3,14 +3,14 @@ type: Decision
 title: DR-0003 — Where federation sits in the delivery order
 description: "Federation's negotiation half lands after the credentialed phase while its addressing half moved into Phase 1, because the repository is already a mesh; amended to take the proving-ground projects out of the phase plan entirely — they are the feedback loop, not steps this repository performs."
 status: draft
-verified: { by: "human:analytics206", at: 2026-08-01T22:35:38Z }
+verified: { by: "human:analytics206", at: 2026-08-02T02:53:59Z }
 tags: [phases, federation, sequencing]
 generated: { by: "agent:claude-opus-5", at: 2026-08-02T02:07:15Z }
 sources:
   - id: self
     resource: /0003-phase-ordering.md
     okfm_role: subject
-    okfm_captured: { hash: "sha256:f23b5dd74d73dabf27f70c886d5a5450144d8462cb92779a42861f17a27a1fef", at: 2026-08-01 }
+    okfm_captured: { hash: "sha256:8dac493bc9de31c746fed1f3fdf732a27fa1e12a693e3ae0e168173a89d8b0bd", at: 2026-08-01 }
 okfm_scope: project
 ---
 # DR-0003 — Where federation sits in the delivery order
@@ -140,3 +140,25 @@ genuine cross-bundle references, a working drift signal, and a benchmark harness
 it. Where a criterion genuinely needs a domain — a `sys://` resolver against a live database,
 attested computations reconciled against existing trusted reports — it stays in the roadmap as
 a capability with no named corpus attached, and the corpus arrives when someone adopts it.
+
+## Amendment 2026-08-02 — federation's addressing half is level 1
+
+Where federation sits in the *delivery* order was this record's question. Where it sits in
+the **level** model was never answered, and the answer is level 1.
+
+The mesh is what you get when you download the project and open the viewer: several bundles,
+a master OKF over them, typed edges between them, and a graph that draws the whole thing.
+Nothing runs. That is the definition of level 1, and it means federation's addressing half is
+already the most complete demonstration in the project rather than a thing waiting on a
+phase.
+
+**Level 2 supports what it can, and says what it cannot.** The build writes a master OKF and
+both halves of every membership edge, so a mesh built by the drop-in is connected without
+anyone authoring an edge by hand. What level 2 cannot do is resolve `okf://` across a network
+or ask another bundle's agent anything — those need transport, which is the negotiation half.
+The right behaviour for an unsupported capability at a level is to name it as unsupported,
+not to half-implement it.
+
+And the standing escape applies here as everywhere: anyone can point an agent at the mesh and
+have it do whatever they want, at any level. That is not a gap in the level model, it is the
+reason the level model describes what *OKFM* provides rather than what an adopter can achieve.

@@ -8,7 +8,7 @@ sources:
   - id: source
     resource: ../../docs/rationale.md
     okfm_role: subject
-    okfm_captured: { hash: "sha256:3ba64b929118af0523a0ca4bfb694723965ec105e0d00c1aff009d227929809e", at: 2026-08-02 }
+    okfm_captured: { hash: "sha256:a7ba705b0fb5609267ec734f242a1bd0bbe2c096fd2dc3e09d94e688db3a2897", at: 2026-08-02 }
 ---
 
 # OKFM — Rationale

@@ -57,12 +57,12 @@ A reader never has to ask which OKF version a given OKFM release speaks. Documen
 | 8 | Evidence, Drift, and Staleness | *this document* |
 | 9 | Governed Numbers: Attested Computation | *this document* |
 | 10 | Workflow Instrumentation | *this document* |
-| 11 | Proving Ground B: SugarPaws3d Patron Analytics | [`docs/roadmap.md`](../docs/roadmap.md) |
+| 11 | Adoption Profile: an Analytics Domain | [`docs/roadmap.md`](../docs/roadmap.md) |
 | 12 | Federation — the OKF Mesh | *this document* |
 | 13 | Drop-In Instantiation and Distribution | *this document* |
 | 14 | The Mesh Viewer | *this document* |
 | 15 | Roadmap | [`docs/roadmap.md`](../docs/roadmap.md) |
-| 16 | Proving Ground A: arXiv Loop Retrofit | [`docs/roadmap.md`](../docs/roadmap.md) |
+| 16 | Adoption Profile: retrofitting a loop that already runs | [`docs/roadmap.md`](../docs/roadmap.md) |
 | 17 | Deferred — Parking Lot with Re-entry Triggers | [`docs/roadmap.md`](../docs/roadmap.md) |
 | 18 | Evaluating the Bundle | *this document* |
 | 19 | Open Questions | [`docs/roadmap.md`](../docs/roadmap.md) |
@@ -140,7 +140,7 @@ A reader never has to ask which OKF version a given OKFM release speaks. Documen
                                v
 +---------------------------------------------------------------+
 |                External stores and systems                    |
-|  arxiv_pipeline (Mongo+Qdrant via MCP) | SugarPaws3d patron   |
+|  evidence store (documents + vectors via MCP) | analytics    |
 |  DB/API captures | project repos and docs | SQL engines       |
 +---------------------------------------------------------------+
 ```
@@ -233,7 +233,7 @@ Official concept ID is the file path minus `.md`. OKFM adopts this. Layout encod
 Because path IDs break when files move, any concept referenced across bundles or cited in telemetry SHOULD carry a stable key:
 
 ```yaml
-okfm_key: eval-arxiv-2607-01234-spec-decode
+okfm_key: eval-paper-2607-01234-spec-decode
 ```
 
 `okfm_key` is the join key of last resort — for reconnecting references after a reorganization, not a replacement for path IDs.
@@ -245,7 +245,7 @@ Official links are untyped by design. OKFM needs typed edges for impact analysis
 ```yaml
 okfm_relations:
   - predicate: evaluates
-    target: /evidence/arxiv-2607-01234.md
+    target: /evidence/paper-2607-01234.md
   - predicate: serves
     target: /goals/spec-decode-latency.md
 ```
@@ -300,7 +300,7 @@ Official `type` values, Title Case, following official convention. Two families.
 | `Source System` | A registered system — the anchor for `sys://` pointers |
 | `OKF Member` | A bundle registered in the federation registry (§12.2) |
 
-Domain packs (arXiv, subscription business, software engineering) add reason codes and body conventions. They do not add frontmatter families.
+Domain packs (research acquisition, subscription business, software engineering) add reason codes and body conventions. They do not add frontmatter families.
 
 ### 7.6 Worked example
 
@@ -315,7 +315,7 @@ generated: { by: research_agent/claude-opus, at: 2026-07-30T18:45:00Z }
 verified: { by: "human:geminia", at: 2026-07-31T09:12:00Z }
 sources:
   - id: paper
-    resource: store://arxiv_pipeline/papers/2607.01234
+    resource: store://evidence-store/papers/2607.01234
     title: "Draft-and-verify decoding at small batch sizes"
     okfm_role: subject
     okfm_captured: { hash: "sha256:9f2c...", at: 2026-07-30 }
@@ -323,9 +323,9 @@ sources:
     resource: /systems/inference-architecture.md#L120-L164
     okfm_role: constraint_source
     okfm_captured: { version: "git:abc1234", at: 2026-07-30 }
-okfm_key: eval-arxiv-2607-01234-spec-decode
+okfm_key: eval-paper-2607-01234-spec-decode
 okfm_relations:
-  - { predicate: evaluates, target: /evidence/arxiv-2607-01234.md }
+  - { predicate: evaluates, target: /evidence/paper-2607-01234.md }
   - { predicate: serves, target: /goals/spec-decode-latency.md }
 okfm_reason_codes: [promising_monitor, infra_mismatch]
 okfm_run_id: run_01K7Z8...
@@ -373,7 +373,7 @@ Three corollaries:
 3. **Attestation beats summary for numbers.** An Attested Computation cannot drift
    from the query, because it *carries* the query and proves what ran (§9.1).
 
-This test applies hardest to the meaning family during SugarPaws3d curation, where
+This test applies hardest to the meaning family during analytics curation, where
 the temptation to document every table is strongest and the payoff is lowest.
 
 ---
@@ -391,11 +391,11 @@ Official `sources[].resource` accepts an absolute URL, a bundle-relative path, a
 /path/to/file.md#L120-L164                # file span — OKFM line anchoring
 https://...                               # external reference (official)
 all queries in project X                  # scope descriptor (official)
-store://arxiv_pipeline/papers/2607.01234  # external store record  (OKFM scheme)
-sys://sp3d-db/table/patrons               # live system element    (OKFM scheme)
-sys://sp3d-db/column/pledges.amount_cents
-sys://sp3d-db/query/monthly_churn.sql
-sys://sp3d-api/capture/2026-06
+store://evidence-store/papers/2607.01234  # external store record  (OKFM scheme)
+sys://warehouse/table/accounts               # live system element    (OKFM scheme)
+sys://warehouse/column/pledges.amount_cents
+sys://warehouse/query/monthly_churn.sql
+sys://warehouse/capture/2026-06
 ```
 
 An official consumer sees a resource URI it may not resolve — which conformance requires it to tolerate. An OKFM consumer resolves it through the registered `Source System` concept.
@@ -407,7 +407,7 @@ Every OKFM pointer records what it saw, as an extension inside the source entry:
 ```yaml
 sources:
   - id: churn-sql
-    resource: sys://sp3d-db/query/monthly_churn.sql
+    resource: sys://warehouse/query/monthly_churn.sql
     okfm_role: implementation
     okfm_captured:
       hash: "sha256:4b1e..."
@@ -436,7 +436,7 @@ Official `stale_after` and OKFM drift answer different questions; use both.
 4. Drift propagates along `okfm_relations` (bounded traversal): concepts depending on stale concepts inherit the flag.
 5. Stale concepts enter a review queue workflow: re-validate (refresh `okfm_captured`, add a `verified` entry), supersede (`status: deprecated` + `supersedes` relation), or acknowledge.
 
-For files this is today's behavior. For `sys://` pointers it is the new capability: edit the SugarPaws3d churn query and every rule citing it goes stale automatically.
+For files this is today's behavior. For `sys://` pointers it is the new capability: edit the the analytics domain churn query and every rule citing it goes stale automatically.
 
 ---
 
@@ -489,7 +489,7 @@ from the bundle every time and is never edited or committed.
 
 ## 9. Governed Numbers: Attested Computation
 
-This is the most valuable thing adopted from official v0.2, and it directly solves the failure mode that motivates the whole SugarPaws3d project — a model re-deriving the semantic layer on every question and guessing the definition.
+This is the most valuable thing adopted from official v0.2, and it directly solves the failure mode that motivates the whole the analytics domain project — a model re-deriving the semantic layer on every question and guessing the definition.
 
 ### 9.1 Why it is stronger than v2's design
 
@@ -514,13 +514,13 @@ prose description of how the number is produced.
 
 Churn, acts, deacts, and revenue are four Attested Computations, not one. Each verifies, goes stale, and attests independently. A `Metric` concept explains meaning and links to its computation; readable business documents link to several.
 
-### 9.3 SugarPaws3d shape
+### 9.3 the analytics domain shape
 
 ```markdown
 ---
 type: Attested Computation
-title: Monthly churned patrons (billing perspective)
-description: Patrons whose pledge ended or whose payment permanently failed in a month.
+title: Monthly lost accounts (contractual perspective)
+description: Accounts whose contract ended or whose payment permanently failed in a month.
 status: stable
 runtime: bigquery
 parameters:
@@ -544,12 +544,12 @@ okfm_perspective: /perspectives/churn-billing.md
 
 # Computation
 
-    SELECT COUNT(DISTINCT patron_id) AS churned
-    FROM patron_pledge_events
+    SELECT COUNT(DISTINCT account_id) AS lost
+    FROM account_contract_events
     WHERE event_month = @month
       AND event_type IN ('pledge_ended', 'payment_failed_final')
 
-Counts each patron once per month, per the billing perspective.[^rules-doc]
+Counts each customer once per month, per the billing perspective.[^rules-doc]
 
 [^rules-doc]: Churn, billing perspective
 ```
@@ -607,12 +607,12 @@ context:
 
 steps:
   - id: discover
-    tool: mcp://arxiv/search
+    tool: mcp://evidence-store/search
     params_hash: "sha256:..."
     candidates_returned: 40
   - id: evaluate
     model: reasoning-model-id
-    produced: [/evaluations/arxiv-2607-01234.md]
+    produced: [/evaluations/paper-2607-01234.md]
   - id: human_review
     decisions: [/decisions/trial-2607-01234.md]
     edit_distance: moderate        # none|light|moderate|rewrite
@@ -620,7 +620,7 @@ steps:
 attestations: []                   # question workflows record verdicts here
 cost: { usd: 1.84, tokens_total: 195000, latency_s: 1320 }
 produced: [/evaluations/..., /decisions/...]
-feedback_sent: [/feedback/outbox/arxiv-2607-01234.md]
+feedback_sent: [/feedback/outbox/paper-2607-01234.md]
 ```
 
 Workflow revisions may add fields; renaming or repurposing one requires a `telemetry_schema` bump. This is the cheapest decision in the system and the one protecting every six-months-later query.
@@ -669,7 +669,7 @@ Rendered in the body as plain language for non-technical readers, not as a metad
 
 ---
 
-## 11. Proving Ground B: SugarPaws3d Patron Analytics
+## 11. Adoption Profile: an Analytics Domain
 
 > Moved to [`docs/roadmap.md`](../docs/roadmap.md).
 
@@ -692,16 +692,16 @@ The registry is itself an OKF bundle — the format describes the mesh in its ow
 ```markdown
 ---
 type: OKF Member
-title: SugarPaws3d business rules
-description: Concepts, perspectives, rules, and computations for the patron business.
-resource: https://git.internal/sp3d-rules
+title: the analytics domain business rules
+description: Concepts, perspectives, rules, and computations for the customer business.
+resource: https://git.internal/domain-rules
 status: stable
-tags: [sp3d, business-rules]
+tags: [analytics, business-rules]
 generated: { by: "human:geminia", at: 2026-07-31T12:00:00Z }
 okfm_member:
   owner: "human:geminia"
-  aliases: ["sp3d business", "patron rules"]
-  agent: mcp://sp3d-rules-agent      # or in-process binding
+  aliases: ["analytics business", "customer rules"]
+  agent: mcp://domain-rules-agent      # or in-process binding
   sync_policy: pull                   # pull | subscribe
 ---
 
@@ -709,7 +709,7 @@ okfm_member:
 
 Owns definitions of churn, activation, deactivation, and revenue, and the
 attested computations behind each. Does not own the warehouse schema — see
-[sp3d data](/members/sp3d-data.md).
+[analytics data](/members/domain-data.md).
 ```
 
 The member's `description` plus the registry's generated `index.md` give progressive disclosure **at the mesh level** — the official index pattern, recursed. Sidecars describe files so agents need not read every file; the registry describes bundles so agents need not search every bundle.
@@ -725,9 +725,9 @@ Cross-bundle sources name the bundle and **pin a commit**. Git history is the ve
 ```yaml
 sources:
   - id: churn-def
-    resource: okf://sp3d-rules/rules/churn-billing.md
+    resource: okf://domain-rules/rules/churn-billing.md
     okfm_role: defines
-    okfm_pin: { bundle: sp3d-rules, commit: abc1234 }
+    okfm_pin: { bundle: domain-rules, commit: abc1234 }
     okfm_captured: { at: 2026-07-30 }
 ```
 
@@ -748,11 +748,11 @@ status: stable
 generated: { by: curation_agent/claude-opus, at: 2026-07-29T16:00:00Z }
 sources:
   - id: target
-    resource: okf://sp3d-data/systems/pledges.md
-    okfm_pin: { bundle: sp3d-data, commit: def5678 }
+    resource: okf://domain-data/systems/pledges.md
+    okfm_pin: { bundle: domain-data, commit: def5678 }
 okfm_feedback:
-  from_bundle: sp3d-rules
-  to_bundle: sp3d-data
+  from_bundle: domain-rules
+  to_bundle: domain-data
   target_source: target
 okfm_reason_codes: [grain_mismatch]
 ---
@@ -773,7 +773,7 @@ Because refs are pinned, drift never silently changes a consumer's answers — i
 
 ### 12.6 Shared concepts and agents
 
-**Shared concepts.** "Churn" exists wherever patron data and accounting rules both live. Nobody owns churn: the `Concept` lives in the registry (or a designated shared bundle); each domain bundle owns its `Perspective` and `Rule`s, linked by `perspective_on` relations that cross bundles. `equivalent_to` / `differs_from` mappings live in the registry beside the concept. The multiple-truths principle, scaled one level up.
+**Shared concepts.** "Churn" exists wherever customer data and accounting rules both live. Nobody owns churn: the `Concept` lives in the registry (or a designated shared bundle); each domain bundle owns its `Perspective` and `Rule`s, linked by `perspective_on` relations that cross bundles. `equivalent_to` / `differs_from` mappings live in the registry beside the concept. The multiple-truths principle, scaled one level up.
 
 **Agents.** Each bundle's agent is a harness workflow bound to it, exposing a small MCP surface: `answer_from_bundle`, `resolve_ref`, `accept_feedback`, `notify`. Two rules keep this honest:
 
@@ -926,7 +926,7 @@ Two further boundaries are checked mechanically, not intended:
 1. **Base validates with `tools/` deleted.** CI runs it as an actual arm: remove the
    directory, validate every bundle, open the viewer.
 2. **`dropin/` and `core` carry no domain words.** CI greps for project and domain names
-   (`arxiv`, `sugarpaws`, `patron`, …) and fails on a hit. That test is what keeps the
+   (the domain names CI is configured to reject) and fails on a hit. That test is what keeps the
    scaffolding distributable while it is developed against two specific domains.
 
 ### 13.4 The config surface
@@ -943,7 +943,7 @@ One file, small enough to read in full:
     "priority_types": ["Attested Computation", "Rule", "Metric", "Perspective"]
   },
   "stores": {
-    "sp3d-db": { "kind": "sql", "adapter": "bigquery", "profile": "env:SP3D_DSN" }
+    "analytics-db": { "kind": "sql", "adapter": "bigquery", "profile": "env:WAREHOUSE_DSN" }
   },
   "federation": { "registry": null }
 }
@@ -1051,9 +1051,9 @@ ecosystem precedent already establishes (§21.2). OKFM's own code and content ar
 
 | Coupling today | Decoupled form |
 |---|---|
-| arXiv specifics in loop code | `packs/research/` — reason codes, prompts, adapter binding |
-| Discovery hard-wired to the arXiv MCP | `DiscoveryAdapter` interface; warehouse introspection is a second implementation |
-| Evidence = files + arxiv refs | Per-scheme resolvers in `core/resolvers/`; `sys://` added for databases |
+| research specifics in loop code | `packs/research/` — reason codes, prompts, adapter binding |
+| Discovery hard-wired to the evidence source | `DiscoveryAdapter` interface; warehouse introspection is a second implementation |
+| Evidence = files + evidence refs | Per-scheme resolvers in `core/resolvers/`; `sys://` added for databases |
 | Reason codes inline in prompts | `core/vocab/` + pack overlays |
 | Refresh targets files | Refresh targets pointers; the file resolver is one case (§8.4) |
 | Loop lives inside one project | Loop in `core/workflows/`, parameterized by pack and config |
@@ -1195,7 +1195,7 @@ browser.
 
 > Moved to [`docs/roadmap.md`](../docs/roadmap.md).
 
-## 16. Proving Ground A: arXiv Loop Retrofit
+## 16. Adoption Profile: retrofitting a loop that already runs
 
 > Moved to [`docs/roadmap.md`](../docs/roadmap.md).
 
@@ -1232,7 +1232,7 @@ Adapted from the published OKF benchmark (§21.1):
 - **Tokens** — harness-billed, not self-reported. Effort, not correctness.
 - **False statements** — separately from omissions. An omission is a gap; a false
   statement is a knowledge defect and should be traced to the concept that caused it.
-- **For SugarPaws3d only: agreement with the golden reports** — a mechanical rubric
+- **For the analytics domain only: agreement with the golden reports** — a mechanical rubric
   rather than hand-written claim lists (§11.4). This is a genuine advantage over the
   published benchmark, which had to write its own ground truth.
 
@@ -1249,7 +1249,7 @@ Both are borrowed rather than learned the hard way (§21.3):
 
 ### 18.4 Cadence
 
-- **Phase 1:** stand up the harness; take a baseline reading on the arXiv bundle.
+- **Phase 1:** stand up the harness; take a baseline reading on the research bundle.
   Report whatever it says.
 - **Phase 3:** run on real business questions against the golden reports.
 - **Ongoing:** re-run after any large curation push. A rising claims-hit gap is the
