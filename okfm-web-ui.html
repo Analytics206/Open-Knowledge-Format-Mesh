@@ -709,13 +709,13 @@ const CONFIG = {
 };
 
 const BOOTSTRAP = {
- "name": "OKFM mesh (bundled)",
+ "name": "The OKFM mesh",
  "generated_at": "2026-08-01",
  "bundles": [
   {
    "id": "mesh",
    "title": "mesh",
-   "owner": "human:analytics206"
+   "owner": null
   },
   {
    "id": "level-1-view",
@@ -735,7 +735,7 @@ const BOOTSTRAP = {
   {
    "id": "docs",
    "title": "docs",
-   "owner": "human:analytics206"
+   "owner": null
   },
   {
    "id": "guide",
@@ -1659,7 +1659,11 @@ async function loadMesh(){
       }
     }
   }catch(e){ /* file:// or no index — fall through */ }
-  if(BOOTSTRAP.concepts.length){ MESH = BOOTSTRAP; SOURCE = "guide"; BUNDLE_ROOT = "."; }
+  // "baked", not "guide". Any baked bootstrap used to be labelled the bundled demo, so the
+  // normal successful outcome of a level 2 build — your own mesh, correctly baked into your
+  // own page — rendered as an amber warning claiming it had failed to find your mesh. There
+  // was no state meaning "this worked", so success borrowed failure's.
+  if(BOOTSTRAP.concepts.length){ MESH = BOOTSTRAP; SOURCE = "baked"; BUNDLE_ROOT = "."; }
 }
 
 /* ---------- type palette (cool instrument set) ---------- */
@@ -2750,11 +2754,12 @@ Float dollars drifted a few cents per thousand rows.</pre>
   if (SOURCE === "live"){
     badge.textContent = "live · " + (MESH.generated_at || "now");
     badge.title = "Read from " + INDEX_URL;
-  } else if (SOURCE === "guide"){
-    badge.textContent = "bundled guide";
-    badge.title = "No mesh index reachable. Showing the okfm-guide bundle. "
-                + "Run `okfm view --serve` to read your own mesh live, or delete okfm-guide/ when you are done with it.";
-    badge.style.borderColor = "var(--stale)"; badge.style.color = "var(--stale)";
+  } else if (SOURCE === "baked"){
+    // Neutral, not amber. This is what a successful build looks like, and colouring it as a
+    // warning sent adopters hunting for a failure that had not happened — and pointed them at
+    // an `okfm view --serve` that does not exist and an okfm-guide/ they may never have had.
+    badge.textContent = "baked · " + (MESH.generated_at || "snapshot");
+    badge.title = "Metadata baked into this page by the last build. Re-run the build to refresh it.";
   } else {
     badge.textContent = "empty";
   }

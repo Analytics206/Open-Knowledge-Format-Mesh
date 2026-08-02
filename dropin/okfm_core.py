@@ -291,7 +291,12 @@ def synthesize_config(root: Path) -> dict:
             "vocab_overlays": [],
         },
         "read": {
-            "web_ui": {"path": "../okfm-web-ui.html"},
+            # Relative to the PROJECT, which is what `config_schema` declares for this key.
+            # It said `../okfm-web-ui.html` for a long time, which the validator rejects for
+            # containing `..` — so the build wrote a config that failed its own check. Not on
+            # the first run, when no config exists yet and validation passes trivially, but on
+            # the second, after the adopter already believed it worked.
+            "web_ui": {"path": "./okfm-web-ui.html"},
             "index": {"max_concepts": 60, "priority_types": []},
             "exclude_scopes": ["guide"],
         },

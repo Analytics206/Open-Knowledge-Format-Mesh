@@ -28,11 +28,12 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from okfm_core import utf8_stdout
+# RESERVED is imported rather than restated. There were two copies — this module's with three
+# entries and `okfm_core`'s with five — so which files survived into a bundle depended on which
+# module happened to look. A controlled list kept in two places is a list that is wrong in one.
+from okfm_core import RESERVED, utf8_stdout
 
 utf8_stdout()
-
-RESERVED = {"index.md", "log.md", "README.md"}
 
 _H1 = re.compile(r"^#\s+(.+?)\s*$", re.M)
 _FM = re.compile(r"\A---\r?\n(.*?)\r?\n---\r?\n", re.S)

@@ -25,8 +25,29 @@ import config_schema
 from okfm_core import HERE, PROJECT, configured_bundles, find_config, load_or_create_config
 
 ROOT = PROJECT
-VIEWER = PROJECT / "okfm-web-ui.html"
 CACHE = HERE / ".okfm-cache" / "observations.json"
+
+VIEWER_NAME = "okfm-web-ui.html"
+
+
+def viewer_path(cfg: dict) -> Path:
+    """Where the viewer is, honouring `read.web_ui.path`.
+
+    That key described the viewer's location and nothing read it — the one config key able to
+    fail the pipeline was ignored by the component that failed. Setting it now moves the file
+    for real, which is what an adopter reasonably expects when a config names a path.
+
+    Falls back to the project root, then to this folder: pasting the drop-in in as `.okfm/`
+    and dropping the viewer beside it both work without configuring anything.
+    """
+    named = ((cfg.get("read") or {}).get("web_ui") or {}).get("path") \
+        or (cfg.get("web_ui") or {}).get("path")
+    if named:
+        return (PROJECT / str(named).removeprefix("./")).resolve()
+    for candidate in (PROJECT / VIEWER_NAME, HERE / VIEWER_NAME):
+        if candidate.is_file():
+            return candidate
+    return PROJECT / VIEWER_NAME
 
 RESERVED_TYPES = {"Index", "Log"}
 _FM = re.compile(r"\A---\r?\n(.*?)\r?\n---\r?\n", re.S)
@@ -112,9 +133,47 @@ def drift_of(block: str, rid: str, obs: dict) -> int | None:
     return 0 if seen_any else None
 
 
+def mesh_owners(cfg: dict) -> dict:
+    """Bundle owners, read from the mesh's `OKF Member` concepts.
+
+    Naming the accountable person is the one thing no process can infer (§12.1), so it is read
+    where a person actually wrote it and left absent everywhere else. Inventing a plausible
+    value here is how this repository's steward ended up credited in other people's viewers.
+    """
+    out = {}
+    mesh = configured_bundles(cfg).get(cfg.get("mesh", "mesh"))
+    if not mesh or not (mesh / "members").is_dir():
+        return out
+    for f in sorted((mesh / "members").glob("*.md")):
+        m = _FM.match(f.read_text(encoding="utf-8"))
+        if not m:
+            continue
+        owner = re.search(r"^\s+owner:[ \t]*(.+)$", m.group(1), re.M)
+        value = owner.group(1).strip().strip("\"'") if owner else ""
+        out[f.stem] = None if value in ("", "null", "~") else value
+    return out
+
+
+def mesh_title(cfg: dict) -> str:
+    """What to call this mesh in the viewer's header.
+
+    The mesh index's own `title` if a person wrote one, otherwise the project's folder name.
+    Never a constant: a hardcoded "OKFM mesh (bundled)" meant every adopter's viewer announced
+    the tool instead of their project.
+    """
+    mesh = configured_bundles(cfg).get(cfg.get("mesh", "mesh"))
+    if mesh and (mesh / "index.md").is_file():
+        m = _FM.match((mesh / "index.md").read_text(encoding="utf-8"))
+        title = scalar(m.group(1), "title") if m else None
+        if title:
+            return title
+    return f"{PROJECT.name} mesh"
+
+
 def collect():
     _, cfg, _ = load_or_create_config(write=False)
     obs = load_observations()
+    owners = mesh_owners(cfg)
     bundles, concepts = [], []
     all_bundles = configured_bundles(cfg)
     bundle_ids = set(all_bundles)
@@ -153,11 +212,19 @@ def collect():
             found += 1
 
         if found:
-            bundles.append({"id": bundle_id, "title": bundle_id, "owner": "human:analytics206"})
+            # `owner: None` when nothing declares one. This used to hardcode the handle of
+            # THIS repository's steward, which every adopter then found baked into their own
+            # viewer, once per bundle, attributing their documentation to a stranger. The
+            # generated concepts had it right all along — `owner: null` with a comment saying
+            # why — and only the baked page invented an answer.
+            bundles.append({"id": bundle_id, "title": bundle_id, "owner": owners.get(bundle_id)})
 
     concepts.sort(key=lambda c: c["p"])
     return {
-        "name": "OKFM mesh (bundled)",
+        # The adopter's project, not this one. A viewer titled "OKFM mesh" over somebody
+        # else's documents is the tool talking about itself in a window that belongs to them.
+        # The mesh's own index title wins when there is one, because a person wrote it.
+        "name": mesh_title(cfg),
         "generated_at": "2026-08-01",
         "bundles": bundles,
         "concepts": concepts,
@@ -182,8 +249,28 @@ def current_config() -> dict:
 
 def main() -> int:
     check = "--check" in sys.argv
+    _, cfg = find_config()
+    viewer = viewer_path(cfg or {})
+
+    if not viewer.is_file():
+        # Skipped, not failed. The viewer is a *reader*; the mesh is built and valid without
+        # it, and taking down the whole pipeline for a missing convenience meant an adopter's
+        # first run ended in a raw FileNotFoundError naming a file they had never heard of.
+        # That reads as "this tool is broken", not "you are missing a step" — and a stranger
+        # who greps the documentation for the filename finds twenty-eight mentions and no
+        # instruction to install it.
+        where = viewer.relative_to(PROJECT) if viewer.is_relative_to(PROJECT) else viewer
+        print(f"no viewer at {where} — skipping the bake.", file=sys.stderr)
+        print(f"The mesh is built and valid; this step only bakes an index into the page.",
+              file=sys.stderr)
+        print(f"To read it in a browser, copy `{VIEWER_NAME}` from the OKFM download — it "
+              f"sits at the\ndownload's root, NOT inside the folder you pasted in — to "
+              f"{PROJECT.name}/, then re-run.", file=sys.stderr)
+        print(f"Or point `read.web_ui.path` at wherever you keep it.", file=sys.stderr)
+        return 0
+
     mesh = collect()
-    html = VIEWER.read_text(encoding="utf-8")
+    html = viewer.read_text(encoding="utf-8")
 
     schema = json.loads(config_schema.as_json())
     # The command to run, as it would actually be typed in THIS project. The panel cannot
@@ -223,7 +310,7 @@ def main() -> int:
     # Right to left, so an earlier replacement does not move a later one's offsets.
     for start, end, new in sorted(edits, reverse=True):
         html = html[:start] + new + html[end:]
-    VIEWER.write_text(html, encoding="utf-8")
+    viewer.write_text(html, encoding="utf-8")
 
     by_bundle = {}
     for c in mesh["concepts"]:

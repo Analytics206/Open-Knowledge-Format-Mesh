@@ -136,8 +136,14 @@ Delete the guide whenever you like: `rm -rf .okfm/guide/`.
 ## Level 2 — paste and run
 
 ```bash
-cp -r "Open Knowledge Format Mesh/dropin" my-project/.okfm && cd my-project
+cp -r Open-Knowledge-Format-Mesh/dropin my-project/.okfm
+cp Open-Knowledge-Format-Mesh/okfm-web-ui.html my-project/
+cd my-project
 ```
+
+**Two things, not one.** The viewer sits at the download's root rather than inside `dropin/`,
+because it is the whole of level 1 and does not belong to the build. Skip it and the build
+still produces a valid mesh — it says so and carries on — you just have nothing to open.
 
 ```bash
 python .okfm/okfm.py
@@ -158,7 +164,7 @@ because the captured hashes are real.
 
 Re-running is safe: the build writes only concepts nothing else has touched.
 
-Python 3.13, standard library only. No install step.
+Python 3.13 or newer, standard library only. No install step.
 
 ## Level 3 — enrichment
 
