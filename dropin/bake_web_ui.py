@@ -21,7 +21,8 @@ import re
 import sys
 from pathlib import Path
 
-from okfm_core import HERE, PROJECT, configured_bundles, load_or_create_config
+import config_schema
+from okfm_core import HERE, PROJECT, configured_bundles, find_config, load_or_create_config
 
 ROOT = PROJECT
 VIEWER = PROJECT / "okfm-web-ui.html"
@@ -29,7 +30,15 @@ CACHE = HERE / ".okfm-cache" / "observations.json"
 
 RESERVED_TYPES = {"Index", "Log"}
 _FM = re.compile(r"\A---\r?\n(.*?)\r?\n---\r?\n", re.S)
-_BOOTSTRAP = re.compile(r"(const BOOTSTRAP = )(\{.*?\n\});", re.S)
+
+# Each baked block: the constant it fills, and how to produce its contents. The config panel
+# needs two of them — the rules, so the page can validate without asking anything, and the
+# config itself, so it opens showing what is actually on disk rather than a blank form.
+_BLOCKS = [
+    ("BOOTSTRAP", re.compile(r"(const BOOTSTRAP = )(\{.*?\n\});", re.S)),
+    ("CONFIG_SCHEMA", re.compile(r"(const CONFIG_SCHEMA = )(\{.*?\n\});", re.S)),
+    ("CONFIG", re.compile(r"(const CONFIG = )(\{.*?\n\});", re.S)),
+]
 
 
 def scalar(block: str, key: str):
@@ -155,35 +164,77 @@ def collect():
     }
 
 
+def current_config() -> dict:
+    """The config exactly as it sits on disk, so the panel opens on the real thing.
+
+    Deliberately the RAW file and not the normalized one. The panel edits what a person
+    wrote; showing them keys the normalizer lifted would mean saving a file they did not
+    write and cannot recognise.
+    """
+    path, _ = find_config()
+    if path is None:
+        return {"_note": "No okfm.json yet. The first build writes one for you."}
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        return {"_error": f"okfm.json is not valid JSON: {exc}"}
+
+
 def main() -> int:
     check = "--check" in sys.argv
     mesh = collect()
     html = VIEWER.read_text(encoding="utf-8")
 
-    m = _BOOTSTRAP.search(html)
-    if not m:
-        print("FATAL: BOOTSTRAP block not found in viewer", file=sys.stderr)
-        return 2
+    schema = json.loads(config_schema.as_json())
+    # The command to run, as it would actually be typed in THIS project. The panel cannot
+    # work it out — where the drop-in folder was pasted is only knowable from here.
+    schema["run"] = f"python {HERE.relative_to(PROJECT).as_posix()}/okfm.py"
 
-    new = json.dumps(mesh, indent=1, ensure_ascii=False)
-    if new.strip() == m.group(2).strip():
+    payloads = {
+        "BOOTSTRAP": mesh,
+        "CONFIG_SCHEMA": schema,
+        "CONFIG": current_config(),
+    }
+
+    stale, edits = [], []
+    for name, pattern in _BLOCKS:
+        m = pattern.search(html)
+        if not m:
+            print(f"FATAL: {name} block not found in viewer", file=sys.stderr)
+            return 2
+        new = json.dumps(payloads[name], indent=1, ensure_ascii=False)
+        if new == "{}":
+            # The anchor is a closing brace at column 0. An empty object has none, and the
+            # next bake would fail to find its own block.
+            new = "{\n}"
+        if new.strip() != m.group(2).strip():
+            stale.append(name)
+            edits.append((m.start(2), m.end(2), new))
+
+    if not stale:
         print(f"up to date — {len(mesh['concepts'])} concepts in {len(mesh['bundles'])} bundles")
         return 0
 
     if check:
-        print("STALE: committed viewer does not match the bundles — run bake_web_ui.py",
-              file=sys.stderr)
+        print(f"STALE: committed viewer does not match the project ({', '.join(stale)}) — "
+              f"run bake_web_ui.py", file=sys.stderr)
         return 1
 
-    VIEWER.write_text(html[:m.start(2)] + new + html[m.end(2):], encoding="utf-8")
+    # Right to left, so an earlier replacement does not move a later one's offsets.
+    for start, end, new in sorted(edits, reverse=True):
+        html = html[:start] + new + html[end:]
+    VIEWER.write_text(html, encoding="utf-8")
+
     by_bundle = {}
     for c in mesh["concepts"]:
         by_bundle[c["b"]] = by_bundle.get(c["b"], 0) + 1
-    print(f"baked {len(mesh['concepts'])} concepts across {len(mesh['bundles'])} bundles")
+    print(f"baked {len(mesh['concepts'])} concepts across {len(mesh['bundles'])} bundles"
+          f"  [{', '.join(stale)}]")
     for b, n in sorted(by_bundle.items()):
         print(f"  {n:>3}  {b}")
 
-    if "body" in new.lower() and '"body"' in new:
+    index = json.dumps(mesh, ensure_ascii=False)
+    if '"body"' in index:
         print("FATAL: bodies leaked into the index", file=sys.stderr)
         return 2
     return 0

@@ -4,6 +4,7 @@
     python okfm/okfm.py                 # the whole deterministic pipeline
     python okfm/okfm.py --check         # same, but fail instead of writing (CI)
 
+    python okfm/okfm.py config          # is okfm.json readable, and what is it doing?
     python okfm/okfm.py build [--apply] # markdown -> concepts
     python okfm/okfm.py refresh         # observe pointers, report drift
     python okfm/okfm.py view            # bake the web UI index
@@ -34,7 +35,12 @@ utf8_stdout()
 HERE = Path(__file__).resolve().parent
 
 # (name, script, args when running the full pipeline, args in --check mode)
+#
+# `config` runs first and stops the pipeline on an error. A build that reads a config with a
+# misspelled key does not fail — it quietly does something else, and the adopter is left
+# comparing what they wrote against what they got.
 STEPS = [
+    ("config",  "check_config.py",  ["--quiet"], ["--quiet"]),
     ("build",   "build.py",         ["--apply"], []),
     ("refresh", "refresh.py",       [],          ["--check"]),
     ("view",    "bake_web_ui.py",   [],          ["--check"]),

@@ -88,8 +88,9 @@ runs, and there is no CLI yet.
 |---|---|
 | Specification, rationale, roadmap, prior art | ✅ |
 | The mesh — 7 bundles, 60 concepts, self-hosted | ✅ |
-| `okfm-web-ui.html` — graph, closure ledger, health panel | ✅ works offline |
+| `okfm-web-ui.html` — graph, closure ledger, health panel, config editor | ✅ works offline |
 | `dropin/` — paste into a project, build a mesh | ✅ level 2, deterministic |
+| Config validation — one rule table, terminal and browser | ✅ |
 | `templates/AGENTS.md`, enrich / guard / revalidate | ✅ level 3 |
 | Benchmark harness | ✅ prototype — deterministic half, placeholder questions |
 | `okfm` CLI, live resolvers, console app | ⬜ Phase 2 |
@@ -126,6 +127,11 @@ python .okfm/okfm.py
 
 It finds `docs/`, builds one OKF per folder plus a mesh OKF over them, and writes the config
 it used — so the first thing you edit is a file it made for you rather than a blank page.
+
+That config is **validated before anything reads it**. Misspell a key and you get
+*"not a key anything reads — did you mean `exclude`?"* rather than a build that quietly does
+something else. The same rules drive a form in the web UI's **Config** tab, because they are
+one table read by both.
 
 Descriptions are **extracted** from your files rather than written, so they can be unhelpful
 but never wrong about what your source says. Everything lands `status: draft` with no

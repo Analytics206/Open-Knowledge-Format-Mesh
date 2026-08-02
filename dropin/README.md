@@ -54,6 +54,36 @@ list turns discovery off entirely; someone who wrote one meant it.
 Your documents are never written to. Everything the tool produces lands under `.okfm/`, so
 `rm -rf .okfm` leaves the project exactly as it was.
 
+## The config is checked before anything reads it
+
+```bash
+python .okfm/okfm.py config
+```
+
+Every consumer of a config ignores keys it does not recognise, so a misspelled `exlude` does
+not fail — it builds the wrong thing quietly. This is the step that says so:
+
+```text
+  FAIL  build.exlude
+        not a key anything reads
+        → did you mean `exclude`?
+```
+
+It runs first in the pipeline. It checks unknown keys, types, enums and ranges, whether the
+paths exist, that `build.out` does not sit inside `build.root` (the build would read its own
+output), and that a `stores` credential is a **handle** — `env:`, `vault:`, `op:` — and not
+the secret itself. Errors stop the build; warnings do not, because a folder you have not
+created yet is the normal case during setup.
+
+**There is also a form.** Open `okfm-web-ui.html` and switch to the **Config** tab: the same
+rules, live, with one line of help per key. It saves through the browser's own file dialog
+and runs nothing — the build stays a terminal command, which is what keeps this a folder of
+scripts with no server in it.
+
+The rules themselves live in `config_schema.py` as a table, and the bake embeds that table in
+the page. One source, three readers. Two lists of what keys exist would agree until somebody
+added a key to one of them, and the page would start accepting configs the build rejects.
+
 **Re-running is safe.** The build writes only concepts nothing else has touched, judged by
 `generated.by` and the presence of `verified`. A tool that eats your edits on the second run
 gets deleted after the second run.
@@ -67,6 +97,8 @@ network, no secrets, no model.
 | File | Does |
 |---|---|
 | `okfm.py` | One entry point. Runs the pipeline, or dispatches a single step. |
+| `config_schema.py` | The config's rules, as data. Read by the validator *and* by the web UI. |
+| `check_config.py` | Validates `okfm.json` before anything reads it. Runs first. |
 | `build.py` | Markdown → concepts, one bundle per folder, plus the mesh OKF. |
 | `okfm_core.py` | Locating and frontmatter parsing. Knows nothing about where it was installed. |
 | `bootstrap.py` | Extraction — `title`, `description` — and in-place concept creation. |

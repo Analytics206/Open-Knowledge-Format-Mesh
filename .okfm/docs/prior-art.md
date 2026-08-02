@@ -8,7 +8,7 @@ sources:
   - id: source
     resource: ../../docs/prior-art.md
     okfm_role: subject
-    okfm_captured: { hash: "sha256:4d95749ef5d803e4c800dbe149cdc07b20d9dd38e5733e34b91d9d08818e57f1", at: 2026-08-02 }
+    okfm_captured: { hash: "sha256:8b5a8eb28d43df3ff6ada3a06460bd782fba6b1debd70d4e2030d481f17118b3", at: 2026-08-02 }
 ---
 
 # OKFM — Ecosystem and Prior Art

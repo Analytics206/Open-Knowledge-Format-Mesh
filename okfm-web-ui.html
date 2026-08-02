@@ -88,6 +88,97 @@
   label.chk input{accent-color:var(--ink); margin:0}
   label.chk .swatch{width:9px; height:9px; border-radius:50%; flex:none}
   label.chk .n{margin-left:auto; font-family:var(--mono); font-size:10.5px; color:var(--slate-dim)}
+  /* ---------- config panel ---------- */
+  /* Level 2's config, edited from level 1's page. It writes nothing on its own: the file
+     goes back to disk through the browser's own save dialog, and the build is run from a
+     terminal. That keeps this one file with no server behind it. */
+  body.cfg main{grid-template-columns:1fr}
+  body.cfg aside{display:none}
+  body.cfg section.stage{overflow-y:auto}
+  .cfg-wrap{max-width:1080px; margin:0 auto; padding:20px 24px 48px}
+  .cfg-note{
+    border:1px solid var(--line); border-left:3px solid var(--machine);
+    background:var(--panel); padding:11px 14px; font-size:12.5px; line-height:1.55;
+    color:var(--slate); margin-bottom:16px;
+  }
+  .cfg-note b{color:var(--ink)}
+  .cfg-bar{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:14px}
+  .cfg-bar button{
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.07em; text-transform:uppercase;
+    background:var(--panel); border:1px solid var(--line); color:var(--ink);
+    padding:6px 12px; cursor:pointer; border-radius:2px;
+  }
+  .cfg-bar button:hover{border-color:var(--slate)}
+  .cfg-bar button[disabled]{opacity:.4; cursor:default}
+  .cfg-bar button.primary{background:var(--ink); color:var(--paper); border-color:var(--ink)}
+  .cfg-bar .cfg-file{
+    font-family:var(--mono); font-size:10.5px; color:var(--slate-dim); margin-left:auto;
+  }
+  .cfg-cols{display:grid; grid-template-columns:1fr 400px; gap:22px; align-items:start}
+  @media (max-width:900px){ .cfg-cols{grid-template-columns:1fr} }
+  .cfg-group{margin-bottom:22px}
+  .cfg-group > h3{
+    font-family:var(--mono); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--slate-dim); margin:0 0 3px; font-weight:600;
+  }
+  .cfg-group > p.blurb{margin:0 0 10px; font-size:12px; color:var(--slate)}
+  .cfg-field{
+    display:grid; grid-template-columns:210px 1fr; gap:12px; align-items:start;
+    padding:8px 0; border-top:1px solid var(--line-soft);
+  }
+  .cfg-field > .k{padding-top:5px}
+  .cfg-field .k label{font-size:12.5px; display:block}
+  .cfg-field .k code{font-family:var(--mono); font-size:10px; color:var(--slate-dim); display:block}
+  .cfg-field .help{font-size:11.5px; color:var(--slate); margin:5px 0 0; line-height:1.5}
+  .cfg-field input[type=text], .cfg-field input[type=number], .cfg-field select, .cfg-field textarea{
+    width:100%; font-family:var(--mono); font-size:12px; padding:5px 7px;
+    border:1px solid var(--line); background:var(--paper); color:var(--ink); border-radius:2px;
+  }
+  .cfg-field textarea{resize:vertical; min-height:52px; line-height:1.5}
+  .cfg-field input:focus, .cfg-field select:focus, .cfg-field textarea:focus{
+    outline:none; border-color:var(--machine);
+  }
+  .cfg-field.bad input, .cfg-field.bad select, .cfg-field.bad textarea{border-color:var(--drift)}
+  .cfg-field.warned input, .cfg-field.warned select, .cfg-field.warned textarea{border-color:var(--stale)}
+  .cfg-field label.bool{display:flex; align-items:center; gap:8px; font-size:12.5px; padding-top:4px}
+  .cfg-field label.bool input{accent-color:var(--ink); margin:0}
+  .cfg-msg{font-family:var(--mono); font-size:10.5px; margin:4px 0 0; line-height:1.5}
+  .cfg-msg.error{color:var(--drift)} .cfg-msg.warn{color:var(--stale)}
+  .cfg-side{position:sticky; top:14px}
+  .cfg-card{border:1px solid var(--line); background:var(--panel); margin-bottom:14px}
+  .cfg-card > h3{
+    font-family:var(--mono); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--slate-dim); margin:0; padding:9px 12px; border-bottom:1px solid var(--line-soft);
+    font-weight:600; display:flex; align-items:center; gap:8px;
+  }
+  .cfg-card > h3 .count{
+    margin-left:auto; font-size:10px; letter-spacing:0; text-transform:none; color:var(--slate);
+  }
+  .cfg-card .body{padding:11px 12px}
+  .cfg-verdict{font-size:12.5px; line-height:1.55}
+  .cfg-verdict.ok{color:var(--verified)}
+  .cfg-finding{padding:7px 0; border-top:1px solid var(--line-soft); font-size:12px; line-height:1.5}
+  .cfg-finding:first-child{border-top:none}
+  .cfg-finding .p{font-family:var(--mono); font-size:10.5px; letter-spacing:.02em}
+  .cfg-finding.error .p{color:var(--drift)} .cfg-finding.warn .p{color:var(--stale)}
+  .cfg-finding .hint{color:var(--slate); font-size:11.5px}
+  .cfg-json{
+    width:100%; min-height:280px; font-family:var(--mono); font-size:11.5px; line-height:1.5;
+    border:1px solid var(--line); background:var(--paper); color:var(--ink);
+    padding:10px; border-radius:2px; resize:vertical;
+  }
+  .cfg-json:focus{outline:none; border-color:var(--machine)}
+  .cfg-json.bad{border-color:var(--drift)}
+  .cfg-run{
+    font-family:var(--mono); font-size:11.5px; background:var(--ink); color:var(--paper);
+    padding:9px 11px; display:flex; align-items:center; gap:10px; border-radius:2px;
+  }
+  .cfg-run code{flex:1; overflow-x:auto; white-space:nowrap}
+  .cfg-run button{
+    font-family:var(--mono); font-size:9.5px; letter-spacing:.08em; text-transform:uppercase;
+    background:none; border:1px solid var(--slate); color:var(--paper); padding:3px 8px;
+    cursor:pointer; border-radius:2px; flex:none;
+  }
   .filter-actions{margin-top:10px}
   .filter-actions button{
     font-family:var(--mono); font-size:10px; letter-spacing:.07em; text-transform:uppercase;
@@ -207,6 +298,7 @@
     <button role="tab" aria-selected="true"  data-view="graph">Graph</button>
     <button role="tab" aria-selected="false" data-view="chains">Closure</button>
     <button role="tab" aria-selected="false" data-view="stats">Health</button>
+    <button role="tab" aria-selected="false" data-view="config">Config</button>
   </nav>
 </header>
 
@@ -222,6 +314,7 @@
     </div>
     <div class="chains" id="chains" hidden></div>
     <div class="stats" id="stats" hidden></div>
+    <div id="config" hidden></div>
   </section>
   <aside class="detail" id="detail"></aside>
 </main>
@@ -245,6 +338,285 @@
    live view of your own mesh.
 -----------------------------------------------------------------------------*/
 const INDEX_URL = (window.OKFM_INDEX_URL) || "./okfm-index.json";
+
+/* The config panel's two baked blocks, both written by `okfm view`.
+   CONFIG_SCHEMA is dropin/config_schema.py's table verbatim — the rules exist once and are
+   read by the terminal validator and by this page. CONFIG is okfm.json as it sat on disk at
+   bake time, so the panel opens on the real file rather than a blank form. */
+const CONFIG_SCHEMA = {
+ "version": "0.2.1",
+ "handles": [
+  "env",
+  "file",
+  "keyring",
+  "op",
+  "vault",
+  "aws-sm",
+  "gcp-sm",
+  "azure-kv"
+ ],
+ "groups": [
+  [
+   "",
+   "Profile",
+   "What this file is."
+  ],
+  [
+   "build",
+   "Build",
+   "What gets read, and what gets written."
+  ],
+  [
+   "bundles",
+   "Bundles",
+   "Name them and discovery stops. Usually leave this empty."
+  ],
+  [
+   "read",
+   "Read",
+   "Consuming a mesh rather than producing one."
+  ],
+  [
+   "stores",
+   "Stores",
+   "External data. Handles only."
+  ],
+  [
+   "federation",
+   "Federation",
+   "Who registers whom."
+  ]
+ ],
+ "fields": [
+  {
+   "path": "okfm",
+   "kind": "string",
+   "default": "0.2.1",
+   "required": true,
+   "label": "Profile version",
+   "help": "Which OKFM profile this config is written against."
+  },
+  {
+   "path": "pack",
+   "kind": "string",
+   "default": null,
+   "required": true,
+   "nullable": true,
+   "label": "Domain pack",
+   "help": "A domain vocabulary overlay, or null for none. The key must be present even when empty — a mesh with no domain is a normal mesh, not a missing answer."
+  },
+  {
+   "path": "build.root",
+   "kind": "path",
+   "base": "project",
+   "exists": "dir",
+   "default": "docs",
+   "label": "Documents root",
+   "help": "The folder to read. Every subfolder of documents under it becomes a bundle."
+  },
+  {
+   "path": "build.root_files",
+   "kind": "bool",
+   "default": true,
+   "label": "Bundle the loose files",
+   "help": "Turn the documents sitting directly in the root into their own bundle. Set false when they are a landing page and two stubs rather than knowledge."
+  },
+  {
+   "path": "build.exclude",
+   "kind": "paths",
+   "base": "root",
+   "exists": "dir",
+   "soft": true,
+   "default": [],
+   "label": "Exclude — folders inside the root",
+   "help": "Subtrees to skip, relative to the root. An archive of superseded documents is the usual first entry."
+  },
+  {
+   "path": "build.include",
+   "kind": "paths",
+   "base": "project",
+   "exists": "dir",
+   "soft": true,
+   "default": [],
+   "label": "Include — trees outside the root",
+   "help": "Folders outside the root to read as well, relative to the project. This is the only way to reach one; nothing scans your project on its own."
+  },
+  {
+   "path": "build.out",
+   "kind": "path",
+   "base": "project",
+   "default": ".okfm",
+   "label": "Output folder",
+   "help": "Where bundles are written. Your documents are never written to."
+  },
+  {
+   "path": "build.mesh",
+   "kind": "string",
+   "default": "mesh",
+   "label": "Mesh bundle name",
+   "help": "The generated OKF whose concepts are the other OKFs — the one to read first."
+  },
+  {
+   "path": "build.mode",
+   "kind": "enum",
+   "choices": [
+    "mirror",
+    "in-place"
+   ],
+   "default": "mirror",
+   "label": "Mode",
+   "help": "mirror writes concepts beside your files and never touches them; in-place adds frontmatter to the files themselves."
+  },
+  {
+   "path": "build.vocab_overlays",
+   "kind": "paths",
+   "base": "project",
+   "exists": "file",
+   "default": [],
+   "label": "Vocabulary overlays",
+   "help": "Extra predicate, type and reason-code files, merged by family."
+  },
+  {
+   "path": "build.sources",
+   "kind": "any",
+   "default": null,
+   "nullable": true,
+   "label": "Explicit source list",
+   "help": "An explicit list of folders. Its presence turns discovery off entirely — somebody who wrote one meant it."
+  },
+  {
+   "path": "bundles",
+   "kind": "pathmap",
+   "base": "project",
+   "exists": "dir",
+   "default": {},
+   "label": "Bundles",
+   "help": "id → path. Its presence turns discovery off. The id should be the folder name: two names for one bundle means the second one exists to be got wrong."
+  },
+  {
+   "path": "read.web_ui.path",
+   "kind": "path",
+   "base": "project",
+   "exists": "file",
+   "soft": true,
+   "default": "./okfm-web-ui.html",
+   "label": "Web UI file",
+   "help": "The single-file viewer. Opens from disk; there is no server."
+  },
+  {
+   "path": "read.web_ui.index",
+   "kind": "path",
+   "base": "project",
+   "soft": true,
+   "default": null,
+   "nullable": true,
+   "label": "Index file",
+   "help": "Where the generated index is written, if you want it as a separate file."
+  },
+  {
+   "path": "read.web_ui.serve_port",
+   "kind": "int",
+   "min": 1,
+   "max": 65535,
+   "default": null,
+   "nullable": true,
+   "label": "Serve port",
+   "help": "Port for the optional local preview. Not needed to open the file."
+  },
+  {
+   "path": "read.index.max_concepts",
+   "kind": "int",
+   "min": 1,
+   "max": 10000,
+   "default": 60,
+   "label": "Index budget",
+   "help": "How many concepts an injected index may carry before it costs more than it buys."
+  },
+  {
+   "path": "read.index.priority_types",
+   "kind": "strings",
+   "default": [],
+   "label": "Priority types",
+   "help": "Types that survive the budget first, most important first."
+  },
+  {
+   "path": "read.exclude_scopes",
+   "kind": "strings",
+   "default": [],
+   "label": "Excluded scopes",
+   "help": "Scopes kept out of health statistics and out of any context assembled for an agent — the bundled guide is the usual entry."
+  },
+  {
+   "path": "stores",
+   "kind": "stores",
+   "default": {},
+   "label": "Stores",
+   "help": "External data stores. Credentials are named by handle and never written here: a config file is committed, a credential is not."
+  },
+  {
+   "path": "federation.registry",
+   "kind": "path",
+   "base": "project",
+   "exists": "dir",
+   "soft": true,
+   "default": null,
+   "nullable": true,
+   "label": "Registry",
+   "help": "The bundle that registers the others. null is a valid mesh — a registry appears when a second owner does."
+  }
+ ],
+ "run": "python dropin/okfm.py"
+};
+const CONFIG = {
+ "okfm": "0.2.1",
+ "pack": null,
+ "_build": "Every folder of documents under `root` gets its own OKF in `out`, plus one for the loose files at the top and a mesh OKF over all of them. `exclude` drops a folder inside `root`; `include` adds a tree outside it. `decisions` is excluded because it is an in-place bundle — those files are the concepts, so mirroring them would be a second copy of knowledge that already exists.",
+ "build": {
+  "root": "docs",
+  "root_files": true,
+  "exclude": [
+   "decisions"
+  ],
+  "include": [],
+  "out": ".okfm",
+  "mesh": "mesh",
+  "mode": "mirror",
+  "vocab_overlays": []
+ },
+ "bundles": {
+  "mesh": "./.okfm/mesh",
+  "level-1-view": "./.okfm/level-1-view",
+  "level-2-build": "./.okfm/level-2-build",
+  "level-3-enrich": "./.okfm/level-3-enrich",
+  "docs": "./.okfm/docs",
+  "guide": "./.okfm/guide",
+  "decisions": "./docs/decisions"
+ },
+ "read": {
+  "web_ui": {
+   "path": "./okfm-web-ui.html",
+   "index": "./okfm-index.json",
+   "serve_port": 7345
+  },
+  "index": {
+   "max_concepts": 60,
+   "priority_types": [
+    "Attested Computation",
+    "Rule",
+    "Metric",
+    "Perspective"
+   ]
+  },
+  "exclude_scopes": [
+   "guide"
+  ]
+ },
+ "stores": {},
+ "federation": {
+  "registry": "./.okfm/mesh"
+ }
+};
+
 const BOOTSTRAP = {
  "name": "OKFM mesh (bundled)",
  "generated_at": "2026-08-01",
@@ -487,7 +859,7 @@ const BOOTSTRAP = {
    "v": null,
    "sa": null,
    "src": 1,
-   "drift": 1,
+   "drift": 0,
    "r": [],
    "scope": null
   },
@@ -513,7 +885,7 @@ const BOOTSTRAP = {
    "v": null,
    "sa": null,
    "src": 1,
-   "drift": 1,
+   "drift": 0,
    "r": [],
    "scope": null
   },
@@ -777,6 +1149,24 @@ const BOOTSTRAP = {
     [
      "part_of",
      "/level-1-view/index.md"
+    ]
+   ],
+   "scope": "project"
+  },
+  {
+   "p": "/level-2-build/config-validation.md",
+   "b": "level-2-build",
+   "t": "Document",
+   "title": "Config validation",
+   "d": "Every consumer ignores keys it does not recognise, so a misspelled key does not fail — it builds the wrong thing quietly. This is the step that says so, and the rules it reads are the same table the web UI's config form is generated from.",
+   "v": null,
+   "sa": null,
+   "src": 3,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/level-2-build/index.md"
     ]
    ],
    "scope": "project"
@@ -1821,13 +2211,495 @@ function bodyBlock(c){
     <pre class="bodytext">${esc(state.body)}</pre>`;
 }
 
+/* ---------- config panel ----------------------------------------------------
+   Level 2's okfm.json, edited from level 1's page.
+
+   The RULES are not written here. They are baked in as CONFIG_SCHEMA from
+   dropin/config_schema.py, which is the same table the terminal validator reads.
+   Two copies of "what keys exist" would agree until somebody added a key to one,
+   and the disagreement would be silent — this page would accept a config the
+   build rejects, which is worse than having no page.
+
+   The split is honest: everything that does not need a filesystem is checked
+   here, live. Whether the paths exist is checked when you run it, because a page
+   opened from file:// cannot see your disk and will not pretend to.
+
+   Nothing is written behind your back. Save goes through the browser's own file
+   dialog, and the build is run from a terminal. That is what keeps this one file
+   with no server behind it.
+---------------------------------------------------------------------------*/
+const CFG = { data:{}, text:"", handle:null, name:"okfm.json", origin:"baked into this page",
+              dirty:false, jsonError:null, touched:new Set(), note:"" };
+
+const SCHEMA = (typeof CONFIG_SCHEMA!=="undefined") ? CONFIG_SCHEMA : {fields:[],groups:[]};
+const CFIELDS = SCHEMA.fields || [];
+const CBY = Object.fromEntries(CFIELDS.map(f=>[f.path,f]));
+const COPEN = new Set(CFIELDS.filter(f=>["pathmap","stores","any"].includes(f.kind)).map(f=>f.path));
+const RUNCMD = SCHEMA.run || "python .okfm/okfm.py";
+
+/* ---- reading and writing a dotted path ---- */
+function cdig(obj, path){
+  let node = obj;
+  for(const part of path.split(".")){
+    if(node===null || typeof node!=="object" || !(part in node)) return [undefined,false];
+    node = node[part];
+  }
+  return [node,true];
+}
+function cset(obj, path, value){
+  const parts = path.split("."), last = parts.pop();
+  let node = obj;
+  for(const p of parts){
+    if(node[p]===null || typeof node[p]!=="object") node[p] = {};
+    node = node[p];
+  }
+  if(value===undefined){
+    delete node[last];
+    // Prune a group we just emptied, so removing the last key does not leave `"read": {}`
+    // sitting in the file looking like a decision somebody made.
+    let chain = path.split("."); chain.pop();
+    while(chain.length){
+      const [v] = cdig(obj, chain.join("."));
+      if(v && typeof v==="object" && !Array.isArray(v) && !Object.keys(v).length){
+        cset(obj, chain.join("."), undefined);
+      }
+      chain.pop();
+    }
+  } else node[last] = value;
+}
+
+/* ---- validation: the same rules as check_config.py, minus the disk ---- */
+function cnorm(p){ return String(p).replace(/\\/g,"/").replace(/^\.\//,"").replace(/^\/+|\/+$/g,""); }
+
+function cclosest(word, options){
+  let best=null, bestD=Infinity;
+  for(const o of options){
+    const d = clev(word,o);
+    if(d<bestD){ bestD=d; best=o; }
+  }
+  return (best && bestD<=Math.max(2, Math.floor(best.length/3))) ? best : null;
+}
+function clev(a,b){
+  const m=a.length,n=b.length; let prev=Array.from({length:n+1},(_,j)=>j);
+  for(let i=1;i<=m;i++){
+    const cur=[i];
+    for(let j=1;j<=n;j++)
+      cur[j]=Math.min(prev[j]+1, cur[j-1]+1, prev[j-1]+(a[i-1]===b[j-1]?0:1));
+    prev=cur;
+  }
+  return prev[n];
+}
+
+function cUnknown(cfg){
+  const out=[];
+  (function walk(node, prefix){
+    if(node===null || typeof node!=="object" || Array.isArray(node)) return;
+    for(const [key,value] of Object.entries(node)){
+      if(key.startsWith("_")) continue;               // `_note`-style comments are the file's own
+      const path = prefix+key;
+      if(COPEN.has(path)) continue;                   // the adopter names these
+      const kids = Object.keys(CBY).filter(p=>p.startsWith(path+"."));
+      if(CBY[path]){ if(kids.length && value && typeof value==="object") walk(value, path+"."); continue; }
+      if(kids.length){ walk(value, path+"."); continue; }
+      const here = prefix.replace(/\.$/,"");
+      const siblings = Object.keys(CBY)
+        .filter(p => (p.includes(".") ? p.slice(0,p.lastIndexOf(".")) : "") === here)
+        .map(p => p.slice(p.lastIndexOf(".")+1));
+      const near = cclosest(key, siblings);
+      out.push({level:"error", path, msg:"not a key anything reads",
+                hint: near ? "did you mean `"+near+"`?"
+                           : "remove it, or prefix it with `_` to keep it as a note"});
+    }
+  })(cfg, "");
+  return out;
+}
+
+function cType(field, value){
+  const k = field.kind;
+  if(k==="any") return null;
+  if(k==="string"||k==="path") return typeof value==="string" ? null : "must be a string";
+  if(k==="bool") return typeof value==="boolean" ? null : "must be true or false";
+  if(k==="int"){
+    if(typeof value!=="number" || !Number.isInteger(value)) return "must be a whole number";
+    if((field.min!=null && value<field.min) || (field.max!=null && value>field.max))
+      return "must be between "+field.min+" and "+field.max;
+    return null;
+  }
+  if(k==="enum") return field.choices.includes(value) ? null :
+    "must be one of "+field.choices.map(c=>"`"+c+"`").join(", ");
+  if(k==="paths"||k==="strings"){
+    if(!Array.isArray(value)) return "must be a list";
+    return value.every(v=>typeof v==="string") ? null : "every entry must be a string";
+  }
+  if(k==="pathmap"){
+    if(value===null || typeof value!=="object" || Array.isArray(value)) return "must be a map of id to path";
+    return Object.values(value).every(v=>typeof v==="string") ? null : "every value must be a path";
+  }
+  if(k==="stores")
+    return (value!==null && typeof value==="object" && !Array.isArray(value)) ? null
+      : "must be a map of name to store";
+  return null;
+}
+
+function centries(field, value){
+  if(field.kind==="path") return [[field.path, value]];
+  if(field.kind==="paths") return (value||[]).map((v,i)=>[field.path+"["+i+"]", v]);
+  if(field.kind==="pathmap") return Object.entries(value||{}).map(([k,v])=>[field.path+"."+k, v]);
+  return [];
+}
+
+function cShape(field, value){
+  if(!field.base) return [];
+  const from = field.base==="root" ? "the documents root" : "the project";
+  const out=[];
+  for(const [where, rel] of centries(field, value)){
+    if(typeof rel!=="string") continue;
+    if(/^[\/\\]/.test(rel) || /^[A-Za-z]:/.test(rel) || rel.split(/[\/\\]/).includes(".."))
+      out.push({level:"error", path:where, msg:"must sit inside "+from+", written relative to it"});
+  }
+  return out;
+}
+
+function cStores(stores){
+  const out=[], handles = SCHEMA.handles || [];
+  for(const [name, store] of Object.entries(stores||{})){
+    if(store===null || typeof store!=="object"){
+      out.push({level:"error", path:"stores."+name, msg:"must be an object"}); continue;
+    }
+    const profile = store.profile;
+    if(profile==null){
+      out.push({level:"warn", path:"stores."+name+".profile",
+                msg:"no credential handle — this store will not resolve"});
+    } else if(typeof profile!=="string" ||
+              !new RegExp("^("+handles.join("|")+"):\\S+$").test(profile)){
+      const dsn = typeof profile==="string" && profile.includes("://");
+      out.push({level:"error", path:"stores."+name+".profile",
+        msg:"must be a handle, not a credential"+(dsn?" — this looks like a live connection string":""),
+        hint:"one of "+handles.map(h=>"`"+h+":`").join(", ")
+             +". A config file is committed; a credential is not."});
+    }
+  }
+  return out;
+}
+
+function cCross(cfg){
+  const out=[];
+  const [root] = cdig(cfg,"build.root"), [outDir] = cdig(cfg,"build.out");
+  const [include] = cdig(cfg,"build.include");
+  const [bundles, hasBundles] = cdig(cfg,"bundles");
+
+  if(typeof root==="string" && typeof outDir==="string"){
+    const r=cnorm(root), o=cnorm(outDir);
+    if(o===r || o.startsWith(r+"/"))
+      out.push({level:"error", path:"build.out", msg:"writes inside `"+root+"`, the folder it reads",
+        hint:"the build would read its own output on the next run, and your documents would stop being only yours"});
+  }
+  (include||[]).forEach((entry,i)=>{
+    if(typeof entry!=="string" || typeof root!=="string") return;
+    const e=cnorm(entry), r=cnorm(root);
+    if(e===r || e.startsWith(r+"/"))
+      out.push({level:"warn", path:"build.include["+i+"]", msg:"inside `"+root+"`, so it is dropped",
+        hint:"include reaches outside the root; use exclude to control what is inside it"});
+  });
+  if(hasBundles && bundles && typeof bundles==="object"){
+    for(const [bid, rel] of Object.entries(bundles)){
+      if(typeof rel!=="string") continue;
+      const leaf = cnorm(rel).split("/").pop();
+      if(leaf!==bid)
+        out.push({level:"warn", path:"bundles."+bid,
+          msg:"id does not match the folder name `"+leaf+"`",
+          hint:"two names for one bundle, and the second exists only to be got wrong"});
+    }
+  }
+  return out;
+}
+
+function cValidate(cfg){
+  const out = cUnknown(cfg);
+  for(const field of CFIELDS){
+    const [value, present] = cdig(cfg, field.path);
+    if(!present){
+      if(field.required) out.push({level:"error", path:field.path, msg:"required, and missing", hint:field.help});
+      continue;
+    }
+    if(value===null){
+      if(!field.nullable) out.push({level:"error", path:field.path, msg:"cannot be null"});
+      continue;
+    }
+    const problem = cType(field, value);
+    if(problem){ out.push({level:"error", path:field.path, msg:problem, hint:field.help}); continue; }
+    if(field.path==="okfm" && value!==SCHEMA.version)
+      out.push({level:"warn", path:"okfm",
+                msg:"this tooling implements "+SCHEMA.version+", the config says "+value});
+    if(field.kind==="stores") out.push(...cStores(value));
+    out.push(...cShape(field, value));
+  }
+  out.push(...cCross(cfg));
+  const rank = {error:0, warn:1};
+  return out.sort((a,b)=> rank[a.level]-rank[b.level] || a.path.localeCompare(b.path));
+}
+
+/* ---- the form, generated from the same table ---- */
+function cInput(field, value, present){
+  const id = "cf_"+field.path.replace(/\./g,"_");
+  const k = field.kind;
+  const shown = present ? value : field.default;
+  const ph = present ? "" : ` placeholder="${esc(JSON.stringify(field.default ?? ""))}"`;
+  if(k==="bool")
+    return `<label class="bool"><input type="checkbox" id="${id}" data-p="${field.path}"
+      ${shown?"checked":""}> ${shown?"true":"false"}</label>`;
+  if(k==="enum")
+    return `<select id="${id}" data-p="${field.path}">`
+      + field.choices.map(c=>`<option${c===shown?" selected":""}>${esc(c)}</option>`).join("")
+      + `</select>`;
+  if(k==="int")
+    return `<input type="number" id="${id}" data-p="${field.path}"
+      value="${shown==null?"":esc(String(shown))}"${ph}>`;
+  if(k==="strings"||k==="paths")
+    return `<textarea id="${id}" data-p="${field.path}" rows="${Math.max(2,(shown||[]).length+1)}"
+      placeholder="one per line">${esc((shown||[]).join("\n"))}</textarea>`;
+  if(k==="pathmap"||k==="stores"||k==="any")
+    return `<textarea id="${id}" data-p="${field.path}" rows="5" class="jsonish"
+      placeholder="{ }">${esc(JSON.stringify(shown ?? (k==="any"?null:{}), null, 1))}</textarea>`;
+  return `<input type="text" id="${id}" data-p="${field.path}"
+    value="${shown==null?"":esc(String(shown))}"${ph}>`;
+}
+
+function cReadInput(el, field){
+  const k = field.kind, raw = el.type==="checkbox" ? el.checked : el.value;
+  if(k==="bool") return raw;
+  if(k==="int"){ const s=String(raw).trim(); return s==="" ? undefined : Number(s); }
+  if(k==="strings"||k==="paths"){
+    const list = String(raw).split("\n").map(s=>s.trim()).filter(Boolean);
+    return list.length ? list : (field.required ? [] : undefined);
+  }
+  if(k==="pathmap"||k==="stores"||k==="any"){
+    const s = String(raw).trim();
+    if(!s) return undefined;
+    try { return JSON.parse(s); } catch(e){ return {__bad:s}; }
+  }
+  const s = String(raw).trim();
+  if(s==="") return field.nullable && field.required ? null : undefined;
+  return s;
+}
+
+function cRenderForm(findings){
+  const byPath = {};
+  for(const f of findings) (byPath[f.path] = byPath[f.path] || []).push(f);
+
+  // `bundles` and `stores` are top-level AND groups of their own, so the catch-all group has
+  // to know which top-level keys are somebody else's.
+  const claimed = new Set((SCHEMA.groups||[]).map(([p])=>p).filter(Boolean));
+  return (SCHEMA.groups||[]).map(([prefix, title, blurb])=>{
+    const fields = CFIELDS.filter(f =>
+      prefix==="" ? (!f.path.includes(".") && !claimed.has(f.path))
+                  : (f.path===prefix || f.path.startsWith(prefix+".")));
+    if(!fields.length) return "";
+    return `<div class="cfg-group"><h3>${esc(title)}</h3><p class="blurb">${esc(blurb)}</p>`
+      + fields.map(f=>{
+          const [value, present] = cdig(CFG.data, f.path);
+          const mine = (byPath[f.path]||[]).concat(
+            findings.filter(x=>x.path.startsWith(f.path+"[") || x.path.startsWith(f.path+".")));
+          const worst = mine.some(x=>x.level==="error") ? "bad"
+                      : mine.length ? "warned" : "";
+          return `<div class="cfg-field ${worst}">
+            <div class="k"><label for="cf_${f.path.replace(/\./g,"_")}">${esc(f.label)}</label>
+              <code>${esc(f.path)}${present?"":" · default"}</code></div>
+            <div>${cInput(f, value, present)}
+              <p class="help">${esc(f.help)}</p>
+              ${mine.map(x=>`<p class="cfg-msg ${x.level}">${esc(x.path)}: ${esc(x.msg)}${
+                  x.hint?" — "+esc(x.hint):""}</p>`).join("")}
+            </div></div>`;
+        }).join("")
+      + `</div>`;
+  }).join("");
+}
+
+function cRender(){
+  const panel = document.getElementById("config");
+  const findings = CFG.jsonError ? [] : cValidate(CFG.data);
+  const errors = findings.filter(f=>f.level==="error");
+  const warns  = findings.filter(f=>f.level==="warn");
+
+  const verdict = CFG.jsonError
+    ? `<p class="cfg-verdict" style="color:var(--drift)">Not valid JSON — ${esc(CFG.jsonError)}</p>`
+    : errors.length
+      ? `<p class="cfg-verdict" style="color:var(--drift)">${errors.length} error${errors.length>1?"s":""}. The build would read a config that does not say what you think it says.</p>`
+      : `<p class="cfg-verdict ok">Readable${warns.length?` — ${warns.length} warning${warns.length>1?"s":""}`:""}.</p>`;
+
+  panel.innerHTML = `<div class="cfg-wrap">
+    <div class="cfg-note"><b>This configures the level&nbsp;2 build</b> — the Python run,
+      <code>${esc(RUNCMD)}</code>. The page you are reading needs no configuration: it is one
+      file, it opens from disk, and it reads nothing.<br>
+      Edit here, save the file, then run it in a terminal. Nothing on this page writes to your
+      project on its own.</div>
+
+    <div class="cfg-bar">
+      <button id="cfgOpen">Open okfm.json…</button>
+      <button id="cfgSave" class="primary">Save</button>
+      <button id="cfgDownload">Download</button>
+      <button id="cfgRevert" ${CFG.dirty?"":"disabled"}>Revert</button>
+      <span class="cfg-file">${esc(CFG.name)} · ${esc(CFG.origin)}${CFG.dirty?" · unsaved":""}</span>
+    </div>
+
+    <div class="cfg-cols">
+      <div class="cfg-form">${CFG.jsonError ? "" : cRenderForm(findings)}</div>
+      <div class="cfg-side">
+        <div class="cfg-card"><h3>Validation <span class="count">${
+            CFG.jsonError ? "—" : findings.length + " finding" + (findings.length===1?"":"s")}</span></h3>
+          <div class="body">${verdict}
+            ${findings.map(f=>`<div class="cfg-finding ${f.level}">
+                <span class="p">${esc(f.path)}</span> — ${esc(f.msg)}
+                ${f.hint?`<br><span class="hint">${esc(f.hint)}</span>`:""}</div>`).join("")}
+            <p class="hint" style="margin:10px 0 0;font-size:11.5px;color:var(--slate-dim)">
+              Whether these paths exist is checked when you run it. A page opened from
+              <code>file://</code> cannot see your disk, and will not guess.</p>
+          </div></div>
+
+        <div class="cfg-card"><h3>okfm.json</h3>
+          <div class="body" style="padding:0">
+            <textarea class="cfg-json ${CFG.jsonError?"bad":""}" id="cfgJson"
+              spellcheck="false">${esc(CFG.text)}</textarea>
+          </div></div>
+
+        <div class="cfg-run"><code>${esc(RUNCMD)}</code>
+          <button id="cfgCopy">copy</button></div>
+        <p style="font-size:11.5px;color:var(--slate);margin:8px 0 0;line-height:1.5">
+          Add <code>--check</code> to validate without writing. <code>${esc(RUNCMD)} config</code>
+          runs these same rules in the terminal, plus the ones that need a filesystem.</p>
+      </div>
+    </div>
+  </div>`;
+
+  cWire();
+}
+
+/* ---- wiring ---- */
+function cSync(fromForm){
+  if(fromForm){ CFG.text = JSON.stringify(CFG.data, null, 2); CFG.jsonError = null; }
+  CFG.dirty = true;
+  cRender();
+}
+
+function cWire(){
+  const panel = document.getElementById("config");
+
+  panel.querySelectorAll("[data-p]").forEach(el=>{
+    const field = CBY[el.dataset.p];
+    const evt = (el.tagName==="TEXTAREA") ? "change" : "input";
+    el.addEventListener(evt, ()=>{
+      const value = cReadInput(el, field);
+      if(value && value.__bad!==undefined) return;     // half-typed JSON: wait for valid
+      cset(CFG.data, field.path, value);
+      CFG.touched.add(field.path);
+      cSync(true);
+      const again = document.getElementById(el.id);
+      if(again){ again.focus(); if(again.setSelectionRange && again.type!=="number"){
+        try{ again.setSelectionRange(again.value.length, again.value.length); }catch(e){} } }
+    });
+  });
+
+  const json = document.getElementById("cfgJson");
+  if(json) json.addEventListener("change", ()=>{
+    try{
+      CFG.data = JSON.parse(json.value); CFG.text = json.value; CFG.jsonError = null;
+    }catch(e){ CFG.text = json.value; CFG.jsonError = e.message; }
+    CFG.dirty = true; cRender();
+  });
+
+  const on = (id, fn)=>{ const b=document.getElementById(id); if(b) b.addEventListener("click", fn); };
+  on("cfgOpen", cOpen);
+  on("cfgSave", cSave);
+  on("cfgDownload", ()=>cDownload(CFG.text));
+  on("cfgRevert", ()=>{ cLoad(JSON.stringify(CONFIG, null, 2), "okfm.json", "baked into this page", null); });
+  on("cfgCopy", async e=>{
+    try{ await navigator.clipboard.writeText(RUNCMD); e.target.textContent="copied"; }
+    catch(err){ e.target.textContent="select it"; }
+    setTimeout(()=>{ e.target.textContent="copy"; }, 1400);
+  });
+}
+
+function cLoad(text, name, origin, handle){
+  CFG.text = text; CFG.name = name; CFG.origin = origin; CFG.handle = handle;
+  CFG.dirty = false; CFG.touched = new Set();
+  try{ CFG.data = JSON.parse(text); CFG.jsonError = null; }
+  catch(e){ CFG.data = {}; CFG.jsonError = e.message; }
+  cRender();
+}
+
+async function cOpen(){
+  if(window.showOpenFilePicker){
+    try{
+      const [handle] = await window.showOpenFilePicker({
+        types:[{description:"OKFM config", accept:{"application/json":[".json"]}}]});
+      const file = await handle.getFile();
+      cLoad(await file.text(), file.name, "opened from disk", handle);
+      return;
+    }catch(e){ if(e.name==="AbortError") return; }   // fall through if unsupported
+  }
+  const picker = document.createElement("input");
+  picker.type = "file"; picker.accept = ".json,application/json";
+  picker.addEventListener("change", async ()=>{
+    const file = picker.files[0];
+    if(file) cLoad(await file.text(), file.name, "opened from disk", null);
+  });
+  picker.click();
+}
+
+async function cSave(){
+  // Written back in place where the browser allows it, downloaded where it does not. There
+  // is no third option that does not mean running a server, and a server is the thing this
+  // page exists without.
+  if(CFG.handle && CFG.handle.createWritable){
+    try{
+      const w = await CFG.handle.createWritable();
+      await w.write(CFG.text.endsWith("\n") ? CFG.text : CFG.text+"\n");
+      await w.close();
+      CFG.dirty = false; CFG.origin = "saved to disk"; cRender(); return;
+    }catch(e){ /* permission withdrawn — fall through */ }
+  }
+  if(window.showSaveFilePicker){
+    try{
+      const handle = await window.showSaveFilePicker({
+        suggestedName:"okfm.json",
+        types:[{description:"OKFM config", accept:{"application/json":[".json"]}}]});
+      const w = await handle.createWritable();
+      await w.write(CFG.text.endsWith("\n") ? CFG.text : CFG.text+"\n");
+      await w.close();
+      CFG.handle = handle; CFG.name = handle.name; CFG.dirty = false;
+      CFG.origin = "saved to disk"; cRender(); return;
+    }catch(e){ if(e.name==="AbortError") return; }
+  }
+  cDownload(CFG.text);
+}
+
+function cDownload(text){
+  const blob = new Blob([text.endsWith("\n")?text:text+"\n"], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "okfm.json";
+  a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+}
+
 /* ---------- view switching ---------- */
+let MESH_EMPTY = false;
+
 function render(){
-  const g = state.view==="graph", ch = state.view==="chains", st = state.view==="stats";
+  const cf = state.view==="config";
+  // With no concepts there is nothing to graph, but there is still a config to fix — which
+  // is the whole reason an empty mesh is usually empty.
+  const live = !cf && !MESH_EMPTY;
+  const g = live && state.view==="graph", ch = live && state.view==="chains",
+        st = live && state.view==="stats";
+  const es = document.getElementById("emptyState");
+  if(es) es.hidden = cf;
   svg.hidden = !g; document.getElementById("legendNote").hidden = !g;
   document.getElementById("chains").hidden = !ch;
   document.getElementById("stats").hidden = !st;
+  document.getElementById("config").hidden = !cf;
+  document.body.classList.toggle("cfg", cf);
   if(g) buildGraph(); if(ch) buildChains(); if(st) buildStats();
+  if(cf && !CFG.text) cLoad(JSON.stringify(CONFIG, null, 2), "okfm.json", "baked into this page", null);
+  else if(cf) cRender();
 }
 document.querySelectorAll('nav.views button').forEach(b=>{
   b.addEventListener("click", ()=>{
@@ -1843,7 +2715,12 @@ function showEmpty(){
     `<div class="gauge"><span class="k">concepts</span><span class="v">0</span></div>`;
   document.getElementById("filters").innerHTML = `<h2 class="grp">Filters</h2>
     <p style="font-size:12px;color:var(--slate);line-height:1.5">Nothing to filter yet.</p>`;
-  document.querySelector("section.stage").innerHTML = `
+  // Appended, never assigned over the stage. Replacing its contents would delete the config
+  // panel, and a project with no concepts is exactly when configuring one is the thing to do.
+  const host = document.createElement("div");
+  host.id = "emptyState";
+  document.querySelector("section.stage").appendChild(host);
+  host.innerHTML = `
     <div class="empty-state" style="padding:64px 28px;max-width:560px;margin:0 auto;text-align:left">
       <p style="font-family:var(--mono);font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--slate-dim);margin:0 0 14px">No mesh found</p>
       <p style="font-size:14px;color:var(--ink);margin:0 0 18px">This project has no concepts yet, and the bundled guide has been removed.</p>
@@ -1859,8 +2736,11 @@ generated: { by: "human:you", at: "${new Date().toISOString().slice(0,10)}" }
 # Why
 
 Float dollars drifted a few cents per thousand rows.</pre>
-      <p style="margin:16px 0 6px">Any <code>.md</code> file with a <code>type:</code> counts, anywhere in the project.</p>
-      <p style="margin:0"><code>okfm view</code> regenerates this page · <code>okfm init --guide</code> restores the guide.</p>
+      <p style="margin:16px 0 6px">Any <code>.md</code> file with a <code>type:</code> counts. Put it
+        where your documents already are — the build reads <code>build.root</code> and whatever
+        <code>build.include</code> names, and nothing scans your project on its own.</p>
+      <p style="margin:0"><code>okfm view</code> regenerates this page · the <b>Config</b> tab
+        shows what the build is set to read.</p>
     </div>`;
   document.getElementById("detail").innerHTML =
     `<div class="empty-state">Nothing selected.</div>`;
@@ -1886,7 +2766,7 @@ Float dollars drifted a few cents per thousand rows.</pre>
     badge.textContent = "empty";
   }
 
-  if (!MESH.concepts.length){ showEmpty(); return; }
+  if (!MESH.concepts.length){ MESH_EMPTY = true; showEmpty(); render(); return; }
   gauges(); filters(); detail(); render();
 })();
 </script>

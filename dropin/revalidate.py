@@ -21,19 +21,33 @@ into noise, and a noisy signal gets ignored.
 This is the exit. Supersede is `status: deprecated` plus a `supersedes` relation;
 acknowledge is a `stale_after` further out. Both are edits, not commands.
 """
-import hashlib
 import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
 from okfm_core import PROJECT, frontmatter, scalar, utf8_stdout
+# The same function `refresh.py` observes with, deliberately. If the re-pinner and the
+# observer computed a hash differently by so much as a line ending, re-validation would
+# write a value the next observation disagrees with, and drift would never clear.
+from refresh import observe_file as observe
 
 utf8_stdout()
 
-# `\.*` tolerates the trailing ellipsis on hashes written before full digests were
-# stored. They compare as prefixes; they rewrite as whole values.
-_CAPTURED = re.compile(r'(okfm_captured:\s*\{\s*hash:\s*")sha256:[0-9a-f]+\.*(")')
+# One source entry: its `resource`, then its captured hash. Matched together because a
+# concept can pin several sources and each one has its OWN hash.
+#
+# It did not, once. This rewrote every `okfm_captured` in a concept to a single value —
+# the hash of the concept file itself — which is right only for an in-place concept, where
+# the file IS its source. For a mirrored concept it pinned the wrong file, and pinned the
+# same wrong file twice. Two different files cannot share a hash, so those pointers reported
+# drift forever and carried no signal at all. `check_bundles.py` now fails on the impossible
+# state, so this cannot go unnoticed again.
+#
+# `\.*` tolerates the trailing ellipsis on hashes written before full digests were stored.
+# They compare as prefixes; they rewrite as whole values.
+_SOURCE = re.compile(
+    r'(resource:\s*(\S+)[\s\S]*?okfm_captured:\s*\{\s*hash:\s*")sha256:[0-9a-f]+\.*(")')
 
 
 def main() -> int:
@@ -80,13 +94,26 @@ def main() -> int:
             print(f"  skip  {raw} — not a concept")
             continue
 
-        text = p.read_text(encoding="utf-8")
-        # In-place concepts hash the body, matching how refresh observes them.
-        sha = hashlib.sha256((body if body is not None else text).encode("utf-8")).hexdigest()
+        missing = []
 
-        new_block, n = _CAPTURED.subn(rf"\g<1>sha256:{sha}\g<2>", block)
+        def repin(m: re.Match) -> str:
+            """Each source gets the hash of the file IT points at."""
+            target = (p.parent / m.group(2)).resolve()
+            if not target.is_file():
+                missing.append(m.group(2))
+                return m.group(0)
+            # In-place concepts hash the body, matching how refresh observes them: the
+            # capture was taken before frontmatter existed, so comparing whole files would
+            # report drift forever.
+            sha = observe(target, body_only=(target == p.resolve()))
+            return f"{m.group(1)}sha256:{sha}{m.group(3)}"
+
+        new_block, n = _SOURCE.subn(repin, block)
         if n == 0:
             print(f"  skip  {raw} — no okfm_captured to refresh")
+            continue
+        if missing:
+            print(f"  skip  {raw} — cannot read {', '.join(missing)}", file=sys.stderr)
             continue
 
         entry = f'verified: {{ by: "{by}", at: {now} }}'

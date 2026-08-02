@@ -29,7 +29,8 @@ Python 3.13, standard library only, no install step.
 
 | Component | Does |
 |---|---|
-| [The pipeline](the-pipeline.md) | one command that runs the other four in order |
+| [The pipeline](the-pipeline.md) | one command that runs the others in order |
+| [Config validation](config-validation.md) | reads `okfm.json` first, and says what is wrong with it |
 | [Extraction](extraction.md) | turns your markdown into concepts without inventing anything |
 | [Mirror mode](mirror-mode.md) | decides where concepts land and whether your files are touched |
 | [Drift observation](drift-observation.md) | notices when a source stopped matching its concept |

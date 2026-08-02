@@ -21,6 +21,9 @@ from okfm_core import PROJECT, configured_bundles, load_or_create_config, vocab_
 _FM = re.compile(r"\A---\r?\n(.*?)\r?\n---\r?\n", re.S)
 _OKFM_KEY = re.compile(r"^(okfm_[\w]+):", re.M)
 _STORED_VERDICT = re.compile(r"^okfm_(stale|drifted|drift|trust|tier|fresh)\s*:", re.M)
+# One source entry: what it points at, and the hash it pinned.
+_SOURCE_PIN = re.compile(r'resource:\s*(\S+)[\s\S]*?okfm_captured:\s*\{\s*hash:\s*"?'
+                         r'sha256:([0-9a-f]+)')
 
 _REASON_CODES = re.compile(r"^okfm_reason_codes:\s*(\[.*?\]|\n(?:[ \t]*-.*\n?)+)", re.M)
 
@@ -109,6 +112,20 @@ def main() -> int:
             if _STORED_VERDICT.search(block):
                 bad = _STORED_VERDICT.search(block).group(0).strip()
                 errors.append(f"{rid}: stores a derived verdict `{bad}` (spec 3.4 forbids)")
+
+            # --- profile: one hash per source, and it must be that source's ---
+            # Two different files cannot share a sha256. When two of a concept's sources
+            # carry the same captured hash, at most one of them is real and the other
+            # reports drift forever while carrying no signal — the exact failure a pinned
+            # hash exists to prevent, wearing its clothes. `revalidate.py` wrote this state
+            # for a while by stamping one hash across every source it found.
+            pins = {}
+            for res, digest in _SOURCE_PIN.findall(block):
+                if digest in pins and pins[digest] != res:
+                    errors.append(f"{rid}: `{res}` and `{pins[digest]}` pin the same hash — "
+                                  f"two different files cannot, so at least one pointer is "
+                                  f"wrong and will report drift forever")
+                pins[digest] = res
 
             # --- profile: controlled predicates (spec 7.3) --------------------
             rel_block = re.search(r"^okfm_relations:\s*\n((?:[ \t]*-.*\n?)+)", block, re.M)
