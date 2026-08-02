@@ -1,10 +1,10 @@
 ---
 type: Document
 title: Providers and keys
-description: "Two adapters, not four — OpenAI-compatible reaches local models and most hosted ones, Anthropic needs its own — with the key appearing here because this is where OKFM drives the provider rather than the reverse."
+description: "Two adapters, not four — OpenAI-compatible reaches local models and most hosted ones, Anthropic needs its own — with the key appearing only at the credentialed variant, because the local one already reverses the direction without paying for it."
 status: draft
 tags: [needs-nothing]
-generated: { by: "agent:claude-opus-5", at: 2026-08-02T03:28:25Z }
+generated: { by: "agent:claude-opus-5", at: 2026-08-02T07:20:00Z }
 sources:
   - id: doc
     resource: ../../docs/okfm-guide/level-3-enrich/providers-and-keys.md

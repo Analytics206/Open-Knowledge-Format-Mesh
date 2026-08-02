@@ -383,6 +383,12 @@ const CONFIG_SCHEMA = {
   "gcp-sm",
   "azure-kv"
  ],
+ "loopback": [
+  "localhost",
+  "127.0.0.1",
+  "::1",
+  "0.0.0.0"
+ ],
  "groups": [
   [
    "",
@@ -403,6 +409,11 @@ const CONFIG_SCHEMA = {
    "read",
    "Read",
    "Consuming a mesh rather than producing one."
+  ],
+  [
+   "enrich",
+   "Enrich",
+   "A local model, if you use one. Level 3, and never in the pipeline."
   ],
   [
    "stores",
@@ -575,6 +586,39 @@ const CONFIG_SCHEMA = {
    "help": "Scopes kept out of health statistics and out of any context assembled for an agent — the bundled guide is the usual entry."
   },
   {
+   "path": "enrich.base_url",
+   "kind": "string",
+   "default": "http://localhost:11434",
+   "label": "Model endpoint",
+   "help": "Where a local model answers. Ollama's default is http://localhost:11434. Nothing in the pipeline calls it; only `okfm.py enrich-local` does."
+  },
+  {
+   "path": "enrich.model",
+   "kind": "string",
+   "default": null,
+   "nullable": true,
+   "label": "Model",
+   "help": "The model tag to draft with — `ollama pull` it first. null means the local variant is not configured, which is a normal state and not a missing answer."
+  },
+  {
+   "path": "enrich.num_ctx",
+   "kind": "int",
+   "min": 512,
+   "max": 1000000,
+   "default": 8192,
+   "label": "Context window",
+   "help": "Tokens the model may hold. Ollama defaults to 2048, which silently truncates a long document and describes only the half it saw."
+  },
+  {
+   "path": "enrich.timeout_s",
+   "kind": "int",
+   "min": 5,
+   "max": 3600,
+   "default": 120,
+   "label": "Timeout (seconds)",
+   "help": "How long to wait for one answer. A small model on a CPU is slow, not stuck."
+  },
+  {
    "path": "stores",
    "kind": "stores",
    "default": {},
@@ -637,6 +681,13 @@ const CONFIG = {
   "exclude_scopes": [
    "guide"
   ]
+ },
+ "_enrich": "Level 3's local variant. Nothing in the pipeline reads this — only `okfm.py enrich-local`, which is the one component declaring `needs: [model]`. No key, because the model runs here; the endpoint being loopback is what makes that claim checkable rather than asserted.",
+ "enrich": {
+  "base_url": "http://localhost:11434",
+  "model": "llama3.2",
+  "num_ctx": 8192,
+  "timeout_s": 120
  },
  "stores": {},
  "federation": {
@@ -1185,6 +1236,24 @@ const BOOTSTRAP = {
    "scope": "project"
   },
   {
+   "p": "/level-3-enrich/a-local-model.md",
+   "b": "level-3-enrich",
+   "t": "Document",
+   "title": "A local model",
+   "d": "OKFM drafts descriptions itself using Ollama on the adopter's own machine — level 3's local variant, which removes the key without removing the model and so sits at `needs-model` with no `needs-secrets`.",
+   "v": null,
+   "sa": null,
+   "src": 1,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/level-3-enrich/index.md"
+    ]
+   ],
+   "scope": "project"
+  },
+  {
    "p": "/level-3-enrich/federation-negotiation.md",
    "b": "level-3-enrich",
    "t": "Document",
@@ -1260,7 +1329,7 @@ const BOOTSTRAP = {
    "b": "level-3-enrich",
    "t": "Document",
    "title": "Providers and keys",
-   "d": "Two adapters, not four — OpenAI-compatible reaches local models and most hosted ones, Anthropic needs its own — with the key appearing here because this is where OKFM drives the provider rather than the reverse.",
+   "d": "Two adapters, not four — OpenAI-compatible reaches local models and most hosted ones, Anthropic needs its own — with the key appearing only at the credentialed variant, because the local one already reverses the direction without paying for it.",
    "v": null,
    "sa": null,
    "src": 1,
@@ -1344,7 +1413,7 @@ const BOOTSTRAP = {
    "b": "level-3-enrich",
    "t": "Runbook",
    "title": "The enrichment loop",
-   "d": "Build, list, draft, guard, review. Three of the five steps need nothing; the union of the other two is what makes the whole loop `[model, human]` and keeps it out of CI.",
+   "d": "Build, list, draft, guard, review — where the drafting step is your agent's or a local model's, interchangeably. Three of the five steps need nothing; the union of the other two is what makes the whole loop `[model, human]` and keeps it out of CI.",
    "v": null,
    "sa": null,
    "src": 1,
@@ -1542,7 +1611,7 @@ const BOOTSTRAP = {
    "b": "mesh",
    "t": "OKF Member",
    "title": "Level 3 — enrichment",
-   "d": "The loop that turns extracted quotations into written descriptions, using an agent you already have.",
+   "d": "The loop that turns extracted quotations into written descriptions, using an agent you already have — or a model on your own machine, which removes the key without moving the level.",
    "v": null,
    "sa": null,
    "src": 0,
@@ -2067,6 +2136,7 @@ const CFIELDS = SCHEMA.fields || [];
 const CBY = Object.fromEntries(CFIELDS.map(f=>[f.path,f]));
 const COPEN = new Set(CFIELDS.filter(f=>["pathmap","stores","any"].includes(f.kind)).map(f=>f.path));
 const RUNCMD = SCHEMA.run || "python .okfm/okfm.py";
+const CLOOPBACK = SCHEMA.loopback || ["localhost","127.0.0.1","::1","0.0.0.0"];
 
 /* ---- reading and writing a dotted path ---- */
 function cdig(obj, path){
@@ -2249,6 +2319,23 @@ function cCross(cfg){
                 +"bundle that the build must not mirror, this is already correct."});
       }
     });
+  }
+  // What separates level 3's local variant from its credentialed one is not the model, it is
+  // where the model runs and whether reaching it costs a secret. The config is the only place
+  // that is written down, so this is the only place it can be checked.
+  const [baseUrl] = cdig(cfg,"enrich.base_url");
+  if(typeof baseUrl==="string" && baseUrl.trim()){
+    let host="";
+    try { host = new URL(baseUrl).hostname; } catch(e) { host=""; }
+    if(!host)
+      out.push({level:"error", path:"enrich.base_url", msg:"not a URL",
+        hint:"a scheme and a host, like `http://localhost:11434`"});
+    else if(!CLOOPBACK.includes(host))
+      out.push({level:"warn", path:"enrich.base_url",
+        msg:"`"+host+"` is not this machine, so this is no longer the local variant",
+        hint:"fine if it is your own hardware — nothing here holds a key either way. But if "
+            +"reaching it needs one, that credential belongs in `stores` as a handle, and the "
+            +"component becomes `needs-secrets` rather than `needs-model`."});
   }
   if(hasBundles && bundles && typeof bundles==="object"){
     for(const [bid, rel] of Object.entries(bundles)){

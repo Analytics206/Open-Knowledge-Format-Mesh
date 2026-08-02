@@ -12,6 +12,16 @@ python okfm/okfm.py revalidate <path> --by human:you
 Step 3 is the only one OKFM does not perform. It hands the work list and
 [the contract](the-agent-contract.md) to whatever you already use and gets out of the way.
 
+Or it performs it, with a model on your own machine and still no key:
+
+```bash
+python okfm/okfm.py enrich-local --apply   # 3. OKFM drafts        needs: [model]
+```
+
+Same loop, same guard, same person at the end — see [a local model](a-local-model.md). The
+only thing that moves is who is holding the model, and the union rule below is why that does
+not move the level.
+
 # Why the union rule puts this at level 3
 
 A composite's needs set is the union of everything it invokes. Three of these five steps need

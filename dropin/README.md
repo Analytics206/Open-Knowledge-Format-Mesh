@@ -94,9 +94,13 @@ added a key to one of them, and the page would start accepting configs the build
 `generated.by` and the presence of `verified`. A tool that eats your edits on the second run
 gets deleted after the second run.
 
-Python 3.13, **standard library only**. No install step, no requirements file. Every
-component is `needs: []` under [DR-0008](../docs/decisions/0008-build-pipeline.md): no
-network, no secrets, no model.
+Python 3.13, **standard library only**. No install step, no requirements file. Every component
+**the pipeline runs** is `needs: []` under
+[DR-0008](../docs/decisions/0008-build-pipeline.md): no network, no secrets, no model.
+
+There is exactly one exception and it is never in the pipeline: `enrich_local.py` declares
+`needs: [model]` because it calls one. A workflow's set is the union of everything it invokes,
+so listing it in the default run would take the whole thing out of CI on a fork's pull request.
 
 ## Files
 
@@ -112,6 +116,7 @@ network, no secrets, no model.
 | `check_bundles.py` | Conformance, profile, strip test, predicates, links, footnotes. |
 | `refresh.py` | Observes pointers, writes the observation cache, reports drift. `--check` gates CI. |
 | `enrich.py` | What needs enriching and the brief for doing it. Prints work; calls no model. |
+| `enrich_local.py` | Drafts it with a model on your machine. The one `needs: [model]` file. |
 | `guard.py` | Checks a diff wrote only fields a `[model]` pass owns. |
 | `revalidate.py` | The human end: refresh a capture, add `verified`, clear the drift. |
 | `telemetry.py` | Writes one run record per pipeline run. |
@@ -207,9 +212,33 @@ python okfm/okfm.py guard                                # 3. did it stay in its
 python okfm/okfm.py revalidate <path> --by human:you     # 4. you sign off
 ```
 
+**Or run step 2 here, with a model on your own machine.** `ollama pull llama3.2`, put it in
+`okfm.json`, and OKFM drafts instead of printing:
+
+```bash
+python okfm/okfm.py enrich-local --apply
+```
+
+Same steps 3 and 4, unchanged. This is level 3's **local variant** — OKFM drives the model
+rather than your agent, and still holds no key, which is `needs-model` without `needs-secrets`
+([DR-0013](../docs/decisions/0013-the-local-model-variant.md)). It writes `description` and
+`tags` and restamps `generated.by`; it may not write a `needs-*` tag, because those are the
+level ladder and CI reads them as fact. Nothing is written without `--apply`, and a malformed
+answer is refused rather than repaired.
+
+The config says where the model runs, and `okfm.py config` warns when that stops being
+loopback — the local and credentialed variants differ by exactly that, and a distinction
+nothing checks decays into one nothing means.
+
 **Step 3 is what makes the human gate real.** `guard` reads the diff and fails if the pass
 touched `verified`, `okfm_relations`, `status`, `type`, `title`, `sources`, or
-`okfm_captured`. Until it existed, those were rules in a document.
+`okfm_captured` — and fails when a field the pass *owns* changed while `generated` did not,
+because content rewritten without a new provenance stamp gets clobbered by the next extraction
+refresh. Until it existed, those were rules in a document.
+
+A rebuild re-pins `okfm_captured` legitimately, so on a file the build still owns that one key
+is not counted, and the run says how many it passed over. Exactly one key, on exactly that kind
+of file: everything else protected is checked on build output as it is anywhere else.
 
 A **created** file is judged on a shorter list — `verified`, and a `status` that is not
 `draft` — because on a new file every field is an addition and the full list would flag all

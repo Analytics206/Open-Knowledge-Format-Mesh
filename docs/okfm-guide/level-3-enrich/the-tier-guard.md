@@ -6,8 +6,13 @@ python okfm/okfm.py guard --allow=status,verified   # you edited those, on purpo
 ```
 
 It reads `git diff` over markdown and fails if a protected field changed, naming the field
-and the reason. It also fails if `generated` did *not* change, because content that was
-rewritten without a new provenance stamp is content whose provenance is now wrong.
+and the reason. It also fails when a field a `[model]` pass *owns* changed and `generated` did
+not — content rewritten without a new provenance stamp is content whose provenance is now
+wrong, and the next extraction refresh will overwrite it for exactly that reason.
+
+That second rule was written down here, and named in the code, long before anything checked
+it. It is checked now. A rule stated in three places and enforced in none is the shape most
+guarantees rot into, and it took writing a component that had to obey it to notice.
 
 # The protected set, and the one field deliberately outside it
 
@@ -37,6 +42,21 @@ concept that arrives already carrying them claims a review that did not happen.
 
 The same reasoning as scoping, below. A guard that fires on the normal case teaches people to
 run it with `--allow`, and at that point it has stopped being a guard.
+
+# One exemption, exactly one key wide
+
+A rebuild re-pins `okfm_captured` on every concept whose source moved. That is the build doing
+its job, not a pass overreaching — so on a file the build still owns, `okfm_captured` alone is
+not counted, and the run says how many it passed over.
+
+The exemption stops there, and the narrowness is the point. `verified`, `status`, `title`,
+`type` and `okfm_relations` are checked on build output exactly as anywhere else, because a
+whole-file skip would let a `verified` entry added to a build-stamped concept sail through —
+the single thing this tool exists to catch. Ownership is read the same way the build reads it,
+including that a concept carrying `verified` stops being the build's whatever its stamp says.
+
+What it cannot do is tell a rebuilt description from a drafted one; on a build-owned concept
+those are the same bytes. Scoping to the pass is the answer to that, not a cleverer heuristic.
 
 # Why after, not during
 

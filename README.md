@@ -65,12 +65,25 @@ Each level includes the one below it. Stop wherever the value stops being worth 
 |---|---|---|
 | **1 — view** | Download it. Open the web UI. Read the guide. | a browser |
 | **2 — build** | Paste one folder into your project and run one command. | Python 3.13 |
-| **3 — enrichment** | Let your own agent fill in what extraction cannot. | an agent you already use |
+| **3 — enrichment** | Let a model fill in what extraction cannot. | an agent you already use, **or Ollama** |
 
-Level 3 has a **credentialed variant**: providers, packs, federation's negotiation half, the
-console app, and the benchmark, where OKFM drives a provider instead of your agent driving
-OKFM. That is a change of direction rather than a fourth level — the ladder asks for a
-browser, then Python, then a model, and there is nothing further to ask for.
+Level 3 has three variants, and they differ by who drives and who holds a key:
+
+| Variant | Who drives | Who holds a key |
+|---|---|---|
+| your agent | your agent drives OKFM | your agent — OKFM holds none |
+| **local** | OKFM drives a model on your machine | **nobody** |
+| credentialed | OKFM drives a hosted provider | OKFM |
+
+The local one runs the whole loop with no account, no key and no billing relationship —
+`ollama pull`, one config line, one command. The credentialed one carries what follows from
+acting unattended: providers, packs, federation's negotiation half, the console app, the
+benchmark.
+
+None of them is a fourth level, and the local one is not a level 2½. The ladder measures what
+OKFM asks before you can start — a browser, then Python, then *something has to reason* — and
+that last one is equally true of a model on a laptop. Removing the fee does not move the line
+([DR-0013](docs/decisions/0013-the-local-model-variant.md)).
 
 Levels 1 and 2 never need a model or a key. That is enforced in CI by
 [`dev/check_levels.py`](dev/check_levels.py), which reads the `needs-*` tag on every
@@ -92,6 +105,7 @@ runs, and there is no CLI yet.
 | `dropin/` — paste into a project, build a mesh | ✅ level 2, deterministic |
 | Config validation — one rule table, terminal and browser | ✅ |
 | `templates/AGENTS.md`, enrich / guard / revalidate | ✅ level 3 |
+| `enrich-local` — the loop on Ollama, no key | ✅ level 3, local variant |
 | Benchmark harness | ✅ prototype — deterministic half, placeholder questions |
 | `okfm` CLI, live resolvers, console app | ⬜ Phase 2 |
 | Providers, packs, federation's negotiation half | ⬜ Phase 3+ |
@@ -160,15 +174,42 @@ your own tool. Drafts stop at `status: draft` until a human says otherwise.
 The whole contract is one file: [`templates/AGENTS.md`](templates/AGENTS.md). Copy it into
 your project as whatever your agent reads.
 
+## Level 3, local — no key, no account
+
+Don't have an agent to point at it, or don't want to spend one on this? Run the model yourself.
+
+```bash
+ollama pull llama3.2
+```
+
+```json
+"enrich": { "base_url": "http://localhost:11434", "model": "llama3.2" }
+```
+
+```bash
+python .okfm/okfm.py enrich-local            # what it would write
+python .okfm/okfm.py enrich-local --apply    # write it
+```
+
+Then `guard` and `revalidate` exactly as above — the model moved onto your machine and nothing
+else moved at all. Enrichment is short, bounded, repetitive work, which is the shape a small
+local model handles well and the shape where a key is most annoying to require.
+
+`enrich_local.py` is the one component in `dropin/` that declares `needs: [model]`, and it is
+deliberately kept out of the pipeline so the default run stays runnable on a fork's pull
+request. It writes `description` and `tags`; it may not write a `needs-*` tag, because those
+are the level ladder and CI reads them as fact.
+
 ## Level 3, credentialed *(Phase 3+)*
 
 Providers, packs, federation's negotiation half, the console app, and the benchmark. Two
 adapters — OpenAI-compatible and Anthropic — plus a config list of endpoints, so adding a
-provider is a config line rather than code. Local models via Ollama are a supported path:
-enrichment is short, bounded, repetitive work that a small local model handles well.
+provider is a config line rather than code.
 
-The direction reverses here: OKFM drives a provider instead of your agent driving OKFM, which
-is why a key appears at this point and nowhere earlier.
+The direction reverses at the local variant — OKFM drives the model instead of your agent
+driving OKFM — and the **key** appears only here, which is the difference between the two.
+`okfm.py config` warns when `enrich.base_url` stops being loopback, because that is the moment
+the two become hard to tell apart from the config alone.
 
 ---
 

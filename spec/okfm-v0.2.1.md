@@ -841,12 +841,27 @@ process rather than a teaser for the next:
 |---|---|---|---|
 | **1 — the format** | spec, guide, viewer, examples | a browser | anything |
 | **2 — the deterministic process** | a drop-in folder that builds a bundle from your files | a runtime | a key, a provider, a model |
-| **3 — the reasoning components** | the enrichment lifecycle | their own agent, LLM, or MCP | a key held by OKFM |
-| **4 — the full suite** | providers, packs, federation, workflows | a key, a provider, `okfm.json` | — |
+| **3 — the reasoning components** | the enrichment lifecycle | a model, in one of three ways | — |
+
+Level 3 has three variants, split on who drives the model and who holds the key
+([DR-0009](../docs/decisions/0009-adoption-levels.md),
+[DR-0013](../docs/decisions/0013-the-local-model-variant.md)):
+
+| Variant | Adopter supplies | Who holds a key |
+|---|---|---|
+| your agent | their own agent, LLM, or MCP | the adopter's tool — OKFM holds none |
+| local | a model on their own machine | nobody |
+| credentialed | a key, a provider, `okfm.json` | OKFM |
+
+A fourth level was collapsed into the third: who holds the key reverses the *direction* —
+OKFM driving a provider instead of a provider's client driving OKFM — and a reversal is not
+another step up.
 
 The **Level 2 / Level 3 boundary is exactly the model boundary**: nothing shipped at Level 2
 may require an LLM. That is mechanically checkable, and it is what keeps the promise true as
-the implementation grows.
+the implementation grows. It has since been tested from the other side — a model that costs
+nothing and needs no key — and it held: removing the fee does not move the line, because the
+line is about what has to reason and not about what that costs.
 
 Pointing a coding agent at the repository and asking it for anything is available from Level
 1 and is not a level.
@@ -915,6 +930,7 @@ okfm/
     bake_web_ui              # regenerate the web UI index                   ✓
     check_bundles            # conformance, profile, strip test              ✓
     enrich / guard / revalidate   # level 3 — outside the pipeline           ✓
+    enrich_local             # level 3, local variant — the one needs: [model] ✓
     telemetry                # one run record per run (§10.1)                ✓
     resolvers/               # file:// only — live schemes need credentials
     vocab/                   # types, predicates, reason codes              ✓

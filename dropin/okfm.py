@@ -10,9 +10,10 @@
     python okfm/okfm.py view            # bake the web UI index
     python okfm/okfm.py check           # validate every bundle
 
-Level 3, outside the pipeline because neither belongs in an unattended run:
+Level 3, outside the pipeline because none of it belongs in an unattended run:
 
     python okfm/okfm.py enrich [--brief]  # what needs enriching, and how
+    python okfm/okfm.py enrich-local      # draft it with a model on this machine
     python okfm/okfm.py guard             # did an edit pass write only what it owns?
     python okfm/okfm.py revalidate P --by human:you   # human review clears drift
 
@@ -21,7 +22,8 @@ observe, bake, validate. Every step is `needs: []` for local sources -- no netwo
 secrets, no model -- so the whole thing is safe on a pull request from a fork.
 
 Enrichment is deliberately absent. It needs a model, which makes any workflow containing it
-`needs: [model]` and moves it to Level 3.
+`needs: [model]` and moves it to Level 3. `enrich-local` runs that model on your own machine
+and still needs no key, which changes what it costs you and not which level it is.
 """
 import subprocess
 import sys
@@ -47,9 +49,14 @@ STEPS = [
     ("check",   "check_bundles.py", [],          []),
 ]
 
-# Not in the pipeline, and deliberately so. `enrich` prints work for a person or an agent
-# to do; `guard` checks the result afterwards. Neither belongs in an unattended run.
-EXTRA = {"enrich": "enrich.py", "guard": "guard.py", "revalidate": "revalidate.py"}
+# Not in the pipeline, and deliberately so. `enrich` prints work for a person or an agent to
+# do; `guard` checks the result afterwards. Neither belongs in an unattended run.
+#
+# `enrich-local` is the one component here that declares `needs: [model]`. A workflow's set
+# is the union of everything it invokes, so listing it in STEPS would take the whole pipeline
+# out of CI on a fork's pull request. It stays reachable and stays out of the run.
+EXTRA = {"enrich": "enrich.py", "enrich-local": "enrich_local.py",
+         "guard": "guard.py", "revalidate": "revalidate.py"}
 
 BY_NAME = {name: script for name, script, *_ in STEPS} | EXTRA
 

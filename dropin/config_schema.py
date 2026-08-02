@@ -18,8 +18,14 @@ import difflib
 import json
 import re
 from pathlib import Path
+from urllib.parse import urlsplit
 
 SPEC_VERSION = "0.2.1"
+
+# Where "on my own machine" stops. DR-0008 rejected a `network` rung on the exposure ladder
+# because nothing needed the open internet without a credential; an endpoint outside this
+# set is the first thing that could, so it is worth a line of output rather than silence.
+LOOPBACK = ("localhost", "127.0.0.1", "::1", "0.0.0.0")
 
 # A credential in a config file is a credential in git history. Values name a handle that
 # something else resolves; the prefixes are a closed list so a pack cannot quietly widen it.
@@ -104,6 +110,22 @@ FIELDS = [
      "help": "Scopes kept out of health statistics and out of any context assembled for an "
              "agent — the bundled guide is the usual entry."},
 
+    {"path": "enrich.base_url", "kind": "string", "default": "http://localhost:11434",
+     "label": "Model endpoint",
+     "help": "Where a local model answers. Ollama's default is http://localhost:11434. "
+             "Nothing in the pipeline calls it; only `okfm.py enrich-local` does."},
+    {"path": "enrich.model", "kind": "string", "default": None, "nullable": True,
+     "label": "Model",
+     "help": "The model tag to draft with — `ollama pull` it first. null means the local "
+             "variant is not configured, which is a normal state and not a missing answer."},
+    {"path": "enrich.num_ctx", "kind": "int", "min": 512, "max": 1000000, "default": 8192,
+     "label": "Context window",
+     "help": "Tokens the model may hold. Ollama defaults to 2048, which silently truncates "
+             "a long document and describes only the half it saw."},
+    {"path": "enrich.timeout_s", "kind": "int", "min": 5, "max": 3600, "default": 120,
+     "label": "Timeout (seconds)",
+     "help": "How long to wait for one answer. A small model on a CPU is slow, not stuck."},
+
     {"path": "stores", "kind": "stores", "default": {}, "label": "Stores",
      "help": "External data stores. Credentials are named by handle and never written "
              "here: a config file is committed, a credential is not."},
@@ -124,6 +146,7 @@ GROUPS = [
     ("build", "Build", "What gets read, and what gets written."),
     ("bundles", "Bundles", "Name them and discovery stops. Usually leave this empty."),
     ("read", "Read", "Consuming a mesh rather than producing one."),
+    ("enrich", "Enrich", "A local model, if you use one. Level 3, and never in the pipeline."),
     ("stores", "Stores", "External data. Handles only."),
     ("federation", "Federation", "Who registers whom."),
 ]
@@ -382,6 +405,23 @@ def _cross_checks(cfg: dict) -> list[dict]:
                         f"it as an in-place bundle that the build must not mirror, this is "
                         f"already correct."))
 
+    # What separates level 3's local variant from its credentialed one is not the model, it
+    # is where the model runs and whether reaching it costs a secret. The config is the only
+    # place that fact is written down, so this is the only place it can be checked.
+    base_url, _ = dig(cfg, "enrich.base_url")
+    if isinstance(base_url, str) and base_url.strip():
+        host = urlsplit(base_url).hostname
+        if not host:
+            out.append(_finding("error", "enrich.base_url", "not a URL",
+                                "a scheme and a host, like `http://localhost:11434`"))
+        elif host not in LOOPBACK:
+            out.append(_finding(
+                "warn", "enrich.base_url",
+                f"`{host}` is not this machine, so this is no longer the local variant",
+                "fine if it is your own hardware — nothing here holds a key either way. But "
+                "if reaching it needs one, that credential belongs in `stores` as a handle, "
+                "and the component becomes `needs-secrets` rather than `needs-model`."))
+
     if has_bundles and isinstance(bundles, dict) and bundles:
         for bid, rel in bundles.items():
             if isinstance(rel, str) and norm(rel).rsplit("/", 1)[-1] != bid:
@@ -403,7 +443,7 @@ def validate(cfg: dict, project: Path | None = None) -> list[dict]:
 def as_json() -> str:
     """The table, for the web UI. One source, two consumers."""
     return json.dumps({"version": SPEC_VERSION, "handles": list(HANDLE_PREFIXES),
-                       "groups": GROUPS, "fields": FIELDS},
+                       "loopback": list(LOOPBACK), "groups": GROUPS, "fields": FIELDS},
                       indent=1, ensure_ascii=False)
 
 

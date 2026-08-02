@@ -24,15 +24,32 @@ to. `--allow` names fields to permit for a run where a human is the author.
 
 A **new** file is judged on whether it arrives already trusted, not on the full protected
 list — see `CREATED_PROTECTED`.
+
+**Build output is not an edit pass.** A concept the deterministic build regenerated because
+its source changed carries a fresh `okfm_captured` in the diff, and flagging that made every
+routine rebuild look like a violation — which teaches people to pass `--allow=okfm_captured`
+as a matter of routine, and a guard people learn to pass is worse than no guard.
+
+The exemption is deliberately **one key on one kind of file**, not a skip. `okfm_captured` is
+the only field a rebuild churns for reasons that have nothing to do with a pass; `verified`,
+`status`, `title`, `type` and `okfm_relations` are checked on build output exactly as
+anywhere else. A whole-file skip would have meant a `verified` entry added to a build-stamped
+concept sailing through, which is the single thing this file exists to catch.
+
+What it cannot do is tell a rebuilt `description` from a drafted one — on a build-owned
+concept those are the same bytes. That is what `guard <paths>` is for: scope the check to
+what the pass touched, and the ambiguity does not arise.
 """
 import re
 import subprocess
 import sys
 from pathlib import Path
 
-from okfm_core import PROJECT, utf8_stdout
+from okfm_core import PROJECT, frontmatter, scalar, utf8_stdout
 
 utf8_stdout()
+
+BUILD = "process:okfm-build"
 
 # Frontmatter keys a [model] pass must not touch (DR-0008's ownership table).
 PROTECTED = {
@@ -51,7 +68,15 @@ PROTECTED = {
 # recompute by reading `generated.by`. A description improved by hand or by an agent that
 # leaves the field saying `process:okfm-bootstrap` gets silently clobbered on the next
 # refresh. That happened here before the rule was written down.
+#
+# So the requirement is checked rather than stated: change a field a [model] pass owns and
+# leave `generated` alone, and that is the failure. It was named here for a long time and
+# enforced nowhere, which made it a comment about a rule instead of a rule.
 MUST_UPDATE = ("generated",)
+MODEL_OWNED = ("description", "tags", "okfm_reason_codes")
+NO_RESTAMP = ("a field a [model] pass owns changed and `generated` did not — the next "
+              "`bootstrap --refresh` decides what it may recompute by reading that field, "
+              "and will silently clobber this")
 
 # A NEW file is judged by a different rule, because on a new file every field is an
 # addition and the protected list would report all of them as "changed" — four misleading
@@ -71,6 +96,27 @@ CREATED_PROTECTED = {
 
 _FM_BOUND = re.compile(r"^[+-]---\s*$")
 _KEY = re.compile(r"^[+-](\s*)([\w_]+):[ \t]*(.*)$")
+
+
+def is_build_output(path: str) -> bool:
+    """Does the file, as it now stands, say the deterministic build wrote it?
+
+    Read from disk rather than from the diff: the build only restamps `generated.at` when the
+    day changes, so a rebuild on the same day rewrites `okfm_captured` and leaves `generated`
+    out of the diff entirely. There would be nothing to match on.
+
+    `verified` disqualifies a file regardless of the stamp, matching `build._owned()` exactly.
+    The build refuses to overwrite a verified concept, so one carrying both a `verified` entry
+    and a build stamp is not the build's any more — and the two functions answering the same
+    question differently is how an exemption becomes a hole.
+    """
+    f = PROJECT / path
+    if not f.is_file():
+        return False
+    block, _ = frontmatter(f)
+    if not block or re.search(r"^verified:", block, re.M):
+        return False
+    return BUILD in (scalar(block, "generated") or "")
 
 
 def diff(staged: bool, paths: list[str]) -> str:
@@ -102,6 +148,7 @@ def main() -> int:
 
     violations, current, in_fm = [], None, False
     files_touched, created, is_new = set(), set(), False
+    changed_keys: dict[str, set[str]] = {}
 
     for line in text.splitlines():
         if line.startswith("--- "):
@@ -128,21 +175,45 @@ def main() -> int:
         if not m or not current:
             continue
         indent, key, value = m.group(1), m.group(2), m.group(3).strip()
+        changed_keys.setdefault(current, set()).add(key)
 
         if current in created:
             if key in CREATED_PROTECTED and key not in allowed:
                 if key != "status" or value.strip("\"'") != "draft":
-                    violations.append((current, key, CREATED_PROTECTED[key]))
+                    violations.append((current, key, "written on a new file",
+                                       CREATED_PROTECTED[key]))
             continue
 
         # A protected key changed anywhere in a concept's frontmatter region. Indent is
         # allowed to be non-zero: okfm_captured is nested inside a sources entry.
         if key in PROTECTED and key not in allowed:
-            violations.append((current, key, PROTECTED[key]))
+            violations.append((current, key, "changed", PROTECTED[key]))
+
+    rebuilt = {p for p in files_touched - created if is_build_output(p)}
+
+    # A field a [model] pass owns changed and the stamp did not. Skipped on build output,
+    # where a rebuilt description and a drafted one are the same bytes and the tool would be
+    # guessing — `guard <paths>` is the answer to that, not a heuristic.
+    for path in sorted(files_touched - created - rebuilt):
+        keys = changed_keys.get(path, set())
+        if keys & set(MODEL_OWNED) and not keys & set(MUST_UPDATE) \
+                and not allowed & set(MUST_UPDATE):
+            violations.append((path, "generated", "not updated", NO_RESTAMP))
+
+    # The exemption, and all of it: one key, on files the build still owns. Everything else
+    # protected is checked on build output exactly as it is anywhere else.
+    exempt = sum(1 for path, key, *_ in violations
+                 if key == "okfm_captured" and path in rebuilt)
+    violations = [v for v in violations
+                  if not (v[1] == "okfm_captured" and v[0] in rebuilt)]
 
     changed = len(files_touched) - len(created)
     print(f"{changed} markdown file(s) changed, {len(created)} created"
           + (" (staged)" if staged else " (working tree)"))
+    if exempt:
+        # Counted rather than dropped in silence: an exemption nobody can see is one nobody
+        # can question, and this one runs on every rebuild.
+        print(f"{exempt} re-pinned by the build, not counted")
     if allowed:
         print(f"allowed by flag: {', '.join(sorted(allowed))}")
     print()
@@ -152,17 +223,16 @@ def main() -> int:
         return 0
 
     seen = set()
-    for path, key, why in violations:
+    for path, key, verb, why in violations:
         if (path, key) in seen:
             continue
         seen.add((path, key))
-        verb = "written on a new file" if path in created else "changed"
         print(f"  FAIL  {path}")
         print(f"        `{key}` {verb} — {why}")
 
-    print(f"\n{len(seen)} protected field(s) flagged.")
+    print(f"\n{len(seen)} field(s) flagged.")
     print("If a person made this edit deliberately, re-run with "
-          "--allow=" + ",".join(sorted({k for _, k, _ in violations})))
+          "--allow=" + ",".join(sorted({k for _, k, _, _ in violations})))
     return 1
 
 

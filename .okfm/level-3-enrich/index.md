@@ -29,26 +29,42 @@ It is the last level. There is nothing to graduate to.
 |---|---|---|
 | [The enrichment loop](the-enrichment-loop.md) | the whole cycle, end to end | `model`, `human` |
 | [The agent contract](the-agent-contract.md) | what an agent may and may not write | `model` |
+| [A local model](a-local-model.md) | OKFM drafts it, on your machine, with no key | `model` |
 | [The work list](the-work-list.md) | what needs enriching, and why | — |
 | [The tier guard](the-tier-guard.md) | did the edit pass write only what it owns | — |
 | [The human exit](the-human-exit.md) | review clears drift; nothing else does | `human` |
 
-Two of the five need nothing mechanically. They are here because they exist only to serve a
+Two of the six need nothing mechanically. They are here because they exist only to serve a
 step that does — a work list with nothing to enrich it is a report about nothing.
 
-# The credentialed variant
+# Three variants, split on who holds the key
 
 Everything above assumes **your agent drives OKFM**. You are already authenticated in a tool
 you were using anyway; OKFM never sees a key, never chooses a provider, and never makes a
 network call.
 
-The variant reverses that: **OKFM drives a provider**, so OKFM holds the credential. Same
-loop, opposite direction — plus everything that follows from a process able to act unattended.
+| Variant | Who drives | Who holds a key | Exposure |
+|---|---|---|---|
+| your agent | your agent drives OKFM | your agent | `model` |
+| [local](a-local-model.md) | OKFM drives a model on your machine | nobody | `model` |
+| credentialed | OKFM drives a hosted provider | OKFM | `model`, `secrets` |
+
+The last two reverse the direction — **OKFM drives the model** — and only the third pays for
+it with a credential. That is why the middle one needed no new rung: `model` without `secrets`
+has been a legal set since [DR-0008](../../docs/decisions/0008-build-pipeline.md) and was
+simply unoccupied until something ran locally. See
+[DR-0013](../../docs/decisions/0013-the-local-model-variant.md) for why removing the fee does
+not move the level.
+
+# The credentialed variant
+
+Same loop, opposite direction from the first — plus everything that follows from a process
+able to act unattended.
 
 | Component | State | Needs today |
 |---|---|---|
 | [The benchmark](the-benchmark.md) | prototype runs | — |
-| [Providers and keys](providers-and-keys.md) | designed, not built | — |
+| [Providers and keys](providers-and-keys.md) | half built — the local half runs | — |
 | [Packs](packs.md) | partly built — vocabulary overlays work | — |
 | [Federation, the negotiation half](federation-negotiation.md) | designed, not built | — |
 | [The console app](the-console-app.md) | designed, not built | — |
@@ -57,7 +73,7 @@ Four of the five are `status: draft` and say so in their first line. A level tha
 unbuilt components as though they shipped would be the mesh lying about itself in the one
 place it cannot afford to.
 
-# Why this is a variant and not a fourth level
+# Why the credentialed case is a variant and not a fourth level
 
 It was one for a while, and the number kept needing to be re-explained.
 

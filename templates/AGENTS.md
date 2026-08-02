@@ -5,6 +5,10 @@ your tool reads. It is the whole contract. No installation, no runtime, no key.
 
 This is **Level 3**: your agent drives OKFM. OKFM never holds a credential.
 
+If nobody is pointing an agent at the mesh, `okfm.py enrich-local` does this same work with a
+model on the machine — same contract, same guard, same person at the end. This file stays the
+authority on what may be written either way.
+
 ---
 
 ## What a mesh is

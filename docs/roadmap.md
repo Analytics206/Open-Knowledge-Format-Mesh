@@ -241,6 +241,12 @@ the mesh OKF, `OKF Member` concepts, cross-bundle references with commit pinning
 viewer that renders more than one bundle. It costs almost nothing because OKFM's own
 repository is a mesh of eight bundles, and it proves the project's central metaphor now
 rather than at the end.
+Also in Phase 1, ahead of where it was planned: **level 3's local variant**
+([DR-0013](decisions/0013-the-local-model-variant.md)). A model on the adopter's own machine
+needs no key, no provider abstraction and no adapter layer, so the part of Phase 3 that was
+expensive is not the part that arrived — one endpoint, one config block, `needs: [model]` and
+no `secrets`. It is worth having early because it makes the enrichment loop complete for an
+adopter with no agent to spare, which is the case the level model otherwise leaves stranded.
 **Exit:** "Why did we decide X?" answered from the mesh alone; one run fully reconstructable from telemetry; every bundle passes official conformance in CI with every `okfm_` key stripped; a first benchmark run recorded, whatever it says.
 
 ### Phase 2 — Extraction into a distributable project
@@ -258,6 +264,11 @@ hour.
 
 The first phase that needs a real domain. It names capabilities, not a corpus — the corpus is
 whichever project adopts OKFM first, and §11 describes one candidate in detail.
+
+The *uncredentialed* half of "OKFM drives the model" already landed in Phase 1 — see
+[DR-0013](decisions/0013-the-local-model-variant.md). What is left here is everything the
+credential brings with it: the second adapter, the endpoint list, handle resolution, and the
+question of a process acting unattended.
 
 Scope: `sys://` resolvers for databases and API captures; a discovery adapter interface; curated schema, queries and rules ingested as meaning-family concepts; **Attested Computations with real attesters**; reconciliation against an existing trusted report; declared-vs-observed reconciliation over a real history; the §11.5 question workflows; actor-aware defaults and plain-language trust rendering; the gap → propose → verify loop; drift detection live on `sys://` pointers.
 **Exit:** one business question answered with a stated perspective, a **passing attestation**, resolvable citations, claim classification, and the answer recorded as an `Answer` concept. One attested computation reconciled against a report its owner already trusts. One declared/observed mismatch found (or consistency verified). One consumer question driving the full gap → propose → verify cycle. A benchmark run (§18.4) on real questions, graded against ground truth the adopter already has.
