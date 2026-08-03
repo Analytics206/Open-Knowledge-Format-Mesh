@@ -268,6 +268,26 @@ def main() -> int:
         return 0
 
     mesh = collect()
+
+    # The viewer renders drift out of the cache `refresh` writes, so a bake that runs after
+    # a build but before a refresh renders drift observed against concepts that no longer
+    # exist in that form. Nothing said so: the bake succeeded, the viewer looked baked, and
+    # the failure surfaced one stage later as `STALE` with a remedy that did not help.
+    #
+    # mtime rather than the cache's own `observed_at`, because the question is "was anything
+    # written after this cache", and a file's timestamp answers that for concepts the cache
+    # has never heard of — which is exactly the new-concept case.
+    if CACHE.is_file():
+        cached_at = CACHE.stat().st_mtime
+        newer = [c for root in configured_bundles(cfg or {}).values() if root.is_dir()
+                 for c in root.rglob("*.md") if c.stat().st_mtime > cached_at]
+        if newer:
+            print(f"  note   {len(newer)} concept(s) changed since drift was last observed. "
+                  f"The viewer\n"
+                  f"         renders drift from that cache, so run `refresh` first — or run "
+                  f"`okfm.py`,\n"
+                  f"         which does build, refresh and view in the order that converges.")
+
     html = viewer.read_text(encoding="utf-8")
 
     schema = json.loads(config_schema.as_json())
@@ -301,8 +321,24 @@ def main() -> int:
         return 0
 
     if check:
-        print(f"STALE: committed viewer does not match the project ({', '.join(stale)}) — "
-              f"run bake_web_ui.py", file=sys.stderr)
+        # Naming the whole pipeline, not this script. This said "run bake_web_ui.py" and
+        # that advice is wrong in the most common case: the viewer bakes drift state out of
+        # the observation cache that `refresh` writes, so a build followed straight by a bake
+        # produces a viewer built on drift that predates the build. Re-running the bake does
+        # not fix it and the message says to do it again — which is how the same failure gets
+        # hit three times in a row before anyone asks why.
+        #
+        # `okfm.py` runs build, refresh, then view in that order, which is the order that
+        # converges. Telling someone to run one stage of a five-stage pipeline out of
+        # sequence is what caused this.
+        print(f"STALE: committed viewer does not match the project ({', '.join(stale)})",
+              file=sys.stderr)
+        print(f"       run `python okfm.py` — the whole pipeline, in order. The viewer "
+              f"renders drift\n"
+              f"       from the cache `refresh` writes, so baking without refreshing first "
+              f"bakes\n"
+              f"       yesterday's drift and stays stale however many times you re-bake.",
+              file=sys.stderr)
         return 1
 
     # Right to left, so an earlier replacement does not move a later one's offsets.
