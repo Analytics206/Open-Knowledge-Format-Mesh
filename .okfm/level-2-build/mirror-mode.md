@@ -3,7 +3,7 @@ type: Document
 title: Mirror mode
 description: "Concepts land in `.okfm/` and point back at your files, which are never opened for writing — the reversible default, with in-place as a flag you pass once you have seen what it produces."
 status: draft
-verified: { by: "human:analytics206", at: 2026-08-03T07:29:12Z }
+verified: { by: "human:analytics206", at: 2026-08-03T08:03:33Z }
 tags: [needs-nothing]
 generated: { by: "agent:claude-opus-5", at: 2026-08-02T03:28:25Z }
 sources:

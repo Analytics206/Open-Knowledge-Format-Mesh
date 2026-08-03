@@ -3,7 +3,7 @@ type: Document
 title: Providers and keys
 description: "Two adapters, not four — OpenAI-compatible reaches local models and most hosted ones, Anthropic needs its own — with the key appearing only at the credentialed variant, because the local one already reverses the direction without paying for it."
 status: draft
-verified: { by: "human:analytics206", at: 2026-08-03T07:29:12Z }
+verified: { by: "human:analytics206", at: 2026-08-03T08:03:33Z }
 tags: [needs-nothing]
 generated: { by: "agent:claude-opus-5", at: 2026-08-02T07:20:00Z }
 sources:

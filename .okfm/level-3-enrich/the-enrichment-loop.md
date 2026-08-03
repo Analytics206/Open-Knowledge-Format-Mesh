@@ -3,7 +3,7 @@ type: Runbook
 title: The enrichment loop
 description: "Build, list, draft, guard, review — where the drafting step is your agent's or a local model's, interchangeably. Three of the five steps need nothing; the union of the other two is what makes the whole loop `[model, human]` and keeps it out of CI."
 status: draft
-verified: { by: "human:analytics206", at: 2026-08-03T07:29:12Z }
+verified: { by: "human:analytics206", at: 2026-08-03T08:03:33Z }
 tags: [needs-model, needs-human]
 generated: { by: "agent:claude-opus-5", at: 2026-08-02T07:20:00Z }
 sources:

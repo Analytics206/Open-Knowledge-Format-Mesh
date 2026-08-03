@@ -3,7 +3,7 @@ type: Runbook
 title: The pipeline
 description: "One command that runs build, refresh, bake and validate in order and stops at the first failure, so the second, misleading error never appears."
 status: draft
-verified: { by: "human:analytics206", at: 2026-08-03T07:29:12Z }
+verified: { by: "human:analytics206", at: 2026-08-03T08:03:33Z }
 tags: [needs-nothing]
 generated: { by: "agent:claude-opus-5", at: 2026-08-02T03:09:28Z }
 sources:

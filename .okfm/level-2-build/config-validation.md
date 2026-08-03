@@ -3,7 +3,7 @@ type: Document
 title: Config validation
 description: "Every consumer ignores keys it does not recognise, so a misspelled key does not fail — it builds the wrong thing quietly. This is the step that says so, and the rules it reads are the same table the web UI's config form is generated from."
 status: draft
-verified: { by: "human:analytics206", at: 2026-08-03T07:29:12Z }
+verified: { by: "human:analytics206", at: 2026-08-03T08:03:33Z }
 tags: [needs-nothing]
 generated: { by: "agent:claude-opus-5", at: 2026-08-02T00:00:00Z }
 sources:
@@ -18,7 +18,7 @@ sources:
   - id: implementation
     resource: ../../dropin/check_config.py
     okfm_role: subject
-    okfm_captured: { hash: "sha256:531e1c7c2c17ff7a76a5cec070061b0c81878de10f35d14b8461604da0627f2c", at: 2026-08-03 }
+    okfm_captured: { hash: "sha256:21b06d111f307e398b874197c609f9dc92fdf4e8428c5163f4b16d7289174a7b", at: 2026-08-03 }
 okfm_scope: project
 okfm_relations:
   - { predicate: part_of, target: /index.md }

@@ -3,7 +3,7 @@ type: Document
 title: The console app
 description: "A served web UI that edits configuration and drives the loop — deliberately a second artifact, because giving the level 1 web UI write access would turn a browser-openable file into an install."
 status: draft
-verified: { by: "human:analytics206", at: 2026-08-03T07:29:12Z }
+verified: { by: "human:analytics206", at: 2026-08-03T08:03:33Z }
 tags: [needs-nothing]
 generated: { by: "agent:claude-opus-5", at: 2026-08-02T03:09:28Z }
 sources:

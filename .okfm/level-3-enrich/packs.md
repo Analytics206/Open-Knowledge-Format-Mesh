@@ -3,7 +3,7 @@ type: Document
 title: Packs
 description: "Domain vocabulary and workflows as an overlay, so core carries no domain words. Partly built: the overlay mechanism works today, which makes this the one credentialed-variant component usable three levels down."
 status: draft
-verified: { by: "human:analytics206", at: 2026-08-03T07:29:12Z }
+verified: { by: "human:analytics206", at: 2026-08-03T08:03:33Z }
 tags: [needs-nothing]
 generated: { by: "agent:claude-opus-5", at: 2026-08-02T03:28:25Z }
 sources:

@@ -3,7 +3,7 @@ type: Document
 title: The tier guard
 description: "Reads the diff after an edit pass and fails on any field the editor does not own, naming the field and the reason. Scope it to the paths the pass touched, or it reports everything else in flight."
 status: draft
-verified: { by: "human:analytics206", at: 2026-08-03T07:29:12Z }
+verified: { by: "human:analytics206", at: 2026-08-03T08:03:33Z }
 tags: [needs-nothing]
 generated: { by: "agent:claude-opus-5", at: 2026-08-02T03:28:25Z }
 sources:
@@ -14,7 +14,7 @@ sources:
   - id: implementation
     resource: ../../dropin/guard.py
     okfm_role: subject
-    okfm_captured: { hash: "sha256:fcd121282e05f114733eb64d8214f91b4c9a7fd7e9415fe46457d1c2596ded2d", at: 2026-08-03 }
+    okfm_captured: { hash: "sha256:6363676e521b8a6a82980bcb3b0b131f2abe3b48be79245963d21e7a932618d0", at: 2026-08-03 }
 okfm_scope: project
 okfm_relations:
   - { predicate: part_of, target: /index.md }
