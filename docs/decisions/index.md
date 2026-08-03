@@ -39,6 +39,7 @@ the implementation disagree, the implementation is right and a record here says 
 | [0015](0015-the-install-has-an-upgrade.md) | The tool, the mesh and the config are three things | accepted | §13.3, §13.7, DR-0007 |
 | [0016](0016-documented-commands-must-exist.md) | Documentation may not name a command that does not exist | accepted | §13.6, DR-0011 |
 | [0017](0017-two-viewers.md) | Two viewers — the demo has data baked in, the adopter's must not | accepted | §13.7, §14.1, DR-0015 |
+| [0018](0018-the-viewer-carries-the-mesh.md) | The viewer carries the mesh — bodies embedded, not fetched | accepted | §14.2, §14.3, DR-0011 |
 
 ## Two different axes, easily confused
 
@@ -150,3 +151,12 @@ concepts and somebody else's name as owner, in a file they had just added to the
 repository. The drop-in now ships a blank one, generated from the shipped page and guarded so
 the markup cannot drift, and the build seeds it on a first run. That is also what makes
 Level 2 a single folder copy instead of two copies and a paragraph explaining the second.
+
+**0018** — bodies were fetched at click time, `file://` blocks fetch, and `file://` is the
+whole of Level 1: the one thing Level 1 promises was the one thing the page could not do,
+and it recommended a `--serve` flag that never existed. Bodies are baked in now, guarded by
+the same `--check` that already guarded every other embedded field. Four features taken from
+Google's reference viewer without taking its CDN dependency — inline markdown, search over
+bodies, four layouts including bundles-as-columns, node size by content. The contamination
+guard §21.3 left behind turned out to be a filename list for a file the corpus never
+included; it is structural now and verified by falsification.

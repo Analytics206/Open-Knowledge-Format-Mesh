@@ -294,10 +294,49 @@
   .detail li{margin:2px 0; font-size:12px}
   .detail a{color:var(--machine); text-decoration:none; border-bottom:1px solid rgba(74,111,165,.35); cursor:pointer}
   .detail a:hover{border-bottom-color:var(--machine)}
+  /* Prose, not a code dump. The body was rendered as preformatted monospace when it was
+     fetched raw; now it is marked up, so it reads as the document somebody wrote. */
   .bodytext{
-    font-family:var(--mono); font-size:11px; line-height:1.55; white-space:pre-wrap;
-    word-break:break-word; background:var(--paper); border:1px solid var(--line-soft);
-    padding:10px 11px; margin:5px 0 0; max-height:340px; overflow-y:auto; color:var(--ink);
+    font-size:12px; line-height:1.6; word-break:break-word; background:var(--paper);
+    border:1px solid var(--line-soft); padding:12px 13px; margin:5px 0 0;
+    max-height:52vh; overflow-y:auto; color:var(--ink);
+  }
+  .bodytext p.md{margin:0 0 9px}
+  .bodytext p.md:last-child{margin-bottom:0}
+  .bodytext h3.md{font-size:13px; margin:14px 0 6px; letter-spacing:-.01em}
+  .bodytext h4.md, .bodytext h5.md, .bodytext h6.md{font-size:12px; margin:12px 0 5px}
+  .bodytext h3.md:first-child, .bodytext h4.md:first-child{margin-top:0}
+  .bodytext ul.md, .bodytext ol.md{margin:0 0 9px; padding-left:18px}
+  .bodytext li{margin:2px 0; font-size:12px}
+  .bodytext code{font-family:var(--mono); font-size:10.5px; background:var(--panel);
+    border:1px solid var(--line-soft); padding:0 3px; border-radius:2px}
+  .bodytext pre.md{font-family:var(--mono); font-size:10.5px; line-height:1.5;
+    background:var(--panel); border:1px solid var(--line-soft); padding:8px 9px;
+    margin:0 0 9px; overflow-x:auto; white-space:pre}
+  .bodytext pre.md code{background:none; border:none; padding:0}
+  .bodytext blockquote.md{margin:0 0 9px; padding:2px 0 2px 10px;
+    border-left:2px solid var(--line); color:var(--slate)}
+  .bodytext hr.md{border:none; border-top:1px solid var(--line-soft); margin:12px 0}
+  .bodytext p.row .sep{color:var(--slate-dim)}
+  /* A body's own links point at bundle paths this page cannot navigate to, so they render
+     as emphasis rather than as anchors that go nowhere. A dead link is worse than none. */
+  .bodytext .mdlink{color:var(--machine); border-bottom:1px solid rgba(74,111,165,.3)}
+  .bodytext a{color:var(--machine)}
+
+  /* search + layout */
+  .searchbox{padding:0 0 12px}
+  .searchbox input{
+    width:100%; box-sizing:border-box; font-family:inherit; font-size:12px;
+    padding:6px 8px; background:var(--paper); color:var(--ink);
+    border:1px solid var(--line); border-radius:3px;
+  }
+  .searchbox input:focus{outline:none; border-color:var(--machine)}
+  .searchhint{font-size:10.5px; color:var(--slate); margin-top:4px; min-height:13px}
+  .searchhint.none{color:var(--rust, #a4553a)}
+  #layoutSel{
+    width:100%; box-sizing:border-box; font-family:inherit; font-size:11.5px;
+    padding:5px 6px; background:var(--paper); color:var(--ink);
+    border:1px solid var(--line); border-radius:3px;
   }
   .nobody{
     margin-top:16px; padding:9px 10px; border:1px dashed var(--line); font-size:11px;
@@ -341,7 +380,7 @@
     <div class="legend-note" id="legendNote" hidden>
       <b>ring</b> solid = human-verified · dashed = machine · none = unverified<br>
       <b>halo</b> amber = past stale_after · rust = source drifted<br>
-      <b>size</b> = inbound references<br>
+      <b>size</b> = inbound references + how much is written in it<br>
       <b>scroll</b> to zoom · drag the background to pan · double-click to reset
     </div>
     <div class="chains" id="chains" hidden></div>
@@ -366,8 +405,13 @@
    3. empty state            no mesh, no guide -> instructions
 
    Fetch only works over http(s). Opened straight from disk (file://) browsers
-   block it, so the baked guide is what you see. Run `okfm view --serve` for a
-   live view of your own mesh.
+   block it, so the baked mesh is what you see — and since DR-0018 that is the
+   whole mesh including every concept body, so `file://` is not a degraded mode.
+
+   This recommended a `view --serve` flag, which was never one: running it
+   printed `unknown option: --serve` and exited 2. It survived because
+   `dev/check_commands.py` reads markdown and this is HTML — now fixed there too.
+   Re-run `okfm view` after a build; there is nothing to serve.
 -----------------------------------------------------------------------------*/
 const INDEX_URL = (window.OKFM_INDEX_URL) || "./okfm-index.json";
 
@@ -446,7 +490,8 @@ function derive(){
 /* ---------- filter state ---------- */
 const state = {
   view:"graph", types:new Set(), trust:new Set(["human","machine","unverified"]),
-  fresh:new Set(["fresh","stale","drifted","unknown"]), bundles:new Set(), selected:null, body:null
+  fresh:new Set(["fresh","stale","drifted","unknown"]), bundles:new Set(), selected:null, body:null,
+  q:"", layout:"force"
 };
 function resetFilters(){
   state.types = new Set(types);
@@ -454,8 +499,19 @@ function resetFilters(){
   state.fresh = new Set(["fresh","stale","drifted","unknown"]);
   state.bundles = new Set(MESH.bundles.map(b=>b.id));
 }
+/* Title, path, type, description, tags — and the BODY, which is the half that matters.
+   A mesh answers "why did we decide X", and the sentence that answers it lives in a body
+   far more often than in a title. Searching metadata only would find the concepts that
+   happen to be *named* after your question. */
+function matches(c, q){
+  if(!q) return true;
+  const hay = [c.title, c.p, c.t, c.d, (BOOTSTRAP.bodies || {})[c.p] || ""].join("\n").toLowerCase();
+  return q.split(/\s+/).filter(Boolean).every(term => hay.includes(term));
+}
+
 const visible = () => MESH.concepts.filter(c =>
-  state.types.has(c.t) && state.trust.has(c.trust) && state.fresh.has(c.fresh) && state.bundles.has(c.b));
+  state.types.has(c.t) && state.trust.has(c.trust) && state.fresh.has(c.fresh) &&
+  state.bundles.has(c.b) && matches(c, state.q));
 
 /* ---------- gauges ---------- */
 const isGuide = c => c.scope === "guide";
@@ -521,6 +577,14 @@ function filters(){
       ${sw?`<span class="swatch" style="background:${sw}"></span>`:""}<span>${label}</span>
       ${n!==undefined?`<span class="n">${n}</span>`:""}</label>`;
   document.getElementById("filters").innerHTML =
+    `<div class="searchbox">
+       <input id="q" type="search" value="${esc(state.q)}" placeholder="Search titles and bodies"
+              autocomplete="off" spellcheck="false">
+       <div class="searchhint" id="qhint"></div>
+     </div>` +
+    grp("Layout", `<select id="layoutSel">` +
+        LAYOUTS.map(l=>`<option value="${l.id}"${state.layout===l.id?" selected":""}>${l.label}</option>`).join("") +
+        `</select>`) +
     grp("Type", types.map(t=>chk("types",t,t,color(t),counts(t))).join("")) +
     grp("Trust", ["human","machine","unverified"].map(v=>chk("trust",v,TRUST_LABEL[v],TRUST_HEX[v],
         MESH.concepts.filter(c=>c.trust===v).length)).join("")) +
@@ -537,7 +601,35 @@ function filters(){
       render();
     });
   });
-  document.getElementById("resetF").onclick = ()=>{ resetFilters(); filters(); render(); };
+  document.getElementById("resetF").onclick = ()=>{
+    resetFilters(); state.q = ""; filters(); render();
+  };
+
+  const q = document.getElementById("q");
+  if(q){
+    // Re-rendering the whole panel on every keystroke would blur the field the user is
+    // typing into. Only the count line and the stage are updated here; the panel itself is
+    // rebuilt on the next filter change.
+    q.addEventListener("input", ()=>{ state.q = q.value.trim().toLowerCase(); render(); qhint(); });
+    q.addEventListener("keydown", e=>{ if(e.key === "Escape"){ q.value=""; state.q=""; render(); qhint(); } });
+  }
+  const sel = document.getElementById("layoutSel");
+  // `runSim`, not `drawGraph`. Draw paints wherever the nodes already are; placing them is
+  // what a layout change means, and calling only the painter changed the dropdown and
+  // nothing else on screen — a control that visibly does nothing.
+  if(sel) sel.addEventListener("change", ()=>{ state.layout = sel.value; runSim(); });
+  qhint();
+}
+
+/* Said out loud, always. A search that silently matches nothing looks identical to a mesh
+   that holds nothing, and the second is a much worse thing to conclude about your project. */
+function qhint(){
+  const el = document.getElementById("qhint");
+  if(!el) return;
+  if(!state.q){ el.textContent = ""; return; }
+  const n = visible().length;
+  el.textContent = n ? `${n} of ${MESH.concepts.length} concepts` : "nothing matches — Esc to clear";
+  el.className = "searchhint" + (n ? "" : " none");
 }
 
 /* ---------- graph ---------- */
@@ -561,14 +653,57 @@ function buildGraph(){
   runSim();
 }
 
+/* Four ways of arranging the same nodes. Force answers "what clusters"; the other three
+   answer questions force is bad at — grid and circle make it possible to *find* a specific
+   concept, and bundle-columns show ownership, which is the one thing a mesh is for and the
+   one thing a force layout scrambles. */
+const LAYOUTS = [
+  {id:"force",   label:"force — what clusters"},
+  {id:"bundles", label:"bundles — columns by owner"},
+  {id:"circle",  label:"circle — every node visible"},
+  {id:"grid",    label:"grid — alphabetical"},
+];
+
 function runSim(){
   clearInterval(simTimer);
+  if(state.layout !== "force"){ placeStatic(); drawGraph(); return; }
   let alpha = 1;
   simTimer = setInterval(()=>{
     tick(alpha); alpha *= 0.96;
     drawGraph();
     if (alpha < 0.02) clearInterval(simTimer);
   }, 16);
+}
+
+function placeStatic(){
+  const W = svg.clientWidth || 800, H = svg.clientHeight || 500;
+  const pad = 60, w = Math.max(240, W - pad*2), h = Math.max(200, H - pad*2);
+  if(state.layout === "circle"){
+    const r = Math.min(w, h) / 2;
+    nodes.forEach((n,i)=>{
+      const a = (i / nodes.length) * Math.PI * 2 - Math.PI/2;
+      n.x = W/2 + Math.cos(a)*r; n.y = H/2 + Math.sin(a)*r; n.vx = n.vy = 0;
+    });
+  } else if(state.layout === "grid"){
+    const sorted = [...nodes].sort((a,b)=>a.p.localeCompare(b.p));
+    const cols = Math.max(1, Math.ceil(Math.sqrt(sorted.length * (w/Math.max(1,h)))));
+    const rows = Math.ceil(sorted.length / cols);
+    sorted.forEach((n,i)=>{
+      n.x = pad + (cols<2?w/2:(i % cols) * (w/(cols-1)));
+      n.y = pad + (rows<2?h/2:Math.floor(i/cols) * (h/(rows-1)));
+      n.vx = n.vy = 0;
+    });
+  } else {                                     // bundles
+    const ids = MESH.bundles.map(b=>b.id).filter(id => nodes.some(n=>n.c.b===id));
+    ids.forEach((id, col)=>{
+      const col_nodes = nodes.filter(n=>n.c.b===id).sort((a,b)=>a.p.localeCompare(b.p));
+      col_nodes.forEach((n,i)=>{
+        n.x = pad + (ids.length<2 ? w/2 : col * (w/(ids.length-1)));
+        n.y = pad + (col_nodes.length<2 ? h/2 : i * (h/(col_nodes.length-1)));
+        n.vx = n.vy = 0;
+      });
+    });
+  }
 }
 
 function tick(alpha){
@@ -597,7 +732,16 @@ function tick(alpha){
   });
 }
 
-const radius = n => 6 + Math.min(n.c.inb, 6) * 1.9;
+/* Two signals, deliberately. Inbound references say how *depended upon* a concept is;
+   body length says how much is actually written in it. They are different questions and a
+   graph that answers only the first makes a one-line stub that everything cites look like
+   the centre of the mesh.
+
+   Weight is damped hard — sqrt, capped — because raw character counts span two orders of
+   magnitude here (87 to 18,361) and a linear scale would produce one planet and sixty
+   pebbles. */
+const radius = n => 6 + Math.min(n.c.inb, 6) * 1.6
+                      + Math.min(3.5, Math.sqrt((n.c.w || 0) / 900));
 
 /* Pan and zoom live entirely in the viewBox. The simulation keeps working in the same
    coordinate space it always did, so nothing downstream — layout, drag, hit-testing —
@@ -795,24 +939,89 @@ function select(p){
   // beside the point. Clicking a concept there means "show me this one", so go where that
   // can be answered rather than selecting something nobody can see.
   if(pageFromHash()==="health") location.hash = "graph";
+  // BEFORE the render, not after. It was after, which was right while the body arrived over
+  // fetch and the panel repainted when it landed. Now the lookup is synchronous, so a render
+  // that runs first paints "no body" for every concept and nothing repaints it.
+  loadBody(p);
   detail();
   if(pageFromHash()==="graph") drawGraph();
-  loadBody(p);
 }
 
-/* Bodies are FETCHED from the bundle, never embedded in this file.
-   Served -> live body, always current. file:// -> unavailable, say so. */
-async function loadBody(p){
-  const url = BUNDLE_ROOT.replace(/\/$/,"") + p;
-  try{
-    const res = await fetch(url, {cache:"no-store"});
-    if(!res.ok) throw 0;
-    let txt = await res.text();
-    txt = txt.replace(/^---[\s\S]*?\n---\n/, "").trim();   // strip frontmatter
-    if(state.selected === p){ state.body = txt.slice(0, 6000); detail(); }
-  }catch(e){
-    if(state.selected === p){ state.body = false; detail(); }
+/* Bodies are EMBEDDED, baked in beside the metadata.
+
+   They used to be fetched from the bundle at read time, and the argument for that was a
+   good one in isolation: a page carrying no text cannot go stale against the bundle or
+   become a second copy of it. What it missed is that `file://` blocks fetch, and `file://`
+   IS level 1. So the single thing level 1 promises — open the page, read the guide — was
+   the one thing this page could not do. It said "body not available here" and recommended
+   a `view --serve` flag, which was never one.
+
+   The staleness objection does not survive contact with the rest of the file: titles,
+   descriptions, trust tiers and drift are all embedded copies already, and `bake --check`
+   fails the pipeline the moment any of them disagrees with the mesh. Bodies are covered by
+   that same guard. See DR-0018. */
+function loadBody(p){
+  const b = (BOOTSTRAP.bodies || {})[p];
+  state.body = (b === undefined) ? false : b;
+}
+
+/* ---------- markdown ----------------------------------------------------------
+   Sixty lines instead of a library. Google's viewer pulls `marked` and `cytoscape`
+   from a CDN, which is why theirs shows nothing at all with the network off — and a
+   viewer that needs the internet to read a local file has given up the property that
+   makes it worth shipping as one file.
+
+   Escapes FIRST, then marks up. A concept body is text somebody wrote; treating it as
+   HTML would let a document rewrite the page that is displaying it. */
+function md(src){
+  const code = [];
+  let s = esc(src);
+  s = s.replace(/```[a-z]*\n([\s\S]*?)```/g, (m, c) => ` ${code.push(c) - 1} `);
+  const out = [];
+  let list = null;
+  for(const raw of s.split("\n")){
+    const line = raw.replace(/\s+$/, "");
+    const fence = line.match(/^ (\d+) $/);
+    if(fence){ closeList(); out.push(`<pre class="md"><code>${code[+fence[1]]}</code></pre>`); continue; }
+    if(!line.trim()){ closeList(); continue; }
+    const h = line.match(/^(#{1,4})\s+(.*)$/);
+    if(h){ closeList(); out.push(`<h${h[1].length + 2} class="md">${inline(h[2])}</h${h[1].length + 2}>`); continue; }
+    if(/^(-{3,}|\*{3,})$/.test(line.trim())){ closeList(); out.push('<hr class="md">'); continue; }
+    const q = line.match(/^>\s?(.*)$/);
+    if(q){ closeList(); out.push(`<blockquote class="md">${inline(q[1])}</blockquote>`); continue; }
+    const ul = line.match(/^\s*[-*]\s+(.*)$/);
+    const ol = line.match(/^\s*\d+[.)]\s+(.*)$/);
+    if(ul || ol){
+      const want = ul ? "ul" : "ol";
+      if(list !== want){ closeList(); out.push(`<${want} class="md">`); list = want; }
+      out.push(`<li>${inline((ul || ol)[1])}</li>`); continue;
+    }
+    // A table row renders as its cells rather than as pipes. Not a table — the panel is
+    // narrow — but the content is readable, which a row of `|---|---|` is not.
+    if(/^\|.*\|$/.test(line.trim())){
+      closeList();
+      const cells = line.trim().slice(1, -1).split("|").map(c => c.trim());
+      if(cells.every(c => /^:?-{2,}:?$/.test(c))) continue;
+      out.push(`<p class="md row">${cells.filter(Boolean).map(inline).join(' <span class="sep">·</span> ')}</p>`);
+      continue;
+    }
+    closeList(); out.push(`<p class="md">${inline(line)}</p>`);
   }
+  closeList();
+  return out.join("");
+
+  function closeList(){ if(list){ out.push(`</${list}>`); list = null; } }
+}
+
+function inline(t){
+  return t
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")
+    .replace(/(^|[\s(])\*([^*\n]+)\*/g, "$1<i>$2</i>")
+    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (m, label, href) =>
+      /^(https?:|mailto:)/.test(href)
+        ? `<a href="${href}" target="_blank" rel="noopener">${label}</a>`
+        : `<span class="mdlink">${label}</span>`);
 }
 
 function detail(){
@@ -820,7 +1029,8 @@ function detail(){
   const c = byPath.get(state.selected);
   if(!c){
     el.innerHTML = `<div class="empty-state">Select a concept.<br><br>
-      This panel shows <b>metadata only</b> — the body stays in the bundle.</div>`;
+      You get its frontmatter, its typed edges, what cites it — and <b>the whole document</b>,
+      rendered. No server, no network, nothing to install.</div>`;
     return;
   }
   const rel = c.r.map(([pred,tgt])=>{
@@ -854,17 +1064,12 @@ function detail(){
 }
 
 function bodyBlock(c){
-  if(state.body === null)
-    return `<div class="nobody">Reading <code>${esc(c.p)}</code>…</div>`;
-  if(state.body === false)
-    return `<div class="nobody"><b>Body not available here.</b><br>
-      This page holds metadata only — it never embeds concept text, so it can never
-      go stale against the bundle or become a second copy of it.<br><br>
-      Open <code>${esc(c.p)}</code>, or run <code>okfm view --serve</code> to read
-      bodies live.</div>`;
+  if(!state.body)
+    return `<div class="nobody">This concept has no body — its frontmatter is the whole of it.
+      That is legal and sometimes right: an <code>index.md</code> is a map, not an argument.</div>`;
   return `<dt style="font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
-    text-transform:uppercase;color:var(--slate-dim);margin-top:16px">body — read live from bundle</dt>
-    <pre class="bodytext">${esc(state.body)}</pre>`;
+    text-transform:uppercase;color:var(--slate-dim);margin-top:18px">body</dt>
+    <div class="bodytext">${md(state.body)}</div>`;
 }
 
 /* ---------- config panel ----------------------------------------------------
@@ -1496,7 +1701,7 @@ Float dollars drifted a few cents per thousand rows.</pre>
   } else if (SOURCE === "baked"){
     // Neutral, not amber. This is what a successful build looks like, and colouring it as a
     // warning sent adopters hunting for a failure that had not happened — and pointed them at
-    // an `okfm view --serve` that does not exist and an okfm-guide/ they may never have had.
+    // a `view --serve` flag that does not exist and an okfm-guide/ they may never have had.
     badge.textContent = "baked · " + (MESH.generated_at || "snapshot");
     badge.title = "Metadata baked into this page by the last build. Re-run the build to refresh it.";
   } else {

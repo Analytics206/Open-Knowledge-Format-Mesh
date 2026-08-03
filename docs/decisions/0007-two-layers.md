@@ -56,8 +56,13 @@ implementation or reuse the reference one. Nothing here has a runtime, a package
 version to resolve.
 
 The web UI belongs in base because it already earns its place there: it opens from
-`file://` and falls back to a baked index with no server. `okfm view --serve`, which
-*generates* that index, is tooling.
+`file://` and falls back to a baked index with no server. `okfm view`, which *generates*
+that index, is tooling.
+
+> This named a `view --serve` flag. There was never one — running it printed `unknown
+> option: --serve` and exited 2. The design note it was standing in for is still right: the
+> page is base, the thing that bakes its index is tooling. Since DR-0018 there is nothing to
+> serve either, because the page carries every body and `file://` is not a degraded mode.
 
 ### Implementation — optional, replaceable.
 

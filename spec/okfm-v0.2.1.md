@@ -1333,39 +1333,59 @@ The page is dynamic. It holds no snapshot of your mesh:
    a five-line example, and names the two commands that matter. An empty mesh is an
    invitation, not an error.
 
-`file://` blocks `fetch`, so a web UI opened directly from disk lands on source 2 or
-3. `okfm view --serve` starts a local server and unlocks source 1 plus live bodies.
-The badge in the masthead states which source is showing; the reader is never left
-guessing whether they are looking at their own mesh.
+`file://` blocks `fetch`, so a web UI opened directly from disk lands on source 2 or 3.
+**That is not a degraded mode.** Since [DR-0018](../docs/decisions/0018-the-viewer-carries-the-mesh.md)
+the baked source carries every concept body, so a page opened from disk shows the whole
+mesh, rendered, with no server and no network. The badge in the masthead states which
+source is showing; the reader is never left guessing whether they are looking at their own
+mesh.
 
-### 14.3 Bodies: fetched, never embedded
+> This said a local server was started by a `view --serve` flag, which "unlocks source 1
+> plus live bodies". No such flag existed — running it printed `unknown option` and exited
+> 2 — and it was recommended here, in the viewer itself, and in two decision records. It is
+> also no longer wanted: the reason to serve was to read bodies, and the page carries them.
 
-Concept bodies are **read from the bundle at click time** when the web UI is served,
-and simply unavailable when it is not. The page never contains them.
+### 14.3 Bodies: embedded, and guarded
 
-This is one rule with three distinct justifications, and it is enforced by
-construction rather than by discipline:
+Concept bodies are **baked into the page** alongside the metadata, so a viewer opened from
+`file://` shows the whole mesh, rendered, with no server and no network.
 
-1. **Divergence.** An embedded body is a snapshot. A month later it silently
-   disagrees with the file it came from, and nothing says so. A fetched body cannot
-   be stale.
-2. **Contamination.** §21.3 records a published incident: a committed rendered
-   bundle page carried every concept body in its inline data, a benchmark control
-   agent found it, and the arm had to be rebuilt. A file with no bodies cannot
-   contaminate anything.
-3. **Access control.** In a federation the owning agent decides what to share
-   (§12.6). A flat file containing every body routes around that.
+This reverses the rule that stood here for most of the project's life — *fetched, never
+embedded* — and the reversal is [DR-0018](../docs/decisions/0018-the-viewer-carries-the-mesh.md).
+The three justifications were real and are answered rather than dropped:
 
-**Mechanical enforcement, not a note in a document:**
+1. **Divergence.** *"An embedded body is a snapshot; a month later it silently disagrees."*
+   It is not silent. `bake --check` runs in the pipeline and in CI and fails the moment the
+   page disagrees with the mesh — and the page already embedded titles, descriptions, trust
+   tiers and drift under exactly the same risk, so this covers bodies at no new cost.
+2. **Contamination.** §21.3's incident stands, and the guard is now structural rather than a
+   list of filenames: the benchmark fails when any control-arm file carries the text of
+   three or more concepts, whatever it is called. `*.html` is in the corpus globs so the
+   viewer is *considered and excluded* rather than absent because nobody listed it — which
+   is what it was.
+3. **Access control.** This is the one that survives intact, and it is scoped: in a
+   federation the owning agent decides what to share (§12.6), and a flat file with every
+   body routes around that. It does not apply to a viewer generated from a bundle you
+   already hold. **Re-entry trigger:** the first mesh with a real access boundary — Phase 4,
+   or a hosted member — at which point the served console (§14.7, DR-0011) is the artifact
+   that must not embed, not this one.
 
-- `okfm-index.json` and any locally-regenerated viewer are **gitignored**; the
-  committed `okfm-web-ui.html` contains guide metadata only.
-- `okfm validate` fails if a committed artifact under `viewer.path` contains concept
-  body text.
-- The benchmark harness (§18.3) refuses to run when a rendered view is present in a
-  control arm — the published mistake, automated away.
-- Generated artifacts are excluded from context assembly (§8) by scope, so no agent
-  reads the web UI instead of the bundle.
+What the old rule cost, and why it was worth reversing: `file://` blocks `fetch`, and
+`file://` is the whole of Level 1. So the single thing Level 1 promises — open the page and
+read the guide — was the one thing the page could not do. It said *"body not available
+here"* and recommended a flag that did not exist.
+
+**Mechanical enforcement, still:**
+
+- `bake --check` fails when the committed page disagrees with the mesh.
+- The benchmark refuses a control arm containing a rendered view, detected by content.
+- Generated artifacts are excluded from context assembly (§8) by scope, so no agent reads
+  the web UI instead of the bundle.
+
+> One of the enforcements listed here was never built: *"`okfm validate` fails if a committed
+> artifact under `viewer.path` contains concept body text."* No such check existed. Had it
+> existed it would have caught DR-0018 on the first run, which is the argument for writing
+> the enforcement at the same time as the rule rather than after it.
 
 ### 14.4 Derived at render time
 

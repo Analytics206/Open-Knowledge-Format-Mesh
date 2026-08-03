@@ -171,7 +171,18 @@ def collect():
     _, cfg, _ = load_or_create_config(write=False)
     obs = load_observations()
     owners = mesh_owners(cfg)
-    bundles, concepts = [], []
+    # Concept text, embedded. It used to be FETCHED at read time and the reasoning was
+    # sound in isolation — a page that carries no bodies cannot go stale against the bundle
+    # or become a second copy of it. What it missed is that `file://` blocks fetch, and
+    # `file://` is the whole of Level 1. So the one thing Level 1 promises — open the page
+    # and read the guide — was the one thing it could not do, and the page said so and then
+    # recommended a command that did not exist.
+    #
+    # The staleness argument does not survive contact with what is already here: titles,
+    # descriptions, trust tiers and drift are all embedded copies, and `--check` fails the
+    # pipeline the moment any of them disagrees with the mesh. Bodies fall under the same
+    # guard at no extra cost. See DR-0018.
+    bundles, concepts, bodies = [], [], {}
     all_bundles = configured_bundles(cfg)
     bundle_ids = set(all_bundles)
 
@@ -193,6 +204,8 @@ def collect():
                 continue
 
             mesh_path = f"{root}/{f.relative_to(src).as_posix()}"
+            body = text[fm.end():].strip()
+            bodies[mesh_path] = body
             concepts.append({
                 "p": mesh_path,
                 "b": bundle_id,
@@ -205,6 +218,11 @@ def collect():
                 "drift": drift_of(block, f"{bundle_id}/{f.relative_to(src).as_posix()}", obs),
                 "r": relations(block, root, bundle_ids),
                 "scope": scalar(block, "okfm_scope"),
+                # Weight, for node size. Characters is a poor proxy for importance and a fair
+                # one for *substance*: a concept with four lines and one with four hundred
+                # should not look identical in a graph somebody is scanning for where the
+                # thinking is.
+                "w": len(body),
             })
             found += 1
 
@@ -225,6 +243,9 @@ def collect():
         "generated_at": "2026-08-01",
         "bundles": bundles,
         "concepts": concepts,
+        # Keyed by mesh path, so the viewer needs no second lookup and a concept with no
+        # body simply has no entry rather than an empty string that renders as a blank pane.
+        "bodies": {p: b for p, b in sorted(bodies.items()) if b},
     }
 
 

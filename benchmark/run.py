@@ -53,7 +53,12 @@ SKIP_DIRS = {".git", ".github", "node_modules", "__pycache__", ".okfm-cache", "r
 
 # The control arm has to be a project someone could actually work in, not a documentation
 # folder. Code and config carry facts the questions may legitimately depend on.
-CORPUS_GLOBS = ("*.md", "*.py", "*.yaml", "*.json")
+# `*.html` is here so the viewer is CONSIDERED and then deliberately excluded from the
+# control arm, rather than absent by accident. It was absent by accident: the glob list did
+# not mention html, so `DERIVATIONS` printed a reassuring note about excluding a file that
+# was never in either arm — and the day somebody added html to this tuple, a page carrying
+# every concept body would have walked into the control arm with nothing to stop it.
+CORPUS_GLOBS = ("*.md", "*.py", "*.yaml", "*.json", "*.html")
 
 
 def utf8_stdout() -> None:
@@ -324,6 +329,46 @@ def main() -> int:
             if desc[:60] in control_text[c]:
                 leaked.append((rel.as_posix(), c.as_posix()))
                 break
+
+    # --- a rendered view in the control arm, detected by CONTENT --------------
+    # §21.3's published incident: a committed rendered bundle page carried every concept
+    # body inline, a control agent found it, and the arm had to be rebuilt. `DERIVATIONS`
+    # guards against it by FILENAME, which works right up until somebody generates a view
+    # under a name this list has never heard of.
+    #
+    # This became load-bearing rather than belt-and-braces when DR-0018 put every body into
+    # the viewer. So the rule is structural now: a control-arm file carrying the text of
+    # three or more different concepts IS a rendered view, whatever it is called.
+    # The fingerprint has to be DISTINCTIVE, not merely long. The first attempt took the
+    # first line over sixty characters, which for every mirrored concept is the identical
+    # boilerplate the build writes into all of them — so `dropin/build.py`, the file that
+    # emits that sentence, was reported as a rendered view of four concepts.
+    #
+    # Longest line, then discard any that more than one concept shares.
+    picked = {}
+    for rel in files:
+        try:
+            text = (PROJECT / rel).read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        m = _FM.match(text)
+        if not m:
+            continue
+        line = max((ln.strip() for ln in text[m.end():].splitlines()), key=len, default="")
+        if len(line) > 60:
+            picked.setdefault(line, []).append(rel)
+    fingerprints = [(rels[0], line) for line, rels in picked.items() if len(rels) == 1]
+    for c in control:
+        try:
+            text = (PROJECT / c).read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        hits = [rel.as_posix() for rel, line in fingerprints
+                if rel != c and line in text]
+        if len(hits) >= 3:
+            errors.append(f"{c.as_posix()} carries the text of {len(hits)} concepts "
+                          f"({', '.join(hits[:3])}…) — that is a rendered view of the mesh "
+                          f"inside the control arm, which is §21.3's incident happening again")
 
     # --- in-place bundles cannot be benchmarked against themselves ------------
     inplace = sorted({b for b, root in bundles.items()

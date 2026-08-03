@@ -40,8 +40,26 @@ HERE = Path(__file__).resolve().parent
 PROJECT = HERE.parent
 DROPIN = PROJECT / "dropin"
 
-# Where an adopter is told what to type.
-SOURCES = ["README.md", "spec/*.md", "docs/**/*.md", "templates/*.md", ".okfm/**/*.md"]
+# Where an adopter is told what to type. The viewer is included because it gives
+# instructions too — and gave a wrong one for months precisely because this list was
+# markdown-only. See FLAGS below.
+SOURCES = ["README.md", "spec/*.md", "docs/**/*.md", "templates/*.md", ".okfm/**/*.md",
+           "okfm-web-ui.html"]
+
+# The viewer's three baked data blocks are a COPY of the corpus, already scanned above as
+# markdown. Scanning them again would report every command quoted inside a historical
+# decision record as a live instruction.
+_BAKED = re.compile(r"const (?:BOOTSTRAP|CONFIG_SCHEMA|CONFIG) = \{.*?\n\};", re.S)
+
+# `okfm view --serve` was recommended in the viewer and in two specification sections. It
+# was never a flag: running it printed `unknown option: --serve` and exited 2. The command
+# check passed it every time, because `view` is a real command and the phantom was the FLAG.
+#
+# So flags are checked too, statically, against the allow-lists the scripts declare. Running
+# them to find out would be the direct test and is not worth it — half the documented
+# commands write files.
+FLAGS = re.compile(r"okfm(?:\.py)?[ \t]+([a-z][a-z-]{2,})[ \t]+(--[a-z][a-z-]*)")
+_ALLOWED = re.compile(r"reject_unknown\([^,]+,\s*\(([^)]*)\)")
 
 # `okfm view`, `okfm.py enrich-local`, `python okfm/okfm.py revalidate` — one pattern, since
 # the docs write it all three ways.
@@ -80,11 +98,48 @@ def documented() -> dict[str, list[str]]:
                 text = f.read_text(encoding="utf-8")
             except (OSError, UnicodeDecodeError):
                 continue
+            if f.suffix == ".html":
+                text = _BAKED.sub("", text)
             for cmd in set(_CMD.findall(text)):
                 if cmd in NOT_COMMANDS:
                     continue
                 found.setdefault(cmd, []).append(f.relative_to(PROJECT).as_posix())
     return found
+
+
+def documented_flags() -> dict[tuple[str, str], list[str]]:
+    """(command, flag) -> the files that tell someone to type it."""
+    found: dict[tuple[str, str], list[str]] = {}
+    for pattern in SOURCES:
+        for f in sorted(PROJECT.glob(pattern)):
+            if not f.is_file():
+                continue
+            try:
+                text = f.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError):
+                continue
+            if f.suffix == ".html":
+                text = _BAKED.sub("", text)
+            for cmd, flag in set(FLAGS.findall(text)):
+                if cmd in NOT_COMMANDS:
+                    continue
+                found.setdefault((cmd, flag), []).append(f.relative_to(PROJECT).as_posix())
+    return found
+
+
+def allowed_flags(script: str) -> set[str] | None:
+    """What a script's `reject_unknown` permits, or None when it declares no list.
+
+    None is not "everything allowed" — it means this check cannot speak for that script, and
+    saying nothing is better than inventing a verdict from an absent declaration.
+    """
+    path = DROPIN / script
+    if not path.is_file():
+        return None
+    m = _ALLOWED.search(path.read_text(encoding="utf-8"))
+    if not m:
+        return None
+    return set(re.findall(r'"(--?[a-z-]+)"', m.group(1)))
 
 
 def dispatchable() -> set[str]:
@@ -132,6 +187,27 @@ def main() -> int:
         else:
             print(f"  ok  okfm {cmd}"
                   + (f"  ({len(set(docs[cmd]))} doc(s))" if docs.get(cmd) else ""))
+
+    # --- flags -------------------------------------------------------------
+    scripts = {}
+    src = (DROPIN / "okfm.py").read_text(encoding="utf-8")
+    for name, script in re.findall(r'[("]([a-z-]+)",\s*"([\w.]+\.py)"', src):
+        scripts[name] = script
+
+    checked = 0
+    for (cmd, flag), files in sorted(documented_flags().items()):
+        if cmd not in known or cmd not in scripts:
+            continue
+        allowed = allowed_flags(scripts[cmd])
+        if allowed is None:
+            continue                       # that script declares no list — say nothing
+        checked += 1
+        if flag not in allowed:
+            problems.append(f"`okfm {cmd} {flag}` is documented in "
+                            f"{', '.join(sorted(set(files))[:2])} and `{scripts[cmd]}` "
+                            f"rejects it — it accepts {', '.join(sorted(allowed)) or '(none)'}")
+    if checked:
+        print(f"  ok  {checked} documented flag(s) match what the script accepts")
 
     for cmd in sorted(known - set(docs)):
         notes.append(f"`okfm {cmd}` exists and no document mentions it")

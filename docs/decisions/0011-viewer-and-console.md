@@ -81,8 +81,12 @@ Configuration editing is likewise level-independent.
 
 ## Why not just make the web UI serveable
 
-Because `okfm view --serve` already exists in the design (§14.2 source 1) and does the
-read-only half. Adding writes to the same file means one artifact with two security postures
+Because `okfm view` already exists and does the read-only half.
+
+> This said a `--serve` flag already existed "in the design". It existed in prose and in no
+> code, for months, while two documents told people to run it. The argument below is
+> unaffected — it is about writes needing a runtime, not about how the read-only page is
+> delivered. Adding writes to the same file means one artifact with two security postures
 and two threat models, distinguished by how it was launched. That is the shape of a mistake.
 
 Separate files also keep the deletion story clean: an adopter who wants no server deletes the
