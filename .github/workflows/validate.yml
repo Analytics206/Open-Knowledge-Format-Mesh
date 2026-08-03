@@ -47,6 +47,13 @@ jobs:
       - name: Every component fits its level
         run: python dev/check_levels.py
 
+      # The config the build WRITES must pass the validator the build RUNS. The pipeline
+      # above cannot catch a disagreement between them: on a first run no config exists,
+      # so validation passes trivially and the bad file is written afterwards. It fails on
+      # the adopter's second run, on a line they did not write.
+      - name: The synthesised config validates
+        run: python dev/check_synthesized.py
+
       # The benchmark's deterministic half: the two arms, the blinding, and the rule that
       # every question must be answerable from source in BOTH arms.
       - name: Benchmark question set and arms

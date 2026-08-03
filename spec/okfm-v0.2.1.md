@@ -1029,7 +1029,7 @@ okfm/
     decisions/               # dated decision records — an IN-PLACE bundle        ✓
   templates/
     bundle/                  # index.md, log.md, one starter concept     ✓
-    AGENTS.md                # the prose contract — level 3, mode 2 (§13.6)  ✓
+    AGENTS.md                # the authoring contract — applies from level 1   ✓
   examples/
     minimal/                 # an adopter-shaped config                            ✓
   benchmark/                 # §18 harness — deterministic half                   ✓
@@ -1184,6 +1184,12 @@ implementer's side:
    before relying on a concept; update the concept and `log.md` after changes; validate
    before committing. Weaker than injection, and portable to any agent tool the adopter
    already has.
+
+   *Level 3* here labels the **mode**, not the file. What the contract says about what may
+   be claimed — land as `draft`, never self-`verified`, never invent a typed edge — binds a
+   person typing frontmatter at level 1 identically. Labelling the file by the mode was a
+   real defect: it gave a first-time hand-author no reason to open the one document that
+   would have stopped them shipping a `verified` entry nobody earned.
 3. **Inside a harness** — *level 3, credentialed*. Workflows call the implementation directly; injection
    is a hook. The reference integration.
 
