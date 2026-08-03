@@ -283,9 +283,27 @@ smaller claim than a **new** domain needing none. See
 | config rejected the build's own output | every adopter, first run, before the build that creates it |
 | in-place bundles were never registered in the mesh | this project — `docs/decisions`, 14 concepts, validated by nothing since it was written |
 
-The distribution-test half is not met. What has been proven is that a **second domain**
-needs no core edits; what has not is that a **stranger** reaches a running mesh from the
-README alone.
+**The distribution-test half is split, and only the mechanical part is met.**
+`dev/check_readme.py` runs the README's own Level 2 commands against a fresh project on
+every CI run and checks that what lands matches what the page claims landed. It found the
+install broken in a way this repository could never have shown:
+
+> `cp -r .../dropin my-project/.okfm` fuses the tool, the config and the adopter's
+> knowledge into one directory. The first run is clean. On the second day there is no way
+> to replace any of the three — re-running the install nests a silent copy and upgrades
+> nothing, and deleting first destroys every enriched and verified concept. This project
+> keeps `dropin/` and `.okfm/` apart and its config at the root, so **the builder's own
+> layout was the safe one and the page described the other.** That gap is what §13.7 is
+> for. See [DR-0015](decisions/0015-the-install-has-an-upgrade.md).
+
+What remains unproven is the part the criterion is actually about: whether a person who has
+never seen this project **understands** the page. That needs a stranger, and the author is
+the one person who cannot stand in for one. A green tick on "the commands run" must not be
+read as closing this exit.
+
+So Phase 2 stands at: a second domain needs no core edits — proven and continuously
+re-proven; the documented path executes and produces what it describes — proven; a stranger
+gets there in under an hour — untested.
 
 ### Phase 3 — The credentialed half: live sources and attestation
 

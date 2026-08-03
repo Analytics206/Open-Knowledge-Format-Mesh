@@ -47,6 +47,12 @@ jobs:
       - name: Every component fits its level
         run: python dev/check_levels.py
 
+      # The README's Level 2 commands, executed against a fresh project. The MECHANICAL half
+      # of §13.7 only — whether a stranger understands the page is not checkable here, and
+      # the script says so on every run so a green tick cannot be read as the exit criterion.
+      - name: The README's own commands run
+        run: python dev/check_readme.py
+
       # The Phase 2 exit, run rather than asserted: stand `examples/warehouse/` up in a
       # temp directory on pack + config alone, and check that dropin/ comes back
       # byte-identical AND that removing the pack makes the same mesh fail. The second half

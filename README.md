@@ -18,12 +18,17 @@ my-project/
   docs/                  your documents. OKFM reads these and never writes to them.
     guides/
     architecture/
-  .okfm/                 everything OKFM. Delete it and the project is as it was.
+  .okfm/                 the mesh OKFM wrote. Delete it and the project is as it was.
     mesh/                  read this first — an OKF whose concepts are the other OKFs
     docs/                  an OKF for the loose files at the top of docs/
     guides/                an OKF for docs/guides/
     architecture/          an OKF for docs/architecture/
+  okfm/                  the tool. Replace this folder to upgrade; the mesh survives.
+  okfm.json              your configuration. The build writes a first one for you.
 ```
+
+**The tool and the mesh are separate folders on purpose.** Put them together and there is no
+way to replace one without risking the other — see [Level 2](#level-2--paste-and-run).
 
 **Every folder of documents gets its own OKF, and one OKF over them says which to read.** That
 is the default with no configuration: `docs/` is found, each subfolder becomes a bundle, the
@@ -103,21 +108,23 @@ That works from level 1 and needs nothing from us.
 
 ## Status
 
-Early Phase 1. The specification is stable enough to build against, the deterministic tooling
-runs, and there is no CLI yet.
+Phase 1 closed, Phase 2 in progress. The specification is stable enough to build against, the
+deterministic tooling runs, and there is no CLI yet.
 
 | | |
 |---|---|
 | Specification, rationale, roadmap, prior art | ✅ |
-| The mesh — 7 bundles, 60 concepts, self-hosted | ✅ |
+| The mesh — 7 bundles, 66 concepts, self-hosted | ✅ |
 | `okfm-web-ui.html` — graph, closure ledger, health panel, config editor | ✅ works offline |
 | `dropin/` — paste into a project, build a mesh | ✅ level 2, deterministic |
 | Config validation — one rule table, terminal and browser | ✅ |
 | `templates/AGENTS.md`, enrich / guard / revalidate | ✅ level 3 |
 | `enrich-local` — the loop on Ollama, no key, no bill | ✅ level 2+, proof of concept |
 | Benchmark harness | ✅ first run recorded — 8 real questions, no measurable gap |
+| Domain packs — a second domain on config alone | ✅ `packs/warehouse`, checked every CI run |
+| Distribution test (§13.7) — a stranger, with only this page | ◐ the commands run; whether they *read* is untested |
 | `okfm` CLI, live resolvers, console app | ⬜ Phase 2 |
-| Providers, packs, federation's negotiation half | ⬜ Phase 3+ |
+| Providers, federation's negotiation half | ⬜ Phase 3+ |
 
 See the [roadmap](docs/roadmap.md) for phases, and [decisions](docs/decisions/index.md) for
 what is settled and what is open.
@@ -141,7 +148,7 @@ Delete the guide whenever you like: `rm -rf .okfm/guide/`.
 ## Level 2 — paste and run
 
 ```bash
-cp -r Open-Knowledge-Format-Mesh/dropin my-project/.okfm
+cp -r Open-Knowledge-Format-Mesh/dropin my-project/okfm
 cp Open-Knowledge-Format-Mesh/okfm-web-ui.html my-project/
 cd my-project
 ```
@@ -151,7 +158,7 @@ because it is the whole of level 1 and does not belong to the build. Skip it and
 still produces a valid mesh — it says so and carries on — you just have nothing to open.
 
 ```bash
-python .okfm/okfm.py
+python okfm/okfm.py
 ```
 
 It finds `docs/`, builds one OKF per folder plus a mesh OKF over them, and writes the config
@@ -171,16 +178,40 @@ Re-running is safe: the build writes only concepts nothing else has touched.
 
 Python 3.13 or newer, standard library only. No install step.
 
+### Three directories, and why they are three
+
+| | Holds | Yours to delete |
+|---|---|---|
+| `okfm/` | the tool — fourteen modules and the core vocabulary | any time; the mesh survives |
+| `.okfm/` | the mesh the build wrote | any time; a rebuild recreates all but your enrichment |
+| `okfm.json` | your configuration | it is the file you edit |
+
+**Upgrading is a delete and a copy**, and it is safe precisely because those are separate:
+
+```bash
+rm -rf my-project/okfm && cp -r Open-Knowledge-Format-Mesh/dropin my-project/okfm
+```
+
+Your config and every concept you enriched or verified are untouched, because neither lives
+in the folder being replaced.
+
+> Earlier versions of this page said `cp -r .../dropin my-project/.okfm`, putting the tool,
+> the config and the mesh in one directory. It works on day one and traps you on day two:
+> running that same command again does not upgrade anything — it nests a second copy inside
+> and reports nothing — and deleting first takes every enriched concept with it. The build
+> now says so out loud if it finds that arrangement. Both still work; only one has an
+> upgrade path.
+
 ## Level 3 — enrichment
 
 Your agent, LLM, or MCP server fills in what extraction cannot: summaries, tags, section
 purposes. Level 2 detects what went stale, level 3 drafts the prose, you approve it.
 
 ```bash
-python .okfm/okfm.py enrich                          # what needs work, and why
+python okfm/okfm.py enrich                          # what needs work, and why
 #                                                      your agent does it
-python .okfm/okfm.py guard                           # did it stay in its lane?
-python .okfm/okfm.py revalidate <path> --by human:you
+python okfm/okfm.py guard                           # did it stay in its lane?
+python okfm/okfm.py revalidate <path> --by human:you
 ```
 
 OKFM holds no credential here — your agent drives OKFM, and you are already authenticated in
@@ -204,8 +235,8 @@ Switch it on in `okfm.json`, or on the **Config** page of the web UI:
 ```
 
 ```bash
-python .okfm/okfm.py enrich-local            # what it would write
-python .okfm/okfm.py enrich-local --apply    # write it
+python okfm/okfm.py enrich-local            # what it would write
+python okfm/okfm.py enrich-local --apply    # write it
 ```
 
 Then `guard` and `revalidate` exactly as above — the model moved onto your machine and nothing

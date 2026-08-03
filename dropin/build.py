@@ -340,6 +340,18 @@ def main() -> int:
     print(f"bundle  : {out_root}")
     print(f"mode    : {cfg.get('mode', 'mirror')} — your documents are never written to\n")
 
+    # The drop-in pasted in AS the bundle root: tool, config and knowledge in one directory.
+    # It works, and it is a trap on the second day rather than the first. There is then no
+    # way to replace the tool without risking the knowledge — `rm -rf` before re-copying
+    # takes every enriched and verified concept with it, and re-copying without deleting
+    # nests a second copy and upgrades nothing, silently. Said once, at the top, because by
+    # the time it matters the adopter has concepts worth losing.
+    if HERE.resolve() == out_root.resolve():
+        print(f"  note   the tool and the mesh share {HERE.name}/. That works, but there is")
+        print(f"         then no way to upgrade one without risking the other. Keeping them")
+        print(f"         apart — the tool in `okfm/`, the mesh in `.okfm/` — makes an")
+        print(f"         upgrade `rm -rf okfm` and a re-copy, with your concepts untouched.\n")
+
     sources = resolve_sources(cfg)
     if not sources:
         print("No source directories found.")

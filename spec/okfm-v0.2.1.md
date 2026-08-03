@@ -1221,9 +1221,15 @@ files around it, and writes a bundle. First run with no config reports what it f
 documentation about scoping.
 
 ```shell
-cp -r okfm/dropin my-project/.okfm && cd my-project
-python .okfm/okfm.py         # one OKF per docs folder, plus the mesh OKF
+cp -r okfm/dropin my-project/okfm && cd my-project
+python okfm/okfm.py          # one OKF per docs folder, plus the mesh OKF
 ```
+
+The tool lands in `okfm/`, the mesh in `.okfm/`, the config at the project root. This said
+`my-project/.okfm` for both and the arrangement has no upgrade path: re-running the install
+nests a copy and updates nothing, and deleting first destroys every enriched concept along
+with the tool. Both layouts still work — `bundle_root` supports either — and the build now
+says so when it finds the fused one ([DR-0015](../docs/decisions/0015-the-install-has-an-upgrade.md)).
 
 Open `okfm-web-ui.html` and the mesh is there — unenriched, because no model was involved,
 and honest about it: extracted descriptions, `status: draft`, no `verified` entry anywhere.

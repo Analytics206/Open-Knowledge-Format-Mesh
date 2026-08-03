@@ -36,6 +36,7 @@ the implementation disagree, the implementation is right and a record here says 
 | [0012](0012-reach-is-configured.md) | Reach is configured, not discovered | accepted | §13.4, §13.5, §21.4 |
 | [0013](0013-the-local-model-variant.md) | Level 2+ — a local model, on level 2's terms | accepted, amended | DR-0008, DR-0009 |
 | [0014](0014-packs-and-in-place-bundles.md) | A pack is a directory; in-place bundles are authored, not built | accepted | §13.2, §13.4, DR-0007 |
+| [0015](0015-the-install-has-an-upgrade.md) | The tool, the mesh and the config are three things | accepted | §13.3, §13.7, DR-0007 |
 
 ## Two different axes, easily confused
 
@@ -124,3 +125,11 @@ a bare name, because a name needs a search order and a search order fails silent
 `--in-place` is removed rather than implemented: it printed `mode : in-place` and mirrored
 anyway, and a build that edits your documents cannot also promise it never touches them.
 In-place bundles are authored by hand and registered by path — which is what this bundle is.
+
+**0015** — the documented install put the tool, the config and the adopter's knowledge in one
+directory. That works on day one and has no upgrade path on day two: re-running the install
+nests a silent copy and updates nothing, and deleting first destroys every enriched concept.
+Three directories now — `okfm/`, `.okfm/`, `okfm.json` — so upgrading is a delete and a copy.
+Both layouts still work and the build warns when it finds the fused one. This repository had
+the safe arrangement all along and the README described the other, which is exactly the gap
+§13.7 exists to find.

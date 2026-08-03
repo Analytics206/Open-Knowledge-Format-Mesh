@@ -414,13 +414,30 @@ def synthesize_config(root: Path) -> dict:
 
 
 def load_or_create_config(write: bool = True) -> tuple[Path, dict, bool]:
-    """Return (path, config, created). Synthesizes and writes one if none exists."""
+    """Return (path, config, created). Synthesizes and writes one if none exists.
+
+    Written to the **project**, which is where `find_config` looks first and where every
+    path inside it is resolved from. It used to be written to `HERE` — inside the drop-in —
+    and that is the adopter's file in the tool's folder:
+
+    * It is the one file the README tells them to edit, and it landed in a dot-folder among
+      fourteen Python modules, indistinguishable from the machinery.
+    * Replacing the drop-in to upgrade puts their configuration in the blast radius. The
+      README's install command *is* the upgrade command, and running it a second time
+      silently nests a copy instead of replacing anything — so the adopter is left running
+      the old code with the new code sitting inside it, and no error either way.
+    * This repository's own config sits at the project root. The tool putting it somewhere
+      else than the builder did is the tell.
+
+    A config already at `HERE` still loads, because `find_config` still looks there. Nothing
+    an adopter has today moves.
+    """
     path, cfg = find_config()
     if path is not None:
         return path, cfg, False
 
     cfg = synthesize_config(PROJECT)
-    path = HERE / CONFIG_NAME
+    path = PROJECT / CONFIG_NAME
     if write:
         path.write_text(json.dumps(cfg, indent=2) + "\n", encoding="utf-8", newline="\n")
     return path, cfg, True
