@@ -1016,7 +1016,6 @@ okfm/
   LICENSE                    # MIT                                                ✓
   NOTICE                     # Apache-2.0 attribution for OKF (§13.8)             ✓
   okfm.json                  # this repo's own config — it self-hosts the guide   ✓
-  okfm.schema.json           # config schema
   okfm-web-ui.html           # the mesh viewer (§14)                              ✓
   spec/
     okfm-v0.2.1.md           # normative specification                            ✓
@@ -1050,7 +1049,8 @@ okfm/
     guide/                   # the format, and a bundle that demonstrates it      ✓
 
   # ---- level 2: the drop-in folder. Copy this whole directory. ------------
-  dropin/                    # paste into a project as .okfm/               ✓
+  dropin/                    # paste into a project as `okfm/` (DR-0015)      ✓
+    okfm.schema.json         # GENERATED from config_schema — editors validate  ✓
     okfm                     # one entry point, dispatches the pipeline      ✓
     build                    # one bundle per folder, plus the mesh OKF    ✓
     refresh                  # observe pointers, report drift (§8.4)         ✓
@@ -1058,6 +1058,7 @@ okfm/
     bootstrap                # extraction: title, description                ✓
     bake_web_ui              # regenerate the web UI index                   ✓
     check_bundles            # conformance, profile, strip test              ✓
+    index                    # what an agent would be handed (§13.7)        ✓
     enrich / guard / revalidate   # level 3 — outside the pipeline           ✓
     enrich_local             # level 3, local variant — the one needs: [model] ✓
     telemetry                # one run record per run (§10.1)                ✓

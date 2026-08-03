@@ -305,6 +305,17 @@ So Phase 2 stands at: a second domain needs no core edits — proven and continu
 re-proven; the documented path executes and produces what it describes — proven; a stranger
 gets there in under an hour — untested.
 
+**`okfm.json` and its schema** are both done. The schema is *generated* from the same rule
+table `check_config.py` and the web UI's config panel read, so an adopter's editor becomes a
+third consumer of one source rather than a fourth copy of the key list — and the build writes
+a `$schema` line into the config it synthesizes, pointing at wherever the drop-in actually
+landed. That makes the editor the earliest of the three validators by a wide margin: a
+misspelled key caught before the file is saved never becomes a build that quietly does the
+wrong thing. `dev/check_schema.py` fails when the committed schema and the table disagree.
+
+Still open in this phase: the packaged `okfm` command, which needs an install step
+[DR-0001](decisions/0001-runtime-and-packaging.md) deliberately does not have yet.
+
 ### Phase 3 — The credentialed half: live sources and attestation
 
 The first phase that needs a real domain. It names capabilities, not a corpus — the corpus is

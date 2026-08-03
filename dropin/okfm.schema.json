@@ -1,0 +1,231 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://okfm.dev/okfm-0.2.1.schema.json",
+  "title": "OKFM 0.2.1 configuration",
+  "description": "Generated from dropin/config_schema.py — do not edit by hand. `dev/check_schema.py` fails when this file and that table disagree.",
+  "type": "object",
+  "properties": {
+    "okfm": {
+      "type": "string",
+      "description": "Which OKFM profile this config is written against.",
+      "default": "0.2.1"
+    },
+    "pack": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Path to a domain pack directory, or null for none. The key must be present even when empty — a mesh with no domain is a normal mesh, not a missing answer. A path rather than a bare name (DR-0014): a name needs a search order, and a search order picks the wrong directory silently."
+    },
+    "build": {
+      "type": "object",
+      "properties": {
+        "root": {
+          "type": "string",
+          "description": "The folder to read. Every subfolder of documents under it becomes a bundle.",
+          "default": "docs"
+        },
+        "root_files": {
+          "type": "boolean",
+          "description": "Turn the documents sitting directly in the root into their own bundle. Set false when they are a landing page and two stubs rather than knowledge.",
+          "default": true
+        },
+        "exclude": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Subtrees to skip, relative to the root. An archive of superseded documents is the usual first entry.",
+          "default": []
+        },
+        "include": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Folders outside the root to read as well, relative to the project. This is the only way to reach one; nothing scans your project on its own.",
+          "default": []
+        },
+        "out": {
+          "type": "string",
+          "description": "Where bundles are written. Your documents are never written to.",
+          "default": ".okfm"
+        },
+        "mesh": {
+          "type": "string",
+          "description": "The generated OKF whose concepts are the other OKFs — the one to read first.",
+          "default": "mesh"
+        },
+        "mode": {
+          "enum": [
+            "mirror"
+          ],
+          "description": "mirror writes concepts beside your files and never touches them. The only mode: for a folder whose documents ARE the concepts, add the frontmatter yourself and name it in `bundles` — the build registers it and writes nothing into it.",
+          "default": "mirror"
+        },
+        "vocab_overlays": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Extra pack DIRECTORIES, for a mesh drawing on more than one. Each family reads only the file bearing its own name — predicates.yaml, types.yaml, reason_codes.yaml, roles.yaml — so a pack cannot widen a list it did not mean to. Usually empty; `pack` covers the single-domain case.",
+          "default": []
+        },
+        "bundle_tags": {
+          "description": "bundle id → tags every concept the build writes there carries. For claims that belong to the folder rather than to any one file — every component in a level-2 bundle is `needs-nothing` by definition, and extraction cannot read that off prose. A tag added by hand to a build-owned concept is erased on the next run, so the build has to be the thing that knows."
+        },
+        "sources": {
+          "description": "An explicit list of folders. Its presence turns discovery off entirely — somebody who wrote one meant it."
+        }
+      },
+      "patternProperties": {
+        "^_": {}
+      },
+      "additionalProperties": false
+    },
+    "bundles": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "id → path. Its presence turns discovery off. The id should be the folder name: two names for one bundle means the second one exists to be got wrong.",
+      "default": {}
+    },
+    "read": {
+      "type": "object",
+      "properties": {
+        "web_ui": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "The single-file viewer. Opens from disk; there is no server.",
+              "default": "./okfm-web-ui.html"
+            },
+            "index": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "Where the generated index is written, if you want it as a separate file."
+            },
+            "serve_port": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "Port for the optional local preview. Not needed to open the file."
+            }
+          },
+          "patternProperties": {
+            "^_": {}
+          },
+          "additionalProperties": false
+        },
+        "index": {
+          "type": "object",
+          "properties": {
+            "max_concepts": {
+              "type": "integer",
+              "description": "How many concepts an injected index may carry before it costs more than it buys.",
+              "default": 60
+            },
+            "priority_types": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Types that survive the budget first, most important first.",
+              "default": []
+            }
+          },
+          "patternProperties": {
+            "^_": {}
+          },
+          "additionalProperties": false
+        },
+        "exclude_scopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Scopes kept out of health statistics and out of any context assembled for an agent — the bundled guide is the usual entry.",
+          "default": []
+        }
+      },
+      "patternProperties": {
+        "^_": {}
+      },
+      "additionalProperties": false
+    },
+    "enrich": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Turn on Level 2+ — OKFM drafts descriptions itself, using a model on hardware you control. Off by default: nothing should start calling a model because a config file mentioned one.",
+          "default": false
+        },
+        "base_url": {
+          "type": "string",
+          "description": "Where Ollama answers. http://localhost:11434 when it runs on this machine; http://<host>:11434 for a box on your network — that host needs OLLAMA_HOST=0.0.0.0 to accept anything but its own loopback.",
+          "default": "http://localhost:11434"
+        },
+        "model": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The model tag to draft with. It must ALREADY be pulled on that Ollama instance — nothing here downloads it. Avoid reasoning models: thinking is disabled, and one that ignores that spends minutes per concept."
+        },
+        "num_ctx": {
+          "type": "integer",
+          "description": "Tokens the model may hold. Ollama defaults to 2048, which silently truncates a long document and describes only the half it saw.",
+          "default": 8192
+        },
+        "timeout_s": {
+          "type": "integer",
+          "description": "How long to wait for one answer. A small model on a CPU is slow, not stuck.",
+          "default": 120
+        }
+      },
+      "patternProperties": {
+        "^_": {}
+      },
+      "additionalProperties": false
+    },
+    "stores": {
+      "type": "object",
+      "description": "External data stores. Credentials are named by handle and never written here: a config file is committed, a credential is not.",
+      "default": {}
+    },
+    "federation": {
+      "type": "object",
+      "properties": {
+        "registry": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The bundle that registers the others. null is a valid mesh — a registry appears when a second owner does."
+        }
+      },
+      "patternProperties": {
+        "^_": {}
+      },
+      "additionalProperties": false
+    },
+    "$schema": {
+      "type": "string",
+      "description": "Path to this schema, so an editor validates the file as you type. Nothing in OKFM reads it."
+    }
+  },
+  "required": [
+    "okfm",
+    "pack"
+  ],
+  "patternProperties": {
+    "^_": {}
+  },
+  "additionalProperties": false
+}

@@ -15,6 +15,7 @@ see your disk, so it says so rather than guessing.
 `needs: []` — no network, no secrets, no model.
 """
 import difflib
+import sys
 import json
 import re
 from pathlib import Path
@@ -227,6 +228,11 @@ def unknown_keys(cfg: dict) -> list[dict]:
         for key, value in node.items():
             if key.startswith("_"):
                 continue                      # `_note`-style comments are the file's own
+            if key == "$schema" and not prefix:
+                # Points an editor at `okfm.schema.json` so the file validates as you type.
+                # Nothing in OKFM reads it, which is exactly why this validator would
+                # otherwise reject the one line that makes a third validator possible.
+                continue
             path = f"{prefix}{key}"
             if path in OPEN_PATHS:
                 continue                      # the adopter names these
@@ -592,5 +598,88 @@ def as_json() -> str:
                       indent=1, ensure_ascii=False)
 
 
+# How a `kind` in the table renders as JSON Schema. Deliberately loose where the table is
+# strict: an editor should flag a boolean written as a string, and should NOT flag a path
+# that does not exist — a browser and an editor both lack a filesystem, which is the same
+# split §13.4 already draws between the terminal validator and the web UI panel.
+_JSON_TYPES = {
+    "string": {"type": "string"},
+    "bool": {"type": "boolean"},
+    "int": {"type": "integer"},
+    "path": {"type": "string"},
+    "paths": {"type": "array", "items": {"type": "string"}},
+    "strings": {"type": "array", "items": {"type": "string"}},
+    "pathmap": {"type": "object", "additionalProperties": {"type": "string"}},
+    "stores": {"type": "object"},
+    "any": {},
+}
+
+
+def as_json_schema() -> dict:
+    """`okfm.json` as JSON Schema, generated from the same table.
+
+    A third consumer of one rule set: the terminal validator, the web UI's config panel, and
+    now whatever editor the adopter has open. Hand-writing this file would have made a fourth
+    copy of the key list, and a fourth copy is how the web UI comes to accept a config the
+    build rejects — the exact failure the table exists to prevent.
+
+    Types and enums only. Everything needing a filesystem — does this directory exist, is
+    this store's credential a handle rather than a literal — stays in `check_config.py`,
+    because an editor cannot see the disk any more than a page opened from `file://` can.
+    """
+    root: dict = {"type": "object", "properties": {}, "required": [],
+                  # `_`-prefixed keys are how this config carries its own notes; `unknown_keys`
+                  # allows them for the same reason. Without this every `_build` comment in a
+                  # real config would light up red in an editor.
+                  "patternProperties": {"^_": {}},
+                  "additionalProperties": False}
+
+    for field in FIELDS:
+        parts = field["path"].split(".")
+        node = root
+        for part in parts[:-1]:
+            props = node.setdefault("properties", {})
+            child = props.setdefault(part, {"type": "object", "properties": {},
+                                            "patternProperties": {"^_": {}},
+                                            "additionalProperties": False})
+            # A group declared as a plain object elsewhere (`stores`) must not be narrowed
+            # into a key list by a nested field appearing later.
+            child.setdefault("properties", {})
+            node = child
+
+        leaf = dict(_JSON_TYPES.get(field["kind"], {}))
+        if field["kind"] == "enum":
+            leaf["enum"] = list(field["choices"])
+        if field.get("nullable") and "type" in leaf:
+            leaf["type"] = [leaf["type"], "null"]
+        if field.get("help"):
+            leaf["description"] = field["help"]
+        if field.get("default") is not None:
+            leaf["default"] = field["default"]
+        node.setdefault("properties", {})[parts[-1]] = leaf
+
+        if field.get("required") and len(parts) == 1:
+            root["required"].append(parts[-1])
+
+    # The one key that is not in the table because nothing in OKFM reads it. Editors do.
+    root["properties"]["$schema"] = {
+        "type": "string",
+        "description": "Path to this schema, so an editor validates the file as you type. "
+                       "Nothing in OKFM reads it.",
+    }
+    return {"$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": f"https://okfm.dev/okfm-{SPEC_VERSION}.schema.json",
+            "title": f"OKFM {SPEC_VERSION} configuration",
+            "description": "Generated from dropin/config_schema.py — do not edit by hand. "
+                           "`dev/check_schema.py` fails when this file and that table "
+                           "disagree.",
+            **root}
+
+
+def schema_text() -> str:
+    """The file as it should be on disk, newline included — one definition, two callers."""
+    return json.dumps(as_json_schema(), indent=2, ensure_ascii=False) + "\n"
+
+
 if __name__ == "__main__":
-    print(as_json())
+    print(schema_text() if "--json-schema" in sys.argv else as_json())

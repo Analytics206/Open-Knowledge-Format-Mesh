@@ -47,6 +47,13 @@ jobs:
       - name: Every component fits its level
         run: python dev/check_levels.py
 
+      # `okfm.schema.json` is GENERATED from the same rule table the terminal validator and
+      # the web UI panel read, so an adopter's editor is a third consumer of one source
+      # rather than a fourth copy of the key list. This fails when the committed file and
+      # the table disagree, which is the only way three validators stay in agreement.
+      - name: The JSON schema is the rule table
+        run: python dev/check_schema.py
+
       # Every `okfm <name>` the documentation tells someone to type must be one the
       # dispatcher answers to. Two were not — `validate` (six mentions, the dispatcher knew
       # it as `check`) and `index` (four, including the page a first-time author reads,

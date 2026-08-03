@@ -397,6 +397,16 @@ def resolve_sources(cfg: dict, root: Path = PROJECT) -> list[dict]:
 def synthesize_config(root: Path) -> dict:
     scan = docs_root({}, root)
     return {
+        # Points the adopter's EDITOR at the schema, so `okfm.json` is validated as they
+        # type — the earliest of the three validators by a wide margin, and the only one
+        # that catches a misspelled key before the file is ever saved. Written as the path
+        # the drop-in actually landed at, because only this side knows where that is; the
+        # viewer's config panel resolves its own `run` command the same way.
+        #
+        # Nothing in OKFM reads this key. `unknown_keys` allows it explicitly for that
+        # reason — it would otherwise reject the one line that makes a third validator work.
+        "$schema": f"./{HERE.relative_to(root).as_posix()}/okfm.schema.json"
+        if HERE.is_relative_to(root) else "./okfm.schema.json",
         "okfm": "0.2.1",
         "pack": None,
         "_generated": (

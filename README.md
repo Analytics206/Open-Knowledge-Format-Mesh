@@ -117,10 +117,10 @@ What is missing is a packaged `okfm` on your PATH, which needs an install step t
 | | |
 |---|---|
 | Specification, rationale, roadmap, prior art | ✅ |
-| The mesh — 7 bundles, 67 concepts, self-hosted | ✅ |
+| The mesh — 7 bundles, 68 concepts, self-hosted | ✅ |
 | `okfm-web-ui.html` — graph, closure ledger, health panel, config editor | ✅ works offline |
 | `dropin/` — paste into a project, build a mesh | ✅ level 2, deterministic |
-| Config validation — one rule table, terminal and browser | ✅ |
+| Config validation — one rule table, terminal, browser **and your editor** | ✅ `okfm.schema.json`, generated |
 | `templates/AGENTS.md`, enrich / guard / revalidate | ✅ level 3 |
 | `enrich-local` — the loop on Ollama, no key, no bill | ✅ level 2+, proof of concept |
 | Benchmark harness | ✅ first run recorded — 8 real questions, no measurable gap |
