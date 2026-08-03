@@ -310,6 +310,8 @@ browser; Level 2 adds Python 3.13 — the only version, not a floor. A packaged 
 PATH would be shorter to type and would cost the zero-install property to get, so it is off
 the plan rather than pending. `python okfm/okfm.py <name>` is the CLI.
 
+### Phase 3 — The credentialed half: live sources and attestation
+
 The first phase that needs a real domain. It names capabilities, not a corpus — the corpus is
 whichever project adopts OKFM first, and §11 describes one candidate in detail.
 

@@ -39,8 +39,8 @@ HERE = Path(__file__).resolve().parent
 PROJECT = HERE.parent
 
 
-def reject_unknown(argv: list[str], allowed: tuple[str, ...]) -> None:
-    """Exit on a flag nothing reads, naming it and what is accepted.
+def reject_unknown(argv: list[str], allowed: tuple[str, ...], doc: str | None = None) -> None:
+    """Answer `--help`, then exit on a flag nothing reads, naming it and what is accepted.
 
     Several scripts test `"--check" in sys.argv` and ignore the rest, so a mistyped or
     invented flag did nothing and exited 0 — indistinguishable from having worked. The viewer
@@ -49,7 +49,25 @@ def reject_unknown(argv: list[str], allowed: tuple[str, ...]) -> None:
 
     A flag that is silently swallowed is worse than one that errors, because the user believes
     the thing they asked for happened.
+
+    **`-h` and `--help` are answered here rather than by each caller**, because every command
+    must answer them and nine of eleven did not. Measured, not assumed:
+
+        okfm config --help      wrote an okfm.json
+        okfm guard  --help      ran the guard, and exited 1 on an unrelated uncommitted edit
+        okfm check  --help      ran the validator
+        okfm view   --help      unknown option: --help
+
+    Four commands did their whole job in response to a request for help, and three refused
+    the one flag every command-line tool in the world accepts. Passing `__doc__` is what a
+    caller owes this function; the module docstrings were already written as help text and
+    were reachable from nowhere.
     """
+    if "-h" in argv or "--help" in argv:
+        print((doc or "").strip() or "no help available for this command")
+        raise SystemExit(0)
+    # Allowed implicitly, so a caller cannot forget to list them and reintroduce the above.
+    allowed = tuple(allowed) + ("-h", "--help")
     unknown = [a for a in argv if a.startswith("-") and a.split("=", 1)[0] not in allowed]
     if unknown:
         print(f"unknown option: {' '.join(unknown)}", file=sys.stderr)

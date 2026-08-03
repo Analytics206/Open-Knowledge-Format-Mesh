@@ -3,7 +3,7 @@ type: Document
 title: The benchmark
 description: "Two arms over one corpus, blind grading, and a harness that reports what it found about this repository rather than producing a flattering number. The deterministic half runs today."
 status: draft
-verified: { by: "human:analytics206", at: 2026-08-03T02:22:16Z }
+verified: { by: "human:analytics206", at: 2026-08-03T07:29:12Z }
 tags: [needs-nothing]
 generated: { by: "agent:claude-opus-5", at: 2026-08-02T03:09:28Z }
 sources:
@@ -14,7 +14,7 @@ sources:
   - id: implementation
     resource: ../../benchmark/run.py
     okfm_role: subject
-    okfm_captured: { hash: "sha256:945a31d70bd4e6881f2c5d70d45ecebd4a5c0b85a7331b94ec89be4f410191b1", at: 2026-08-03 }
+    okfm_captured: { hash: "sha256:997ca8673dbc6a591731b8481e780fc9d44c7a59972820d5b60f3ce4409ca92e", at: 2026-08-03 }
 okfm_scope: project
 okfm_relations:
   - { predicate: part_of, target: /index.md }

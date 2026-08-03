@@ -57,7 +57,7 @@ from datetime import datetime, timezone
 from urllib.parse import urlsplit
 
 from enrich import FORBIDDEN, work_list
-from okfm_core import PROJECT, find_config, frontmatter, scalar, utf8_stdout
+from okfm_core import PROJECT, find_config, frontmatter, reject_unknown, scalar, utf8_stdout
 
 utf8_stdout()
 
@@ -246,6 +246,7 @@ def read_source(concept, uri: str, budget: int) -> tuple[str, bool]:
 
 def main() -> int:
     argv = sys.argv[1:]
+    reject_unknown(argv, ("--apply", "--limit"), __doc__)
     apply = "--apply" in argv
     limit = None
     for i, a in enumerate(argv):

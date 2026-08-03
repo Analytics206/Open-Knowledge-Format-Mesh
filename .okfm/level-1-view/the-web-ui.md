@@ -3,7 +3,7 @@ type: Document
 title: The web UI
 description: "One HTML file that renders the whole mesh from disk — graph, health panel, closure ledger, drift in three states. Read-only, and that is what makes it the whole of level 1."
 status: draft
-verified: { by: "human:analytics206", at: 2026-08-03T02:22:16Z }
+verified: { by: "human:analytics206", at: 2026-08-03T07:29:12Z }
 tags: [needs-nothing]
 generated: { by: "agent:claude-opus-5", at: 2026-08-02T03:09:28Z }
 sources:
@@ -14,7 +14,7 @@ sources:
   - id: implementation
     resource: ../../okfm-web-ui.html
     okfm_role: subject
-    okfm_captured: { hash: "sha256:138372bea46c725f32468659f185d5ca0ca2d5620baa12bf5916ac5ee3149e8b", at: 2026-08-03 }
+    okfm_captured: { hash: "sha256:67a9cd41cec20e9db7490ed4f60946cac95fe9fc670c5155a223cac0755b380a", at: 2026-08-03 }
 okfm_scope: project
 okfm_relations:
   - { predicate: part_of, target: /index.md }

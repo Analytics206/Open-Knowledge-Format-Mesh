@@ -117,7 +117,7 @@ def work_list():
 
 
 def main() -> int:
-    reject_unknown(sys.argv[1:], ("--brief",))
+    reject_unknown(sys.argv[1:], ("--brief",), __doc__)
     full = "--brief" in sys.argv
     obs, items = work_list()
 

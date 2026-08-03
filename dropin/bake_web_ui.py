@@ -266,7 +266,7 @@ def current_config() -> dict:
 
 
 def main() -> int:
-    reject_unknown(sys.argv[1:], ("--check",))
+    reject_unknown(sys.argv[1:], ("--check",), __doc__)
     check = "--check" in sys.argv
     _, cfg = find_config()
     viewer = viewer_path(cfg or {})

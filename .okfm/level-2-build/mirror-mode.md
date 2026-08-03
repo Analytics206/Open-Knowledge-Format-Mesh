@@ -3,7 +3,7 @@ type: Document
 title: Mirror mode
 description: "Concepts land in `.okfm/` and point back at your files, which are never opened for writing — the reversible default, with in-place as a flag you pass once you have seen what it produces."
 status: draft
-verified: { by: "human:analytics206", at: 2026-08-03T02:22:16Z }
+verified: { by: "human:analytics206", at: 2026-08-03T07:29:12Z }
 tags: [needs-nothing]
 generated: { by: "agent:claude-opus-5", at: 2026-08-02T03:28:25Z }
 sources:
@@ -14,7 +14,7 @@ sources:
   - id: implementation
     resource: ../../dropin/build.py
     okfm_role: subject
-    okfm_captured: { hash: "sha256:bdfa1b83a6e64ea7d6252e1a0f8fcb2d64fe8223b0c34109a063f9553a31bd0d", at: 2026-08-03 }
+    okfm_captured: { hash: "sha256:cafc8dd0addb3eca6930a88ab87a052148e7ca27f0428c9b5c1b31ed696296b4", at: 2026-08-03 }
 okfm_scope: project
 okfm_relations:
   - { predicate: part_of, target: /index.md }

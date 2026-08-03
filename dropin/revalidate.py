@@ -26,7 +26,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from okfm_core import PROJECT, frontmatter, scalar, utf8_stdout
+from okfm_core import PROJECT, frontmatter, reject_unknown, scalar, utf8_stdout
 # The same function `refresh.py` observes with, deliberately. If the re-pinner and the
 # observer computed a hash differently by so much as a line ending, re-validation would
 # write a value the next observation disagrees with, and drift would never clear.
@@ -54,6 +54,7 @@ _AT = re.compile(r"(at:\s*)\d{4}-\d{2}-\d{2}")
 
 def main() -> int:
     argv = sys.argv[1:]
+    reject_unknown(argv, ("--by", "--stable"), __doc__)
     by, promote, paths, skip = None, False, [], False
     for i, a in enumerate(argv):
         if skip:

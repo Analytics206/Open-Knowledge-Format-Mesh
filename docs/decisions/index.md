@@ -160,3 +160,13 @@ Google's reference viewer without taking its CDN dependency — inline markdown,
 bodies, four layouts including bundles-as-columns, node size by content. The contamination
 guard §21.3 left behind turned out to be a filename list for a file the corpus never
 included; it is structural now and verified by falsification.
+
+**0019** — `### Phase 3` vanished from the roadmap in a rewrite that ended one line short,
+leaving Phase 3's scope and exit criteria sitting under Phase 2's heading while twelve
+references pointed at a section that no longer existed. The numbered spine has been guarded
+since the split; the corpus's other heading system, a name plus an ordinal, was guarded by
+nothing. Finding it surfaced the larger one: nine of eleven commands did not answer `--help`,
+four of them did their whole job instead — `okfm config --help` wrote a config file — and the
+check meant to catch that probed commands by running them and accepted any exit code it
+liked. Help is answered in one place now, and the probe asserts the help text rather than
+tolerating an exit status.

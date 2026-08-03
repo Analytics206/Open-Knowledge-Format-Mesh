@@ -3,7 +3,7 @@ type: Runbook
 title: The pipeline
 description: "One command that runs build, refresh, bake and validate in order and stops at the first failure, so the second, misleading error never appears."
 status: draft
-verified: { by: "human:analytics206", at: 2026-08-03T02:22:16Z }
+verified: { by: "human:analytics206", at: 2026-08-03T07:29:12Z }
 tags: [needs-nothing]
 generated: { by: "agent:claude-opus-5", at: 2026-08-02T03:09:28Z }
 sources:
@@ -14,7 +14,7 @@ sources:
   - id: implementation
     resource: ../../dropin/okfm.py
     okfm_role: subject
-    okfm_captured: { hash: "sha256:6d6ab37bb80641675980e3d2b209c2e7fd0d550f48d2520904ceb564a48a5f0f", at: 2026-08-03 }
+    okfm_captured: { hash: "sha256:306f7325467656773de6a6f65deaf0ac760d4fb1f27c5902c7ddfb326773e9d6", at: 2026-08-03 }
 okfm_scope: project
 okfm_relations:
   - { predicate: part_of, target: /index.md }

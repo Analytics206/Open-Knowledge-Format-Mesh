@@ -17,7 +17,8 @@ import sys
 from pathlib import Path
 
 from okfm_core import (ACTOR_KINDS, PROJECT, actor_kind, actor_of, configured_bundles,
-                       load_or_create_config, pack_dirs, parse_relations, vocab_terms)
+                       load_or_create_config, pack_dirs, parse_relations, reject_unknown,
+                       vocab_terms)
 
 _FM = re.compile(r"\A---\r?\n(.*?)\r?\n---\r?\n", re.S)
 _OKFM_KEY = re.compile(r"^(okfm_[\w]+):", re.M)
@@ -40,6 +41,7 @@ def scalar(block, key):
 
 
 def main() -> int:
+    reject_unknown(sys.argv[1:], (), __doc__)
     _, cfg, _ = load_or_create_config(write=False)
     bundles = configured_bundles(cfg)
     errors, warnings = [], []

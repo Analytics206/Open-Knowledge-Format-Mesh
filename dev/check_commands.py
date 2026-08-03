@@ -31,6 +31,7 @@ to keep the same set in sync, which is the failure this file exists to catch.
 
 `needs: []`.
 """
+import ast
 import re
 import subprocess
 import sys
@@ -139,7 +140,42 @@ def allowed_flags(script: str) -> set[str] | None:
     m = _ALLOWED.search(path.read_text(encoding="utf-8"))
     if not m:
         return None
-    return set(re.findall(r'"(--?[a-z-]+)"', m.group(1)))
+    # `reject_unknown` allows these implicitly so a caller cannot forget to list them. If
+    # only the runtime knew that, this check and that function would be two implementations
+    # of one rule, disagreeing the first time a document said `okfm view --help`.
+    return set(re.findall(r'"(--?[a-z-]+)"', m.group(1))) | {"-h", "--help"}
+
+
+def help_line(script: str) -> str:
+    """The first line of a script's module docstring — what `--help` must print.
+
+    Parsed rather than imported: importing `dropin/` from `dev/` to read `__doc__` would run
+    every module-level statement in it, which is the same mistake as probing a command by
+    executing it.
+    """
+    path = DROPIN / script
+    if not script or not path.is_file():
+        return ""
+    try:
+        doc = ast.get_docstring(ast.parse(path.read_text(encoding="utf-8"))) or ""
+    except SyntaxError:
+        return ""
+    return doc.strip().splitlines()[0].strip() if doc.strip() else ""
+
+
+def dispatched_scripts() -> dict[str, str]:
+    """command -> the .py the dispatcher runs for it.
+
+    `[,:]` because the dispatcher holds two tables in two shapes — `STEPS` is a list of
+    tuples, `("build", "build.py", ...)`, and `EXTRA` is a dict, `{"guard": "guard.py"}`.
+    The pattern here matched only the tuple form, so six of eleven commands resolved to no
+    script at all. Nothing said so: this map fed the flag check, which skips a command whose
+    script declares no allow-list, and a command that resolved to nothing was skipped by the
+    same branch as a command that had nothing to declare. It printed `1 documented flag(s)
+    match`, which reads like coverage and was five commands out of eleven.
+    """
+    src = (DROPIN / "okfm.py").read_text(encoding="utf-8")
+    return dict(re.findall(r'"([a-z-]+)"\s*[,:]\s*"([\w.]+\.py)"', src))
 
 
 def dispatchable() -> set[str]:
@@ -162,6 +198,7 @@ def main() -> int:
     print(f"dispatcher knows: {', '.join(sorted(known))}")
 
     docs = documented()
+    scripts = dispatched_scripts()
     problems, notes = [], []
 
     for cmd, files in sorted(docs.items()):
@@ -173,27 +210,57 @@ def main() -> int:
 
     # Documented AND dispatchable is not yet proof it runs — a name in the table can point at
     # a script that raises on import. Cheap to rule out, so ruled out.
+    #
+    # This probe used to accept exit 0 **or 2** and call that a pass, which made it not a help
+    # probe at all. Measured across eleven commands, nine did something else:
+    #
+    #     okfm config --help      wrote an okfm.json and exited 0
+    #     okfm check  --help      ran the validator and exited 0
+    #     okfm guard  --help      ran the guard, and exited 1 on an unrelated uncommitted edit
+    #     okfm view   --help      unknown option: --help, exit 2 — accepted as fine
+    #
+    # So a documentation check was performing a build, a config write and a validation on
+    # every CI run, and its verdict on `guard` depended on the working tree: green on a clean
+    # checkout, red on the builder's machine the moment a human revalidated and had not yet
+    # committed. It reported that as "documented, dispatched, and broken" — three claims, none
+    # of them true.
+    #
+    # The assertion is now the specific one: `--help` must print **that script's own
+    # docstring** (or argparse's usage line) and exit 0. Tolerating an exit code cannot tell
+    # help from work; requiring the help text can.
+    helped = 0
     for cmd in sorted(docs):
         if cmd not in known:
             continue
         r = subprocess.run([sys.executable, str(DROPIN / "okfm.py"), cmd, "--help"],
                            capture_output=True, text=True, encoding="utf-8",
                            errors="replace", cwd=PROJECT)
-        if r.returncode not in (0, 2):
-            problems.append(f"`okfm {cmd} --help` exited {r.returncode} — documented, "
-                            f"dispatched, and broken")
-        elif "Traceback" in r.stderr:
+        if "Traceback" in r.stderr:
             problems.append(f"`okfm {cmd} --help` raised on import")
+            continue
+        if r.returncode != 0:
+            problems.append(f"`okfm {cmd} --help` exited {r.returncode} — asking a command "
+                            f"for help must not fail")
+            continue
+        want = help_line(scripts.get(cmd, ""))
+        got = (r.stdout or "").strip().splitlines()
+        first = got[0].strip() if got else ""
+        if first.startswith("usage:"):
+            pass                              # argparse wrote it, which is the real thing
+        elif not want:
+            problems.append(f"`okfm {cmd} --help` — {scripts.get(cmd)} has no docstring to "
+                            f"print, so there is no help to give")
+        elif first != want:
+            problems.append(f"`okfm {cmd} --help` printed {first[:40]!r}, not the script's "
+                            f"help ({want[:40]!r}) — it did its job instead of describing it")
         else:
-            print(f"  ok  okfm {cmd}"
-                  + (f"  ({len(set(docs[cmd]))} doc(s))" if docs.get(cmd) else ""))
+            helped += 1
+        print(f"  ok  okfm {cmd}"
+              + (f"  ({len(set(docs[cmd]))} doc(s))" if docs.get(cmd) else ""))
+    if helped:
+        print(f"  ok  {helped} command(s) answered --help with their own documentation")
 
     # --- flags -------------------------------------------------------------
-    scripts = {}
-    src = (DROPIN / "okfm.py").read_text(encoding="utf-8")
-    for name, script in re.findall(r'[("]([a-z-]+)",\s*"([\w.]+\.py)"', src):
-        scripts[name] = script
-
     checked = 0
     for (cmd, flag), files in sorted(documented_flags().items()):
         if cmd not in known or cmd not in scripts:

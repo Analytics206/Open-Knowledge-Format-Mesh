@@ -45,7 +45,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from okfm_core import PROJECT, frontmatter, scalar, utf8_stdout
+from okfm_core import PROJECT, frontmatter, reject_unknown, scalar, utf8_stdout
 
 utf8_stdout()
 
@@ -128,6 +128,7 @@ def diff(staged: bool, paths: list[str]) -> str:
 
 def main() -> int:
     argv = sys.argv[1:]
+    reject_unknown(argv, ("--staged", "--allow"), __doc__)
     staged = "--staged" in argv
     allowed, paths = set(), []
     for a in argv:

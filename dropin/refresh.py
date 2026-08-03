@@ -95,7 +95,7 @@ def observe_file(path: Path, body_only: bool = False) -> str | None:
 
 
 def main() -> int:
-    reject_unknown(sys.argv[1:], ("--check",))
+    reject_unknown(sys.argv[1:], ("--check",), __doc__)
     check = "--check" in sys.argv
     _, cfg, _ = load_or_create_config(write=False)
     drift_cfg = cfg.get("drift", {})

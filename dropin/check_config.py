@@ -24,7 +24,7 @@ import sys
 from build import MINE                     # the actor the build stamps on what it writes
 from config_schema import BY_PATH, FIELDS, dig, validate
 from okfm_core import (PROJECT, bundle_root, configured_bundles, find_config, frontmatter,
-                       resolve_sources, scalar, utf8_stdout)
+                       reject_unknown, resolve_sources, scalar, utf8_stdout)
 
 utf8_stdout()
 
@@ -96,6 +96,7 @@ def defaults_in_use(cfg: dict) -> list[tuple[str, object]]:
 
 def main() -> int:
     argv = sys.argv[1:]
+    reject_unknown(argv, ("--strict", "--quiet"), __doc__)
     strict = "--strict" in argv
     quiet = "--quiet" in argv
 

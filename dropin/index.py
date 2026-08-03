@@ -97,10 +97,7 @@ def rank(cfg: dict, items: list[dict]) -> list[dict]:
 
 def main() -> int:
     argv = sys.argv[1:]
-    reject_unknown(argv, ("--json", "--check", "-h", "--help"))
-    if "-h" in argv or "--help" in argv:
-        print(__doc__)
-        return 0
+    reject_unknown(argv, ("--json", "--check"), __doc__)
 
     _, cfg, _ = load_or_create_config(write=False)
     items = concepts(cfg)
