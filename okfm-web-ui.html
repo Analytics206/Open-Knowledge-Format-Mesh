@@ -1017,10 +1017,10 @@ const BOOTSTRAP = {
    "t": "Document",
    "title": "The shipped mesh",
    "d": "Seven real bundles you can read, validate and copy — a working mesh split on change cadence, not a demonstration built to be looked at.",
-   "v": null,
+   "v": "human",
    "sa": null,
    "src": 2,
-   "drift": 1,
+   "drift": 0,
    "r": [
     [
      "part_of",
@@ -1035,10 +1035,10 @@ const BOOTSTRAP = {
    "t": "Document",
    "title": "The web UI",
    "d": "One HTML file that renders the whole mesh from disk — graph, health panel, closure ledger, drift in three states. Read-only, and that is what makes it the whole of level 1.",
-   "v": null,
+   "v": "human",
    "sa": null,
    "src": 2,
-   "drift": 1,
+   "drift": 0,
    "r": [
     [
      "part_of",
@@ -1053,10 +1053,10 @@ const BOOTSTRAP = {
    "t": "Document",
    "title": "Your own agent",
    "d": "Point a coding agent at the repository and ask it for whatever you want. This works from level 1 and needs nothing from OKFM.",
-   "v": null,
+   "v": "human",
    "sa": null,
    "src": 1,
-   "drift": 1,
+   "drift": 0,
    "r": [
     [
      "part_of",
@@ -1071,10 +1071,10 @@ const BOOTSTRAP = {
    "t": "Document",
    "title": "Config validation",
    "d": "Every consumer ignores keys it does not recognise, so a misspelled key does not fail — it builds the wrong thing quietly. This is the step that says so, and the rules it reads are the same table the web UI's config form is generated from.",
-   "v": null,
+   "v": "human",
    "sa": null,
    "src": 3,
-   "drift": 1,
+   "drift": 0,
    "r": [
     [
      "part_of",
@@ -1160,10 +1160,10 @@ const BOOTSTRAP = {
    "t": "Document",
    "title": "Mirror mode",
    "d": "Concepts land in `.okfm/` and point back at your files, which are never opened for writing — the reversible default, with in-place as a flag you pass once you have seen what it produces.",
-   "v": null,
+   "v": "human",
    "sa": null,
    "src": 2,
-   "drift": 1,
+   "drift": 0,
    "r": [
     [
      "part_of",
@@ -1196,10 +1196,10 @@ const BOOTSTRAP = {
    "t": "Runbook",
    "title": "The pipeline",
    "d": "One command that runs build, refresh, bake and validate in order and stops at the first failure, so the second, misleading error never appears.",
-   "v": null,
+   "v": "human",
    "sa": null,
    "src": 2,
-   "drift": 1,
+   "drift": 0,
    "r": [
     [
      "part_of",
@@ -1214,10 +1214,10 @@ const BOOTSTRAP = {
    "t": "Document",
    "title": "The web UI bake",
    "d": "Regenerates the index the level 1 web UI reads, so disagreement between the web UI and the mesh is a state that cannot exist rather than a bug you can have.",
-   "v": null,
+   "v": "human",
    "sa": null,
    "src": 2,
-   "drift": 1,
+   "drift": 0,
    "r": [
     [
      "part_of",
@@ -1254,10 +1254,10 @@ const BOOTSTRAP = {
    "t": "Document",
    "title": "A local model",
    "d": "Level 2+ — OKFM drafts descriptions itself with Ollama on hardware the adopter owns, keeping level 2's no-key-no-bill terms while the component still declares `needs-model` and the checked 2/3 boundary stays where it was.",
-   "v": null,
+   "v": "human",
    "sa": null,
    "src": 1,
-   "drift": 1,
+   "drift": 0,
    "r": [
     [
      "part_of",
@@ -1272,10 +1272,10 @@ const BOOTSTRAP = {
    "t": "Document",
    "title": "Federation, the negotiation half",
    "d": "Transport, agent interfaces and the feedback ledger — the half of federation that co-located bundles cannot prove, because what is missing is a member that can refuse.",
-   "v": null,
+   "v": "human",
    "sa": null,
    "src": 1,
-   "drift": 1,
+   "drift": 0,
    "r": [
     [
      "part_of",
@@ -1325,10 +1325,10 @@ const BOOTSTRAP = {
    "t": "Document",
    "title": "Packs",
    "d": "Domain vocabulary and workflows as an overlay, so core carries no domain words. Partly built: the overlay mechanism works today, which makes this the one credentialed-variant component usable three levels down.",
-   "v": null,
+   "v": "human",
    "sa": null,
    "src": 2,
-   "drift": 1,
+   "drift": 0,
    "r": [
     [
      "part_of",
@@ -1343,10 +1343,10 @@ const BOOTSTRAP = {
    "t": "Document",
    "title": "Providers and keys",
    "d": "Two adapters, not four — OpenAI-compatible reaches local models and most hosted ones, Anthropic needs its own — with the key appearing only at the credentialed variant, because the local one already reverses the direction without paying for it.",
-   "v": null,
+   "v": "human",
    "sa": null,
    "src": 1,
-   "drift": 1,
+   "drift": 0,
    "r": [
     [
      "part_of",
@@ -1383,10 +1383,10 @@ const BOOTSTRAP = {
    "t": "Document",
    "title": "The benchmark",
    "d": "Two arms over one corpus, blind grading, and a harness that reports what it found about this repository rather than producing a flattering number. The deterministic half runs today.",
-   "v": null,
+   "v": "human",
    "sa": null,
    "src": 2,
-   "drift": 1,
+   "drift": 0,
    "r": [
     [
      "part_of",
@@ -1405,10 +1405,10 @@ const BOOTSTRAP = {
    "t": "Document",
    "title": "The console app",
    "d": "A served web UI that edits configuration and drives the loop — deliberately a second artifact, because giving the level 1 web UI write access would turn a browser-openable file into an install.",
-   "v": null,
+   "v": "human",
    "sa": null,
    "src": 1,
-   "drift": 1,
+   "drift": 0,
    "r": [
     [
      "part_of",
@@ -1427,10 +1427,10 @@ const BOOTSTRAP = {
    "t": "Runbook",
    "title": "The enrichment loop",
    "d": "Build, list, draft, guard, review — where the drafting step is your agent's or a local model's, interchangeably. Three of the five steps need nothing; the union of the other two is what makes the whole loop `[model, human]` and keeps it out of CI.",
-   "v": null,
+   "v": "human",
    "sa": null,
    "src": 1,
-   "drift": 1,
+   "drift": 0,
    "r": [
     [
      "part_of",
@@ -1467,10 +1467,10 @@ const BOOTSTRAP = {
    "t": "Document",
    "title": "The tier guard",
    "d": "Reads the diff after an edit pass and fails on any field the editor does not own, naming the field and the reason. Scope it to the paths the pass touched, or it reports everything else in flight.",
-   "v": null,
+   "v": "human",
    "sa": null,
    "src": 2,
-   "drift": 1,
+   "drift": 0,
    "r": [
     [
      "part_of",

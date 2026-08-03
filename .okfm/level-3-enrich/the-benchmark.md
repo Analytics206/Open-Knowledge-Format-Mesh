@@ -3,17 +3,18 @@ type: Document
 title: The benchmark
 description: "Two arms over one corpus, blind grading, and a harness that reports what it found about this repository rather than producing a flattering number. The deterministic half runs today."
 status: draft
+verified: { by: "human:analytics206", at: 2026-08-03T02:15:13Z }
 tags: [needs-nothing]
 generated: { by: "agent:claude-opus-5", at: 2026-08-02T03:09:28Z }
 sources:
   - id: doc
     resource: ../../docs/okfm-guide/level-3-enrich/the-benchmark.md
     okfm_role: subject
-    okfm_captured: { hash: "sha256:a69ee059b02c504c51cd0dc73fb41a86c615eb301d191721f81e52abccd8f18b", at: 2026-08-01 }
+    okfm_captured: { hash: "sha256:2f52920c238a09bdabe7b4fcce29be2232ef0dc5b5d83b47543558f40521dee0", at: 2026-08-03 }
   - id: implementation
     resource: ../../benchmark/run.py
     okfm_role: subject
-    okfm_captured: { hash: "sha256:ff61dc6dd30f1ef5ac43cc469e19112de57a667dca2a421a2aa95b2a7f7e7020", at: 2026-08-01 }
+    okfm_captured: { hash: "sha256:945a31d70bd4e6881f2c5d70d45ecebd4a5c0b85a7331b94ec89be4f410191b1", at: 2026-08-03 }
 okfm_scope: project
 okfm_relations:
   - { predicate: part_of, target: /index.md }

@@ -3,13 +3,14 @@ type: Document
 title: A local model
 description: "Level 2+ — OKFM drafts descriptions itself with Ollama on hardware the adopter owns, keeping level 2's no-key-no-bill terms while the component still declares `needs-model` and the checked 2/3 boundary stays where it was."
 status: draft
+verified: { by: "human:analytics206", at: 2026-08-03T02:15:13Z }
 tags: [needs-model]
 generated: { by: "agent:claude-opus-5", at: 2026-08-02T08:10:00Z }
 sources:
   - id: source
     resource: ../../docs/okfm-guide/level-3-enrich/a-local-model.md
     okfm_role: subject
-    okfm_captured: { hash: "sha256:f2556f63976827e5d4f9f333ccd4d9f79ce27ca678140040dc8904f98bf1aa2b", at: 2026-08-02 }
+    okfm_captured: { hash: "sha256:36de1a83aa34ebac61216efa85a0035be401425a5ece9fcb95314e45fc2bce33", at: 2026-08-03 }
 okfm_scope: project
 okfm_relations:
   - { predicate: part_of, target: /index.md }

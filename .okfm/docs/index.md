@@ -3,7 +3,7 @@ type: Index
 title: docs
 description: Concepts derived from docs.
 status: draft
-generated: { by: "process:okfm-build", at: 2026-08-02T00:00:00Z }
+generated: { by: "process:okfm-build", at: 2026-08-03T00:00:00Z }
 okfm_relations:
   - { predicate: registered_by, target: /mesh/index.md }
 ---
