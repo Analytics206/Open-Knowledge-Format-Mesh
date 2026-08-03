@@ -8,17 +8,24 @@ It defaults to the directory it was dropped into. On a first run with no configu
 scans that directory, reports what it found, and writes the config it used — so the first
 thing you edit is a file it made for you rather than a blank page.
 
-Two modes:
+One mode. Concepts are written into the bundle and point back at your files via
+`resource`; your markdown is never touched. That is not a default, it is the guarantee —
+`.okfm/` belongs to the tool, your documents belong to you, and `rm -rf .okfm` returns the
+project to exactly what it was.
 
-    mirror (default)  Concepts are written into the bundle and point back at your files
-                      via `resource`. Your markdown is never touched. This is the safe
-                      default because the folder gets pasted into other people's
-                      repositories.
+**In-place bundles exist, and this build does not make them.** Where the documents *are*
+the knowledge — decision records, for instance — you add the frontmatter yourself and name
+the folder in `bundles`. The build then registers it in the mesh and writes nothing into
+it. That is Level 1 with the mesh wrapped around it, and it is the arrangement
+`docs/decisions` uses here.
 
-    in-place          Frontmatter is added to your markdown, so your files *become* the
-                      concepts. Right when the documents are themselves the knowledge —
-                      decision records, for instance — and wrong for a docs tree the
-                      concepts are merely *about*.
+> There was a `--in-place` flag and a `mode: "in-place"` config value for a long time.
+> Neither was ever read: the flag reached exactly one line of code, the header that prints
+> `mode : in-place`, and the build then mirrored. So it announced doing the one thing this
+> tool promises not to do, and did not do it — the failure mode of a claim, not of a
+> feature. Removed rather than implemented ([DR-0014](../docs/decisions/0014-packs-and-in-place-bundles.md)):
+> a build that edits your documents cannot also promise it never touches them, and the
+> promise is worth more than the mode.
 
 `needs: []` — no network, no secrets, no model. Python 3.13, standard library only.
 """
@@ -31,7 +38,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from okfm_core import (
-    HERE, PROJECT, RESERVED, bundle_root, configured_bundles, frontmatter,
+    HERE, PROJECT, RESERVED, bundle_root, configured_bundles, frontmatter, is_concept,
     load_or_create_config, reserved_only_dirs, resolve_sources, scalar,
 )
 from bootstrap import _extract_description, _title, _yaml_str
@@ -215,16 +222,25 @@ def write_mesh(cfg: dict, out_root: Path, mesh_name: str, built: list[tuple[str,
     mesh_dir = out_root / mesh_name
     written = prune_members(cfg, mesh_dir, built, apply)
 
+    # A bundle's directory is `build.out/<name>` when this build mirrored it, and wherever
+    # `bundles` says when somebody authored it in place. Deriving it from the name alone
+    # produced a member whose `resource` pointed into the output folder at a bundle that was
+    # never there — a dangling pointer on the one concept whose job is to say where a bundle is.
+    configured = {bid: (PROJECT / str(rel).removeprefix("./")).resolve()
+                  for bid, rel in (cfg.get("bundles") or {}).items()}
+
     for name, path, count in built:
         dest = mesh_dir / "members" / f"{name}.md"
         if not _owned(dest):
             continue
+        src_dir = configured.get(name, out_root / name)
+        in_place = not src_dir.is_relative_to(out_root)
         body = "\n".join([
             "---",
             "type: OKF Member",
             f"title: {_yaml_str(name)}",
-            f"description: {_yaml_str(f'{count} concept(s) derived from {path}.')}",
-            f"resource: ../../{name}",
+            f"description: {_yaml_str(f'{count} concept(s) ' + ('authored in place in' if in_place else 'derived from') + f' {path}.')}",
+            f"resource: {_rel(dest, src_dir)}",
             "status: draft",
             f'generated: {{ by: "{MINE}", at: {stamp} }}',
             "okfm_member:",
@@ -248,13 +264,17 @@ def write_mesh(cfg: dict, out_root: Path, mesh_name: str, built: list[tuple[str,
             # one member bundle and nothing connects them -- which is the single
             # relationship a mesh is for.
             f"  - {{ predicate: registers, "
-            f"target: /{_bundle_id(cfg, out_root / name, name)}/index.md }}",
+            f"target: /{_bundle_id(cfg, src_dir, name)}/index.md }}",
             "---",
             "",
             f"# {name}",
             "",
-            f"Built from [`{path}`](../../../{path}). Its documents are the source; these",
-            "concepts point at them and never restate them.",
+            (f"Authored in place in [`{path}`]({_rel(dest, src_dir)}). Those files carry "
+             f"their own frontmatter, so they *are* the concepts — this build registers "
+             f"the bundle and never writes into it."
+             if in_place else
+             f"Built from [`{path}`](../../../{path}). Its documents are the source; these "
+             f"concepts point at them and never restate them."),
             "",
             "`owner` is null because nothing can infer it. Naming the accountable person is",
             "the one thing this file is for that a directory listing does not already do.",
@@ -308,8 +328,6 @@ def write_mesh(cfg: dict, out_root: Path, mesh_name: str, built: list[tuple[str,
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--apply", action="store_true", help="write; otherwise dry-run")
-    ap.add_argument("--in-place", action="store_true",
-                    help="add frontmatter to your files instead of mirroring them")
     a = ap.parse_args()
 
     cfg_path, cfg, created = load_or_create_config(write=a.apply)
@@ -320,7 +338,7 @@ def main() -> int:
     print(f"dropin  : {HERE}")
     print(f"config  : {cfg_path}" + ("  (synthesized)" if created else ""))
     print(f"bundle  : {out_root}")
-    print(f"mode    : {'in-place' if a.in_place else cfg.get('mode', 'mirror')}\n")
+    print(f"mode    : {cfg.get('mode', 'mirror')} — your documents are never written to\n")
 
     sources = resolve_sources(cfg)
     if not sources:
@@ -372,6 +390,35 @@ def main() -> int:
                           sum(1 for f in out_dir.glob("*.md") if f.name not in RESERVED)))
 
     mesh_name = cfg.get("mesh", "mesh")
+
+    # ---- in-place bundles the build did not produce --------------------------
+    # A bundle can reach the mesh two ways: this build mirrors it, or somebody wrote
+    # frontmatter into their own files and named the folder in `bundles`. Only the first
+    # kind was ever registered, so an in-place bundle was a member of the mesh that the
+    # mesh had no concept for — and `check_bundles` rejects exactly that, with an error
+    # naming the bundle rather than the reason.
+    #
+    # This project shipped with its own instance: `docs/decisions`, 14 concepts, excluded
+    # from mirroring because the files ARE the concepts, listed in no `bundles` map, and
+    # therefore validated by nothing at all for its whole life. The toy second domain in
+    # `examples/warehouse` hit the same wall independently, which is how it was found.
+    #
+    # Registering is all that happens here. The build still never writes into an in-place
+    # bundle — those files belong to whoever authored them.
+    for bid, rel in sorted((cfg.get("bundles") or {}).items()).__iter__():
+        if bid == mesh_name or any(b[0] == bid for b in built):
+            continue
+        src = (PROJECT / str(rel).removeprefix("./")).resolve()
+        if not src.is_dir() or src.is_relative_to(out_root):
+            continue                      # build output, or not there — not in-place
+        n = sum(1 for f in src.rglob("*.md")
+                if f.name not in RESERVED and is_concept(f))
+        if not n:
+            continue
+        shown = src.relative_to(PROJECT).as_posix() if src.is_relative_to(PROJECT) else str(src)
+        print(f"  in-place {n:>3}  {shown}  →  registered, not written")
+        built.append((bid, shown, n))
+
     mesh_n = 0
     if mesh_name and built:
         mesh_n = write_mesh(cfg, out_root, mesh_name, sorted(built), stamp, a.apply)

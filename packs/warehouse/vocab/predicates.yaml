@@ -1,0 +1,23 @@
+# Warehouse predicates — a pack overlay under spec §7.3.
+#
+# THREE. Predicates are the expensive thing a pack can add, and the count is the point.
+#
+# An unknown type warns and an unknown reason code warns, but an unknown predicate is
+# REJECTED, because impact analysis and drift propagation read a typed edge as fact. So a
+# pack adding a predicate is widening the one list the validator refuses to guess about.
+# Each of these had to answer: does core already say this, and would a wrong edge here be
+# worse than no edge?
+#
+# What was considered and dropped, because core already covers it:
+#   dataset -> pipeline dependency   `depends_on` — goes stale if the target changes
+#   contract -> field meaning        `defines`
+#   metric -> dataset                `measures`
+#   a rejected modelling approach    `superseded_by`
+#
+# Packs may add. Packs may NOT redefine a core predicate — a predicate's meaning is a fixed
+# asset, and silently changing one rewrites every edge already drawn with it.
+
+lineage:
+  - produced_by     # this dataset is the output of the target pipeline
+  - produces        # inverse of produced_by
+  - certifies       # this data contract certifies the target dataset's shape and cadence

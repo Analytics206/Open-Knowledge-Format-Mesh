@@ -1,0 +1,22 @@
+# Warehouse reason codes — a pack overlay under spec §10.2.
+#
+# Merged into `reason_codes` and into nothing else. The filename is what decides that: this
+# file can only ever be read by the reason-code load, so nothing here can become a legal
+# predicate or type by accident. That was not true until DR-0014.
+#
+# Core carries the four codes every domain shares. These are the ones a warehouse needs and
+# no other domain would recognise, which is the test for whether a code belongs in a pack
+# rather than in core.
+#
+# Same rule as core: ADDING a code is one line. CHANGING what one means is forbidden —
+# every historical record carrying it was written under the old meaning.
+
+capture:
+  - late_arriving_fact      # the row landed after its window closed; the period was recomputed
+  - backfill_pending        # this period has known-incomplete capture and is not yet comparable
+  - source_schema_changed   # upstream changed shape; the reading before and after are not the same reading
+
+modelling:
+  - grain_mismatch          # computed at a different grain than the metric declares
+  - dedup_key_collision     # two rows claim one business key; the tie-break is a judgement, not arithmetic
+  - perspective_disagreement  # two named viewpoints define this measure differently, and both stand

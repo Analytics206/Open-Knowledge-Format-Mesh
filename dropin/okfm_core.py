@@ -437,9 +437,25 @@ VOCAB = HERE / "vocab"
 
 
 def load_vocab(name: str, overlays: list[Path] | None = None) -> dict[str, list[str]]:
-    """Read `vocab/<name>.yaml` plus any overlays, merged by family."""
+    """Read core's `vocab/<name>.yaml`, then the same filename in each overlay DIRECTORY.
+
+    An overlay is a directory, and the **filename inside it names the family**. That is the
+    whole safety property: `reason_codes.yaml` can contribute to `reason_codes` and to
+    nothing else, because that is the only name this function will open for it.
+
+    Overlays used to be a flat list of file paths, appended to every family's read. One
+    pack file declaring one reason code therefore registered that term as a valid
+    `reason_code`, `type`, `role` **and `predicate`** — measured, not theorised. The last
+    one is the damage: predicates are the single vocabulary `check_bundles` rejects on,
+    because traversal and drift propagation read a typed edge as fact. So the mechanism for
+    adding domain words was also, silently, the mechanism for widening the one list that is
+    controlled on purpose.
+
+    Fixing the read order would have fixed this instance. Making the family come from the
+    filename makes the next instance unable to happen.
+    """
     out: dict[str, list[str]] = {}
-    for path in [VOCAB / f"{name}.yaml", *(overlays or [])]:
+    for path in [VOCAB / f"{name}.yaml", *(d / f"{name}.yaml" for d in (overlays or []))]:
         if not path.is_file():
             continue
         family = None
@@ -460,6 +476,40 @@ def load_vocab(name: str, overlays: list[Path] | None = None) -> dict[str, list[
 def vocab_terms(name: str, overlays: list[Path] | None = None) -> set[str]:
     """Every term across every family — what a validator actually checks against."""
     return {t for terms in load_vocab(name, overlays).values() for t in terms}
+
+
+def pack_dirs(cfg: dict) -> tuple[list[Path], list[str]]:
+    """Every vocabulary overlay directory this config asks for, plus what did not resolve.
+
+    Two keys reach the same place, so they are resolved in one function rather than two:
+    `pack` names the adopter's domain pack (§13.2 — "a directory of YAML plus at most one
+    adapter file"), and `build.vocab_overlays` is the escape hatch for a mesh drawing on
+    more than one. A pack is listed first so core loses to the pack and the pack loses to
+    an explicit overlay, which is the order an adopter would guess.
+
+    **`pack` is a path, not a bare name.** §13.4's example writes `"pack": "warehouse"`, and
+    a bare name needs a search path, a search path needs a resolution order, and a
+    resolution order is one more thing that fails silently when it picks the wrong
+    directory. A path is checked by the config machinery that already exists. Recorded in
+    DR-0014; the spec note in §13.4 says the same.
+
+    A named pack that does not resolve is returned as a problem rather than skipped. Skipping
+    it would validate the mesh against core vocabulary alone, so every domain term reports
+    "not in core vocabulary" — a hundred confusing errors whose actual cause is one wrong
+    path, which is the shape of failure this project has paid for twice already.
+    """
+    dirs, missing = [], []
+    for raw in ([cfg["pack"]] if cfg.get("pack") else []) + list(cfg.get("vocab_overlays") or []):
+        root = (PROJECT / str(raw)).resolve()
+        if not root.is_dir():
+            missing.append(str(raw))
+            continue
+        # A pack's vocabulary sits at `<pack>/vocab/`, exactly as core's does at
+        # `dropin/vocab/`. Same shape in both places, and it leaves the pack root free for
+        # the one adapter file §13.2 allows without mixing code in with the word lists.
+        # A pack with no `vocab/` is legal — an adapter-only pack adds no vocabulary.
+        dirs.append(root / "vocab")
+    return dirs, missing
 
 
 def bundle_root(cfg: dict) -> Path:

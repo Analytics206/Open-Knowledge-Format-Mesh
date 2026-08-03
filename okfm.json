@@ -15,12 +15,13 @@
     "vocab_overlays": []
   },
   "bundles": {
-    "mesh": "./.okfm/mesh",
+    "decisions": "./docs/decisions",
+    "docs": "./.okfm/docs",
+    "guide": "./.okfm/guide",
     "level-1-view": "./.okfm/level-1-view",
     "level-2-build": "./.okfm/level-2-build",
     "level-3-enrich": "./.okfm/level-3-enrich",
-    "docs": "./.okfm/docs",
-    "guide": "./.okfm/guide"
+    "mesh": "./.okfm/mesh"
   },
   "read": {
     "web_ui": {

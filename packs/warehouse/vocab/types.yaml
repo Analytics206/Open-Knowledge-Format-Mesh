@@ -1,0 +1,16 @@
+# Warehouse concept types — a pack overlay under spec §7.5.
+#
+# An unknown `type` is a WARNING, never an error: official OKF §6.2 says `type` is not
+# centrally registered and consumers must tolerate unknown values. So this file does not
+# unlock anything — it silences a typo-catching warning for the types this domain really
+# uses, which is the whole job.
+#
+# Core already carries `Metric`, `Rule`, `Perspective`, `Attested Computation` and
+# `Source System`. Those are the meaning-family types every analytical domain shares, and a
+# pack that restated them would be a fork with extra steps. Only what core lacks is here.
+
+warehouse:
+  - Dataset         # a table or view treated as a knowledge object, not just a schema entry
+  - Pipeline        # a scheduled transformation, and the reason it runs when it runs
+  - Data Contract   # what a producer promises about a dataset's shape and cadence
+  - Freshness SLO   # the staleness bound a dataset commits to, and what happens when it is missed

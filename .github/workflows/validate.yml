@@ -47,6 +47,20 @@ jobs:
       - name: Every component fits its level
         run: python dev/check_levels.py
 
+      # The Phase 2 exit, run rather than asserted: stand `examples/warehouse/` up in a
+      # temp directory on pack + config alone, and check that dropin/ comes back
+      # byte-identical AND that removing the pack makes the same mesh fail. The second half
+      # is the one that matters — a pack that changes nothing when removed proves nothing.
+      - name: A second domain stands up on pack + config alone
+        run: python dev/check_pack_example.py
+
+      # A pack may add domain terms; it may not widen a family it did not name. This
+      # failed for most of the project's life — one overlay file reached every family, so
+      # a pack's reason code became a legal `predicate`, the one vocabulary that is
+      # rejected rather than warned about because traversal reads an edge as fact.
+      - name: A pack adds only to the family it names
+        run: python dev/check_vocab.py
+
       # The config the build WRITES must pass the validator the build RUNS. The pipeline
       # above cannot catch a disagreement between them: on a first run no config exists,
       # so validation passes trivially and the bad file is written afterwards. It fails on

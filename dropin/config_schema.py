@@ -18,6 +18,12 @@ import difflib
 import json
 import re
 from pathlib import Path
+
+# What counts as a concept, and which filenames are structural, are rules — and they are
+# already written in `okfm_core`. Restating them here would be a fourth copy of a rule this
+# project has now had to reunify three times. Imported rather than inlined for that reason
+# alone; everything above the filesystem line in this file stays dependency-free.
+from okfm_core import RESERVED, is_concept
 from urllib.parse import urlsplit
 
 SPEC_VERSION = "0.2.1"
@@ -46,10 +52,13 @@ FIELDS = [
     {"path": "okfm", "kind": "string", "default": SPEC_VERSION, "required": True,
      "label": "Profile version",
      "help": "Which OKFM profile this config is written against."},
-    {"path": "pack", "kind": "string", "default": None, "required": True, "nullable": True,
+    {"path": "pack", "kind": "path", "base": "project", "exists": "dir",
+     "default": None, "required": True, "nullable": True,
      "label": "Domain pack",
-     "help": "A domain vocabulary overlay, or null for none. The key must be present even "
-             "when empty — a mesh with no domain is a normal mesh, not a missing answer."},
+     "help": "Path to a domain pack directory, or null for none. The key must be present "
+             "even when empty — a mesh with no domain is a normal mesh, not a missing "
+             "answer. A path rather than a bare name (DR-0014): a name needs a search "
+             "order, and a search order picks the wrong directory silently."},
 
     {"path": "build.root", "kind": "path", "base": "project", "exists": "dir",
      "default": "docs", "label": "Documents root",
@@ -72,13 +81,21 @@ FIELDS = [
     {"path": "build.mesh", "kind": "string", "default": "mesh",
      "label": "Mesh bundle name",
      "help": "The generated OKF whose concepts are the other OKFs — the one to read first."},
-    {"path": "build.mode", "kind": "enum", "choices": ["mirror", "in-place"],
+    # `in-place` was a choice here and was read by nothing — see DR-0014. Removing it from
+    # the enum is what makes the config reject a value the build would have ignored, which
+    # is the difference between a setting and a decoration.
+    {"path": "build.mode", "kind": "enum", "choices": ["mirror"],
      "default": "mirror", "label": "Mode",
-     "help": "mirror writes concepts beside your files and never touches them; in-place "
-             "adds frontmatter to the files themselves."},
-    {"path": "build.vocab_overlays", "kind": "paths", "base": "project", "exists": "file",
+     "help": "mirror writes concepts beside your files and never touches them. The only "
+             "mode: for a folder whose documents ARE the concepts, add the frontmatter "
+             "yourself and name it in `bundles` — the build registers it and writes "
+             "nothing into it."},
+    {"path": "build.vocab_overlays", "kind": "paths", "base": "project", "exists": "dir",
      "default": [], "label": "Vocabulary overlays",
-     "help": "Extra predicate, type and reason-code files, merged by family."},
+     "help": "Extra pack DIRECTORIES, for a mesh drawing on more than one. Each family "
+             "reads only the file bearing its own name — predicates.yaml, types.yaml, "
+             "reason_codes.yaml, roles.yaml — so a pack cannot widen a list it did not "
+             "mean to. Usually empty; `pack` covers the single-domain case."},
     {"path": "build.sources", "kind": "any", "default": None, "nullable": True,
      "label": "Explicit source list",
      "help": "An explicit list of folders. Its presence turns discovery off entirely — "
@@ -298,7 +315,72 @@ def check_values(cfg: dict, project: Path | None = None) -> list[dict]:
                                 {f["path"] for f in malformed})
 
     out += _cross_checks(cfg)
+    if project is not None:
+        out += _check_excluded_bundles(cfg, project)
     return out
+
+
+def _check_excluded_bundles(cfg: dict, project: Path) -> list[dict]:
+    """An excluded folder that holds concepts is an in-place bundle, or it is invisible.
+
+    `build.exclude` has two entirely different meanings and the config cannot tell them
+    apart: *there is nothing here worth mirroring*, and *these files are already concepts,
+    so mirroring them would make a second copy*. The second is an in-place bundle and has
+    to be named in `bundles`, because that is the only thing that puts it in front of the
+    validator.
+
+    Nothing checked this, and the cost was not hypothetical. This project excluded
+    `docs/decisions` for the right reason, never listed it, and so shipped fourteen
+    concepts — with `verified` entries, typed relations and cross-bundle links — that
+    `check_bundles` had never once read. The count it prints was 49 across 6 bundles while
+    63 concepts existed. One of the fourteen carried an actor in a form the profile does
+    not recognise, which the validator would have caught the day it was written.
+
+    A warning, not an error: excluding a folder of concepts on purpose and not wanting it
+    in the mesh is a legitimate choice. What is not legitimate is making it by accident, and
+    a config cannot tell which one happened. Saying so is the whole fix.
+    """
+    root, _ = dig(cfg, "build.root")
+    exclude, _ = dig(cfg, "build.exclude")
+    bundles, _ = dig(cfg, "bundles")
+    if not isinstance(exclude, list) or not isinstance(root, str):
+        return []
+
+    named = {str(p).strip("./").replace("\\", "/").rstrip("/")
+             for p in (bundles or {}).values() if isinstance(p, str)}
+    out = []
+    for i, entry in enumerate(exclude):
+        if not isinstance(entry, str):
+            continue
+        rel = f"{root.strip('./')}/{entry.strip('./')}".strip("/")
+        if rel in named:
+            continue                        # registered in place — the correct arrangement
+        folder = (project / rel).resolve()
+        if not folder.is_dir():
+            continue
+        n = sum(1 for f in folder.rglob("*.md")
+                if f.name not in RESERVED and _is_concept(f))
+        if n:
+            out.append(_finding(
+                "warn", f"build.exclude[{i}]",
+                f"holds {n} concept(s) and is in no `bundles` entry — nothing validates them",
+                f'excluded folders are not mirrored AND not checked. If these files are '
+                f'concepts, add `"{rel.rsplit("/", 1)[-1]}": "./{rel}"` under `bundles` to '
+                f'register it in place. If they are not, this is already correct.'))
+    return out
+
+
+def _is_concept(path: Path) -> bool:
+    """`okfm_core.is_concept`, but a file this validator cannot read is not a finding.
+
+    Validating a config should never fail because a file in a folder it mentions is
+    unreadable — that is a different problem, and reporting it from here would name the
+    wrong cause.
+    """
+    try:
+        return is_concept(path)
+    except OSError:
+        return False
 
 
 def _check_stores(stores: dict) -> list[dict]:
@@ -353,6 +435,12 @@ def _check_shape(field, value) -> list[dict]:
     return out
 
 
+def _build_output(cfg: dict, project: Path) -> Path:
+    """Where the build writes. Paths under it are its output, not its input."""
+    out = (cfg.get("build") or {}).get("out") or cfg.get("bundle") or ".okfm"
+    return (project / str(out).removeprefix("./")).resolve()
+
+
 def _check_paths(field, value, cfg, project: Path, skip: set[str]) -> list[dict]:
     """Does what it points at exist? The one class of check a browser cannot make."""
     want = field.get("exists")
@@ -360,6 +448,7 @@ def _check_paths(field, value, cfg, project: Path, skip: set[str]) -> list[dict]
         return []
     base = _rel(field.get("base", "project"), cfg, project)
     level = "warn" if field.get("soft") else "error"
+    built = _build_output(cfg, project)
 
     out = []
     for where, rel in _entries(field, value).items():
@@ -367,8 +456,27 @@ def _check_paths(field, value, cfg, project: Path, skip: set[str]) -> list[dict]
             continue                        # already rejected — one problem, one message
         target = (base / rel.removeprefix("./")).resolve()
         ok = target.is_dir() if want == "dir" else target.is_file()
-        if not ok:
-            shown = target.relative_to(project) if target.is_relative_to(project) else target
+        if ok:
+            continue
+        shown = target.relative_to(project) if target.is_relative_to(project) else target
+        # A path under `build.out` is something this pipeline is about to create. Config
+        # validation is step ONE and the build is step two, so demanding the build's own
+        # output already exist fails every project on its first run — which is exactly
+        # what it did: a config naming `.okfm/docs` and `.okfm/mesh` stopped the pipeline
+        # before the build that creates them, with an error about missing directories and
+        # no hint that running the thing again would fix it.
+        #
+        # Nothing is lost by softening it. `check_bundles` runs AFTER the build in the same
+        # pipeline and fails on a bundle path that still does not resolve, so a genuine typo
+        # inside the output root is caught in the same run by the check that can tell the
+        # difference. A typo OUTSIDE the output root is not the build's to create and still
+        # fails here.
+        if target.is_relative_to(built):
+            out.append(_finding("warn", where,
+                                f"not built yet: {shown}",
+                                "`build.out` owns this path — the build creates it, and "
+                                "the mesh check after the build is what fails if it does not"))
+        else:
             out.append(_finding(level, where, f"no such {want}: {shown}"))
     return out
 

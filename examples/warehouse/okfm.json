@@ -1,0 +1,34 @@
+{
+  "okfm": "0.2.1",
+  "_pack": "The only line that makes this a warehouse mesh. Everything else here is what any project would write. Delete this line and validation fails on four types, three predicates and two reason codes — which is how you can tell the pack is doing the work rather than decorating the config.",
+  "pack": "packs/warehouse",
+  "build": {
+    "root": "docs",
+    "root_files": true,
+    "exclude": [],
+    "include": [],
+    "out": ".okfm",
+    "mesh": "mesh",
+    "mode": "mirror",
+    "vocab_overlays": []
+  },
+  "_bundles": "`knowledge` is an IN-PLACE bundle: those files carry their own frontmatter, so they are the concepts and nothing mirrors them. It sits outside `build.root` and is registered here by path, which is the only way an in-place bundle becomes visible to the validator.",
+  "bundles": {
+    "mesh": "./.okfm/mesh",
+    "docs": "./.okfm/docs",
+    "knowledge": "./knowledge"
+  },
+  "read": {
+    "web_ui": {
+      "path": "./okfm-web-ui.html"
+    },
+    "index": {
+      "max_concepts": 60,
+      "priority_types": ["Data Contract", "Dataset", "Metric", "Rule"]
+    },
+    "exclude_scopes": []
+  },
+  "federation": {
+    "registry": "./.okfm/mesh"
+  }
+}

@@ -35,6 +35,7 @@ the implementation disagree, the implementation is right and a record here says 
 | [0011](0011-viewer-and-console.md) | Viewer stays read-only; a console is separate | accepted, built last | §14.3, §14.7 |
 | [0012](0012-reach-is-configured.md) | Reach is configured, not discovered | accepted | §13.4, §13.5, §21.4 |
 | [0013](0013-the-local-model-variant.md) | Level 2+ — a local model, on level 2's terms | accepted, amended | DR-0008, DR-0009 |
+| [0014](0014-packs-and-in-place-bundles.md) | A pack is a directory; in-place bundles are authored, not built | accepted | §13.2, §13.4, DR-0007 |
 
 ## Two different axes, easily confused
 
@@ -116,3 +117,10 @@ the UI is what reveals which commands are actually needed.
 Trust and staleness stay read-time because they are free. The cache stores observations, not
 verdicts, and a pointer that has never been observed reports `unknown` rather than defaulting
 to fresh.
+
+**0014** — a vocabulary overlay is a directory and the filename inside it names the family,
+so a pack's reason code can no longer become a legal predicate. `pack` is a path rather than
+a bare name, because a name needs a search order and a search order fails silently. And
+`--in-place` is removed rather than implemented: it printed `mode : in-place` and mirrored
+anyway, and a build that edits your documents cannot also promise it never touches them.
+In-place bundles are authored by hand and registered by path — which is what this bundle is.

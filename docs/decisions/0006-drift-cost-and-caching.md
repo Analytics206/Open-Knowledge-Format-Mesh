@@ -4,7 +4,7 @@ title: DR-0006 — Drift is observed at build time, never resolved at read time
 description: Trust and staleness are pure functions of data already in hand; drift needs the outside world, and the outside world does not belong on the read path.
 status: draft
 verified: { by: "human:analytics206", at: 2026-08-01T22:35:38Z }
-generated: { by: "claude-opus-5/level3-enrich", at: 2026-08-01T00:00:00Z }
+generated: { by: "agent:claude-opus-5/level3-enrich", at: 2026-08-01T00:00:00Z }
 sources:
   - id: self
     resource: /0006-drift-cost-and-caching.md

@@ -17,7 +17,7 @@ import sys
 from pathlib import Path
 
 from okfm_core import (ACTOR_KINDS, PROJECT, actor_kind, actor_of, configured_bundles,
-                       load_or_create_config, parse_relations, vocab_terms)
+                       load_or_create_config, pack_dirs, parse_relations, vocab_terms)
 
 _FM = re.compile(r"\A---\r?\n(.*?)\r?\n---\r?\n", re.S)
 _OKFM_KEY = re.compile(r"^(okfm_[\w]+):", re.M)
@@ -47,7 +47,14 @@ def main() -> int:
 
     # Overlays let a pack add domain terms without forking core (spec 10.2). Core alone
     # carries no domain words, which is what keeps the tooling portable (13.3).
-    overlays = [(PROJECT / p) for p in cfg.get("vocab_overlays", [])]
+    #
+    # Directories, resolved in one place. Each family reads only the file that bears its
+    # own name, so a pack's reason codes cannot become legal predicates — which is what
+    # happened while this was a flat list of files appended to every family's read.
+    overlays, unresolved = pack_dirs(cfg)
+    for raw in unresolved:
+        errors.append(f"config: pack or overlay `{raw}` is not a directory — every domain "
+                      f"term would validate against core vocabulary alone and fail")
     predicates = vocab_terms("predicates", overlays)
     reason_codes = vocab_terms("reason_codes", overlays)
     known_types = vocab_terms("types", overlays)

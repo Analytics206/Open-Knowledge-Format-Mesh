@@ -117,19 +117,60 @@ def is_concept(path: Path) -> bool:
         return False
 
 
-def split_arms(files: list[Path], bundles: dict[str, Path]) -> tuple[list[Path], list[Path]]:
-    """(treatment, control).
+def build_out() -> Path:
+    """Where the build writes. A bundle under it was DERIVED; a bundle outside it was authored."""
+    cfg = json.loads((PROJECT / "okfm.json").read_text(encoding="utf-8"))
+    return Path(str((cfg.get("build") or {}).get("out") or ".okfm").removeprefix("./"))
 
-    Control is the corpus with every concept **and every derivation** gone. Dropping only
+
+def split_arms(files: list[Path],
+               bundles: dict[str, Path]) -> tuple[list[Path], list[Path], set[Path]]:
+    """(treatment, control, stripped).
+
+    Control is the corpus with every DERIVED concept and every derivation gone. Dropping only
     the concepts is the mistake §18.3 warns about: a rendered view left behind carries the
     same prose and quietly turns the control arm into a second treatment arm.
+
+    **In-place concepts are stripped, not deleted**, and the distinction decides whether the
+    experiment is fair. A mirrored concept is a thing OKFM made, so the corpus without OKFM
+    simply lacks it. An in-place concept is somebody's document with frontmatter added to it —
+    deleting it removes a fact the project had before OKFM existed, which makes the control
+    arm a smaller *corpus* rather than the same corpus without a mesh, and any gap measured
+    against it is partly just the missing document.
+
+    So the control arm gets the file with its frontmatter removed: the document as it stood
+    before anyone typed `type:`. That is the same operation the strip test already relies on,
+    pushed one step further — strip the `okfm_` keys and it is still legal OKF; strip the
+    whole block and it is still the document.
+
+    This surfaced the moment `docs/decisions` was registered as a bundle. Four of eight
+    questions cite a decision record as their source, and all four failed the §18.1 rule that
+    every fact be answerable in both arms — correctly, because the control arm no longer had
+    the documents. The questions were fine; the arm was wrong.
     """
     roots = list(bundles.values())
+    derived_root = build_out()
     drop = {Path(d) for d in DERIVATIONS}
-    control = [rel for rel in files
-               if rel not in drop
-               and not (any(rel.is_relative_to(r) for r in roots) and is_concept(PROJECT / rel))]
-    return files, control
+    control, stripped = [], set()
+    for rel in files:
+        if rel in drop:
+            continue
+        in_bundle = any(rel.is_relative_to(r) for r in roots)
+        if not in_bundle or not is_concept(PROJECT / rel):
+            control.append(rel)
+        elif rel.is_relative_to(derived_root):
+            continue                                  # derived — the mesh made it, so it goes
+        else:
+            control.append(rel)                       # authored in place — keep the prose
+            stripped.add(rel)
+    return files, control, stripped
+
+
+def strip_frontmatter(path: Path) -> str:
+    """The document without its concept layer. Falls back to the file when there is none."""
+    text = path.read_text(encoding="utf-8")
+    m = _FM.match(text)
+    return text[m.end():].lstrip("\n") if m else text
 
 
 def descriptions(files: list[Path], bundles: dict[str, Path]) -> list[tuple[Path, str]]:
@@ -188,7 +229,7 @@ def main() -> int:
 
     bundles = bundle_dirs()
     files, meta = corpus()
-    treatment, control = split_arms(files, bundles)
+    treatment, control, stripped = split_arms(files, bundles)
     control_set = {p.as_posix() for p in control}
 
     print(f"corpus      {len(files)} files")
@@ -198,7 +239,8 @@ def main() -> int:
         print(f"excluded    {len(meta)} file(s) describing this harness: "
               + ", ".join(m.as_posix() for m in meta))
     print(f"treatment   {len(treatment)}")
-    print(f"control     {len(control)}  ({len(treatment) - len(control)} concepts removed)")
+    print(f"control     {len(control)}  ({len(treatment) - len(control)} concepts removed"
+          + (f", {len(stripped)} stripped to prose" if stripped else "") + ")")
 
     errors, notes = [], []
 
@@ -208,7 +250,9 @@ def main() -> int:
     # two directories hold the same files. A benchmark that silently measures a corpus against
     # itself reports a clean run forever and a difference of zero, which reads as "the bundle
     # does not help" rather than "the harness is broken" — the most expensive way to be wrong.
-    removed = len(treatment) - len(control)
+    # Stripping counts. An arm that keeps every file but removes the concept layer from some
+    # of them is a different arm, and the file counts alone would call it identical.
+    removed = (len(treatment) - len(control)) + len(stripped)
     if removed == 0:
         errors.append("control arm is identical to the treatment arm — no concept was "
                       "removed, so the two arms measure the same corpus. Check that "
@@ -266,20 +310,29 @@ def main() -> int:
     # A description that survives into the control arm means the concept and its source are
     # the same file, and removing the bundle did not remove the knowledge.
     leaked = []
+    # Read what the control arm will CONTAIN, not what is on disk. A stripped file is
+    # materialised without its frontmatter, so checking the on-disk copy found every
+    # in-place concept's own description inside its own file and reported fourteen leaks
+    # that will not exist in the arm — noise, and the expensive kind, because a check that
+    # cries wolf on every run is one nobody reads on the run that matters.
+    control_text = {c: (strip_frontmatter(PROJECT / c) if c in stripped
+                        else (PROJECT / c).read_text(encoding="utf-8")) for c in control}
     for rel, desc in descriptions(files, bundles):
         if len(desc) < 40:
             continue
         for c in control:
-            if desc[:60] in (PROJECT / c).read_text(encoding="utf-8"):
+            if desc[:60] in control_text[c]:
                 leaked.append((rel.as_posix(), c.as_posix()))
                 break
 
     # --- in-place bundles cannot be benchmarked against themselves ------------
-    inplace = sorted(b for b, root in bundles.items()
-                     if any(p.is_relative_to(root) and _is_inplace(p) for p in files))
+    inplace = sorted({b for b, root in bundles.items()
+                      for p in stripped if p.is_relative_to(root)})
     for b in inplace:
-        notes.append(f"bundle `{b}` is in-place: its concepts ARE its sources, so removing "
-                     f"them removes the facts. Questions must not draw on it.")
+        n = sum(1 for p in stripped if p.is_relative_to(bundles[b]))
+        notes.append(f"bundle `{b}` is in-place: its {n} concept(s) ARE their sources, so "
+                     f"the control arm keeps the prose and drops the frontmatter. Questions "
+                     f"may draw on it — the fact survives, the concept layer does not.")
 
     for n in notes:
         print(f"  note  {n}")
@@ -307,7 +360,14 @@ def main() -> int:
         for rel in paths:
             dst = out / "arms" / arms[arm] / rel
             dst.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(PROJECT / rel, dst)
+            if arm == "control" and rel in stripped:
+                # The document without its concept layer. Written rather than copied, so the
+                # control arm holds real prose and no frontmatter for an agent to read as a
+                # curated signal — which is the one thing this arm exists not to have.
+                dst.write_text(strip_frontmatter(PROJECT / rel),
+                               encoding="utf-8", newline="\n")
+            else:
+                shutil.copy2(PROJECT / rel, dst)
 
     key, sheet = {"_arms": arms}, []
     prompts = out / "prompts"

@@ -1030,8 +1030,11 @@ okfm/
   templates/
     bundle/                  # index.md, log.md, one starter concept     ✓
     AGENTS.md                # the authoring contract — applies from level 1   ✓
+  packs/
+    warehouse/               # a domain pack: vocab/ YAML, no code (§13.2)          ✓
   examples/
     minimal/                 # an adopter-shaped config                            ✓
+    warehouse/               # the Phase 2 exit — a second domain on pack + config ✓
   benchmark/                 # §18 harness — deterministic half                   ✓
 
   # ---- the mesh: OKFM described in its own format (§12) -------------------
@@ -1100,7 +1103,7 @@ One file, small enough to read in full:
 ```json
 {
   "okfm": "0.2.1",
-  "pack": "warehouse",
+  "pack": "packs/warehouse",
   "bundles": { "primary": "./okf" },
   "index": {
     "max_concepts": 60,
@@ -1117,6 +1120,12 @@ One file, small enough to read in full:
   mesh with no domain pack is valid, and this repository's own config is one. Omit
   `bundles` and the build discovers them by scanning (§13.5). Omit `stores` and only
   file and object pointers resolve.
+- **`pack` is a path, not a bare name.** This example read `"pack": "warehouse"` and the
+  key was read by nothing at all, so setting it had no effect. It now resolves a directory
+  whose vocabulary sits at `<pack>/vocab/`, mirroring core's own `dropin/vocab/`. A bare
+  name would need a search path, a search path needs a resolution order, and a resolution
+  order picks the wrong directory in silence ([DR-0014](../docs/decisions/0014-packs-and-in-place-bundles.md)).
+  `examples/warehouse/` is a working one.
 - **Credentials by reference only** (`env:` / secret-manager handles). A config file
   is committed; a credential is not.
 - **`federation: null` is a valid mesh.** A single bundle is the common case; the

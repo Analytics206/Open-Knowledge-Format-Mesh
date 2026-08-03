@@ -262,6 +262,31 @@ a first pass at the distribution test (§13.7) — someone other than the builde
 builder on a clean machine with only the README, reaches a running mesh in under an
 hour.
 
+**The first half of that exit is met, and it cost four defects to meet it.**
+`packs/warehouse/` is a domain pack of three YAML files and no code;
+`examples/warehouse/` is a project standing on it; `dev/check_pack_example.py` builds that
+project in a temporary directory on every CI run and asserts that `dropin/` comes back
+byte-identical **and that removing the pack makes the same mesh fail**. The second
+assertion is the one that matters — this criterion could most easily have been faked by a
+pack that was decorative, and a pack that changes nothing when removed was doing nothing.
+
+None of the four was visible from inside this repository, which is the finding underneath
+the finding. CI had grepped `dropin/` for domain words since Phase 1 and that check was
+green throughout; it proves no *existing* domain's words are in the code, which is a much
+smaller claim than a **new** domain needing none. See
+[DR-0014](decisions/0014-packs-and-in-place-bundles.md):
+
+| Defect | Who it failed |
+|---|---|
+| one vocabulary overlay reached every family | any pack author — a reason code became a legal `predicate` |
+| `pack` was required, validated, and read by nothing | anyone following §13.4 |
+| config rejected the build's own output | every adopter, first run, before the build that creates it |
+| in-place bundles were never registered in the mesh | this project — `docs/decisions`, 14 concepts, validated by nothing since it was written |
+
+The distribution-test half is not met. What has been proven is that a **second domain**
+needs no core edits; what has not is that a **stranger** reaches a running mesh from the
+README alone.
+
 ### Phase 3 — The credentialed half: live sources and attestation
 
 The first phase that needs a real domain. It names capabilities, not a corpus — the corpus is
