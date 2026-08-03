@@ -38,6 +38,7 @@ the implementation disagree, the implementation is right and a record here says 
 | [0014](0014-packs-and-in-place-bundles.md) | A pack is a directory; in-place bundles are authored, not built | accepted | §13.2, §13.4, DR-0007 |
 | [0015](0015-the-install-has-an-upgrade.md) | The tool, the mesh and the config are three things | accepted | §13.3, §13.7, DR-0007 |
 | [0016](0016-documented-commands-must-exist.md) | Documentation may not name a command that does not exist | accepted | §13.6, DR-0011 |
+| [0017](0017-two-viewers.md) | Two viewers — the demo has data baked in, the adopter's must not | accepted | §13.7, §14.1, DR-0015 |
 
 ## Two different axes, easily confused
 
@@ -142,3 +143,10 @@ wider than the fix — the documentation may not *name* a command that does not 
 form, because a reader scanning for something to type cannot tell a roadmap entry from an
 instruction. `build.bundle_tags` came out of the same work: a claim the build cannot derive
 and a human cannot make stick has to be declared where the build reads it.
+
+**0017** — the viewer at the download root has this project's mesh baked in, which is the
+point of it at Level 1 and exactly wrong once copied: an adopter saw 68 of somebody else's
+concepts and somebody else's name as owner, in a file they had just added to their
+repository. The drop-in now ships a blank one, generated from the shipped page and guarded so
+the markup cannot drift, and the build seeds it on a first run. That is also what makes
+Level 2 a single folder copy instead of two copies and a paragraph explaining the second.

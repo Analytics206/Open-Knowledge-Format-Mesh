@@ -250,21 +250,40 @@ def main() -> int:
     _, cfg = find_config()
     viewer = viewer_path(cfg or {})
 
+    template = HERE / VIEWER_NAME
+    if not viewer.is_file() and template.is_file() and template != viewer:
+        # Seeded, not demanded. The drop-in ships a BLANK viewer, and on a first run it is
+        # copied to wherever the config says the viewer lives — so pasting one folder is the
+        # whole of Level 2, which is what it always claimed to be.
+        #
+        # Blank matters as much as present. The viewer at the download's root has this
+        # project's mesh baked into it, because that is the point of it at Level 1: open the
+        # file and OKFM's own guide is there. Copying THAT into an adopter's project shows
+        # them sixty-eight of somebody else's concepts and somebody else's name as owner,
+        # in a file they just added to their repository, looking exactly like it worked.
+        where = viewer.relative_to(PROJECT) if viewer.is_relative_to(PROJECT) else viewer
+        if not check:
+            viewer.parent.mkdir(parents=True, exist_ok=True)
+            viewer.write_text(template.read_text(encoding="utf-8"),
+                              encoding="utf-8", newline="\n")
+            print(f"  seeded  {where} — the blank viewer from the drop-in, "
+                  f"about to be filled with your mesh")
+        else:
+            print(f"  would seed  {where} from the drop-in's blank viewer")
+            return 0
+
     if not viewer.is_file():
         # Skipped, not failed. The viewer is a *reader*; the mesh is built and valid without
         # it, and taking down the whole pipeline for a missing convenience meant an adopter's
         # first run ended in a raw FileNotFoundError naming a file they had never heard of.
-        # That reads as "this tool is broken", not "you are missing a step" — and a stranger
-        # who greps the documentation for the filename finds twenty-eight mentions and no
-        # instruction to install it.
+        # That reads as "this tool is broken", not "you are missing a step".
         where = viewer.relative_to(PROJECT) if viewer.is_relative_to(PROJECT) else viewer
-        print(f"no viewer at {where} — skipping the bake.", file=sys.stderr)
+        print(f"no viewer at {where}, and no blank one in the drop-in to seed from — "
+              f"skipping the bake.", file=sys.stderr)
         print(f"The mesh is built and valid; this step only bakes an index into the page.",
               file=sys.stderr)
-        print(f"To read it in a browser, copy `{VIEWER_NAME}` from the OKFM download — it "
-              f"sits at the\ndownload's root, NOT inside the folder you pasted in — to "
-              f"{PROJECT.name}/, then re-run.", file=sys.stderr)
-        print(f"Or point `read.web_ui.path` at wherever you keep it.", file=sys.stderr)
+        print(f"Copy `{VIEWER_NAME}` from the OKFM download to {PROJECT.name}/ and re-run, "
+              f"or point\n`read.web_ui.path` at wherever you keep it.", file=sys.stderr)
         return 0
 
     mesh = collect()

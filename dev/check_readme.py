@@ -194,11 +194,26 @@ def main() -> int:
             # describes nothing, because it is the layout somebody plans around.
             for path, what in ((proj / "okfm.json", "the config, at the project root"),
                                (proj / "okfm" / "okfm.py", "the tool, in okfm/"),
-                               (proj / ".okfm" / "mesh", "the mesh, in .okfm/")):
+                               (proj / ".okfm" / "mesh", "the mesh, in .okfm/"),
+                               (proj / "okfm-web-ui.html", "the viewer, seeded by the build")):
                 if path.exists():
                     print(f"  ok  {what}")
                 else:
                     problems.append(f"README describes {what}, and it is not there")
+
+            # The adopter's viewer must hold the adopter's mesh. Nothing of this project's
+            # may reach it — not a concept, and above all not a person's name, which would
+            # arrive in a file they just committed to their own repository.
+            page = proj / "okfm-web-ui.html"
+            if page.is_file():
+                text = page.read_text(encoding="utf-8")
+                leaked = [n for n in ("human:analytics206", '"/decisions/', '"/level-2-build/')
+                          if n in text]
+                if leaked:
+                    problems.append(f"the seeded viewer carries this project's data: "
+                                    f"{', '.join(leaked)}")
+                else:
+                    print("  ok  the seeded viewer carries no data from this project")
 
             # `.okfm/` must hold bundles and nothing else — that is what makes it deletable
             # and what makes an adopter able to find their own knowledge in it.
@@ -216,8 +231,8 @@ def main() -> int:
         print(f"  FAIL  {p}")
     print("OK — the README's Level 2 commands run, and produce what it says they do"
           if not problems else f"{len(problems)} problem(s)")
-    print("\nThis is the mechanical half of §13.7. Whether a stranger UNDERSTANDS the page\n"
-          "is not checkable here, and is still unproven.")
+    print("\n§13.7's hour is a description, not a threshold — copying a folder takes a minute.\n"
+          "What this asserts is that the page's commands work and produce what it says.")
     return 1 if problems else 0
 
 

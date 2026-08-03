@@ -1,7 +1,7 @@
 ---
 type: OKF Member
 title: decisions
-description: 16 concept(s) authored in place in docs/decisions.
+description: 17 concept(s) authored in place in docs/decisions.
 resource: ../../../docs/decisions
 status: draft
 generated: { by: "process:okfm-build", at: 2026-08-03T00:00:00Z }

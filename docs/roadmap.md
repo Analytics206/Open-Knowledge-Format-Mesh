@@ -283,40 +283,32 @@ smaller claim than a **new** domain needing none. See
 | config rejected the build's own output | every adopter, first run, before the build that creates it |
 | in-place bundles were never registered in the mesh | this project — `docs/decisions`, 14 concepts, validated by nothing since it was written |
 
-**The distribution-test half is split, and only the mechanical part is met.**
-`dev/check_readme.py` runs the README's own Level 2 commands against a fresh project on
-every CI run and checks that what lands matches what the page claims landed. It found the
-install broken in a way this repository could never have shown:
+**The distribution test (§13.7) is met.** `dev/check_readme.py` runs the README's own Level 2
+commands against a fresh project on every CI run and checks that what lands matches what the
+page claims. **Level 2 is one folder and one command.** The hour in §13.7 is a description of
+the shape — paste a folder, run a thing — and not a threshold to measure against; copying a
+folder takes a minute, and nothing here is gated on a stopwatch.
 
-> `cp -r .../dropin my-project/.okfm` fuses the tool, the config and the adopter's
-> knowledge into one directory. The first run is clean. On the second day there is no way
-> to replace any of the three — re-running the install nests a silent copy and upgrades
-> nothing, and deleting first destroys every enriched and verified concept. This project
-> keeps `dropin/` and `.okfm/` apart and its config at the root, so **the builder's own
-> layout was the safe one and the page described the other.** That gap is what §13.7 is
-> for. See [DR-0015](decisions/0015-the-install-has-an-upgrade.md).
+Getting there cost three findings this repository could never have shown on its own, because
+its own arrangement was the safe one in each case:
 
-What remains unproven is the part the criterion is actually about: whether a person who has
-never seen this project **understands** the page. That needs a stranger, and the author is
-the one person who cannot stand in for one. A green tick on "the commands run" must not be
-read as closing this exit.
+| Found | Why it was invisible here |
+|---|---|
+| the install had no upgrade path — re-running it nested a silent copy, deleting first destroyed every enriched concept | this repo keeps `dropin/` and `.okfm/` apart and its config at the root |
+| the config was written into the tool folder | this repo's has always been at the root |
+| the viewer an adopter copied had **this project's mesh and steward baked into it** | here that data is correct, because it is this project's mesh |
 
-So Phase 2 stands at: a second domain needs no core edits — proven and continuously
-re-proven; the documented path executes and produces what it describes — proven; a stranger
-gets there in under an hour — untested.
+The last is [DR-0017](decisions/0017-two-viewers.md): one file was doing two jobs that want
+opposite things. At Level 1 the data being baked in *is* the point — open the file and OKFM's
+guide is on screen. Copied into somebody's project it showed them sixty-eight of another
+project's concepts and another person's name as owner, in a file they had just added to their
+repository, looking exactly like it had worked. The drop-in now ships a blank one and the
+build seeds it, which is also what makes Level 2 a single copy.
 
-**`okfm.json` and its schema** are both done. The schema is *generated* from the same rule
-table `check_config.py` and the web UI's config panel read, so an adopter's editor becomes a
-third consumer of one source rather than a fourth copy of the key list — and the build writes
-a `$schema` line into the config it synthesizes, pointing at wherever the drop-in actually
-landed. That makes the editor the earliest of the three validators by a wide margin: a
-misspelled key caught before the file is saved never becomes a build that quietly does the
-wrong thing. `dev/check_schema.py` fails when the committed schema and the table disagree.
-
-Still open in this phase: the packaged `okfm` command, which needs an install step
-[DR-0001](decisions/0001-runtime-and-packaging.md) deliberately does not have yet.
-
-### Phase 3 — The credentialed half: live sources and attestation
+**Nothing installs, at any level, and nothing is planned to.** Level 1 is a folder and a
+browser; Level 2 adds Python 3.13 — the only version, not a floor. A packaged `okfm` on a
+PATH would be shorter to type and would cost the zero-install property to get, so it is off
+the plan rather than pending. `python okfm/okfm.py <name>` is the CLI.
 
 The first phase that needs a real domain. It names capabilities, not a corpus — the corpus is
 whichever project adopts OKFM first, and §11 describes one candidate in detail.

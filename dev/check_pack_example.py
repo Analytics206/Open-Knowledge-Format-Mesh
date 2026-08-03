@@ -120,7 +120,9 @@ def main() -> int:
         shutil.copytree(DROPIN, proj / "dropin",
                         ignore=shutil.ignore_patterns("__pycache__", "okfm.json"))
         shutil.copytree(PACK, proj / PACK_REL)
-        shutil.copy2(PROJECT / "okfm-web-ui.html", proj / "okfm-web-ui.html")
+        # The viewer is not copied: the drop-in carries a blank one and the build seeds it.
+        # Copying this project's — which has its own mesh baked in — would have handed the
+        # example a page full of somebody else's concepts before it built its own.
 
         if not (proj / PACK_REL).is_dir():
             problems.append(f"okfm.json names `{PACK_REL}` but nothing was copied there")

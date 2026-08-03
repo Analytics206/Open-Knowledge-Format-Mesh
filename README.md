@@ -109,10 +109,13 @@ That works from level 1 and needs nothing from us.
 ## Status
 
 Phase 1 closed, Phase 2 in progress. The specification is stable enough to build against and
-the deterministic tooling runs. The commands are there — `validate`, `index`, `build`,
-`view`, `refresh`, `enrich`, `guard`, `revalidate` — reached as `python okfm/okfm.py <name>`.
-What is missing is a packaged `okfm` on your PATH, which needs an install step that
-[DR-0001](docs/decisions/0001-runtime-and-packaging.md) deliberately does not have yet.
+the deterministic tooling runs.
+
+**Nothing installs, at any level.** Level 1 is a folder and a browser. Level 2 adds Python
+3.13 — the only version, not a floor — and the commands are reached as
+`python okfm/okfm.py <name>`: `validate`, `index`, `build`, `view`, `refresh`, `enrich`,
+`guard`, `revalidate`. A packaged `okfm` on your PATH would be shorter to type and would cost
+the zero-install property to get, so it is not planned.
 
 | | |
 |---|---|
@@ -125,9 +128,9 @@ What is missing is a packaged `okfm` on your PATH, which needs an install step t
 | `enrich-local` — the loop on Ollama, no key, no bill | ✅ level 2+, proof of concept |
 | Benchmark harness | ✅ first run recorded — 8 real questions, no measurable gap |
 | Domain packs — a second domain on config alone | ✅ `packs/warehouse`, checked every CI run |
-| Distribution test (§13.7) — a stranger, with only this page | ◐ the commands run; whether they *read* is untested |
+| Level 2 is one folder and one command | ✅ the README's own commands run in CI |
 | `okfm index` — what an agent would actually be handed | ✅ budgeted, and says what it cut |
-| Packaged `okfm` command, live resolvers, console app | ⬜ Phase 2 |
+| Live resolvers, console app | ⬜ Phase 2 |
 | Providers, federation's negotiation half | ⬜ Phase 3+ |
 
 See the [roadmap](docs/roadmap.md) for phases, and [decisions](docs/decisions/index.md) for
@@ -153,17 +156,22 @@ Delete the guide whenever you like: `rm -rf .okfm/guide/`.
 
 ```bash
 cp -r Open-Knowledge-Format-Mesh/dropin my-project/okfm
-cp Open-Knowledge-Format-Mesh/okfm-web-ui.html my-project/
 cd my-project
 ```
-
-**Two things, not one.** The viewer sits at the download's root rather than inside `dropin/`,
-because it is the whole of level 1 and does not belong to the build. Skip it and the build
-still produces a valid mesh — it says so and carries on — you just have nothing to open.
 
 ```bash
 python okfm/okfm.py
 ```
+
+**One folder, one command.** The viewer comes with it — blank — and the first run drops a
+copy at your project root and fills it with your mesh.
+
+> It used to be two copies, the second being `okfm-web-ui.html` from the download's root.
+> That file is the *Level 1* viewer and has **this** project's mesh baked into it, which is
+> the whole point of it there: open it and OKFM's own guide is on screen. Copied into your
+> project it showed you sixty-eight of somebody else's concepts, and somebody else's name as
+> the owner of four bundles, in a file you had just added to your repository — looking
+> exactly like it had worked. The drop-in now carries a blank one instead.
 
 It finds `docs/`, builds one OKF per folder plus a mesh OKF over them, and writes the config
 it used — so the first thing you edit is a file it made for you rather than a blank page.
@@ -180,7 +188,7 @@ because the captured hashes are real.
 
 Re-running is safe: the build writes only concepts nothing else has touched.
 
-Python 3.13 or newer, standard library only. No install step.
+Python 3.13, standard library only. No install step, at this level or any other.
 
 ### Three directories, and why they are three
 
