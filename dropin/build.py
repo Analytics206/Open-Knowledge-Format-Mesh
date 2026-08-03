@@ -74,7 +74,8 @@ def _owned(dest: Path) -> bool:
     return (scalar(block, "generated") or "").find(MINE) >= 0
 
 
-def mirror(src_dir: Path, out_dir: Path, ctype: str, stamp: str, apply: bool) -> list[str]:
+def mirror(src_dir: Path, out_dir: Path, ctype: str, stamp: str, apply: bool,
+           tags: list[str] | None = None) -> list[str]:
     """Write one concept per source document, pointing back at the source.
 
     Reserved filenames are skipped and **said out loud**. `README.md` is the one that hurts:
@@ -111,6 +112,14 @@ def mirror(src_dir: Path, out_dir: Path, ctype: str, stamp: str, apply: bool) ->
             f"title: {_yaml_str(_title(text, f))}",
             f"description: {_yaml_str(_extract_description(text))}",
             "status: draft",
+            # Declared per bundle in `build.bundle_tags`, because some claims are properties
+            # of the folder rather than of any one file — every component in a level-2 bundle
+            # is `needs-nothing` by definition, and extraction cannot derive that from prose.
+            #
+            # Emitted by the BUILD rather than added by hand afterwards, which is the whole
+            # point. A tag typed into a build-owned concept is erased on the next run, so the
+            # only way a claim survives is for the thing that rewrites the file to know it.
+            *([f"tags: [{', '.join(tags)}]"] if tags else []),
             f'generated: {{ by: "{MINE}", at: {stamp} }}',
             "sources:",
             "  - id: source",
@@ -388,7 +397,8 @@ def main() -> int:
             print(f"  note  {rel} and {targets[name]} both build `{name}` — "
                   f"rename one folder, or name the bundle in `sources`")
         targets[name] = rel
-        names = mirror(src, out_dir, ctype, stamp, a.apply)
+        names = mirror(src, out_dir, ctype, stamp, a.apply,
+                       (cfg.get("bundle_tags") or {}).get(name))
         if names and _owned(out_dir / "index.md"):
             write_index(out_dir, name, names, stamp, a.apply,
                         _bundle_id(cfg, out_root / cfg.get("mesh", "mesh"),

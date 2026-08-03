@@ -24,7 +24,7 @@ from pathlib import Path
 import config_schema
 from okfm_core import (HERE, PROJECT, configured_bundles, find_config,
                        load_or_create_config, parse_relations, reject_unknown,
-                       actor_kind, actor_of)
+                       actor_kind, actor_of, trust)
 
 ROOT = PROJECT
 CACHE = HERE / ".okfm-cache" / "observations.json"
@@ -90,17 +90,9 @@ def relations(block: str, bundle_root: str, bundle_ids: set[str] | None = None):
     return out
 
 
-def trust(block: str):
-    """DERIVED, never stored. A human verifier outranks a machine one; absent is unverified.
-
-    Read from the actor's PREFIX, not from whether `human:` appears somewhere on the line.
-    The substring test awarded the top trust tier to `nonhuman:bot`, which is the worst
-    direction for that mistake to run — a false `unverified` is a nuisance, a false `human`
-    is a review nobody performed.
-    """
-    if not re.search(r"^verified:", block, re.M):
-        return None
-    return "human" if actor_kind(actor_of(block, "verified")) == "human" else "machine"
+# `trust()` now lives in `okfm_core`, imported below — `index.py` needed the same rule and
+# copying it would have made a second implementation of the one thing that decides whether a
+# reader is told a human reviewed something.
 
 
 _CAPTURED = re.compile(r"resource:\s*(\S+)[\s\S]*?hash:\s*\"?sha256:([0-9a-f]+)")

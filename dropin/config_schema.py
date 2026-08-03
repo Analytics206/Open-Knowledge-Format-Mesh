@@ -96,6 +96,14 @@ FIELDS = [
              "reads only the file bearing its own name — predicates.yaml, types.yaml, "
              "reason_codes.yaml, roles.yaml — so a pack cannot widen a list it did not "
              "mean to. Usually empty; `pack` covers the single-domain case."},
+    {"path": "build.bundle_tags", "kind": "any", "default": None, "nullable": True,
+     "label": "Tags applied per bundle",
+     "help": "bundle id → tags every concept the build writes there carries. For claims "
+             "that belong to the folder rather than to any one file — every component in a "
+             "level-2 bundle is `needs-nothing` by definition, and extraction cannot read "
+             "that off prose. A tag added by hand to a build-owned concept is erased on the "
+             "next run, so the build has to be the thing that knows."},
+
     {"path": "build.sources", "kind": "any", "default": None, "nullable": True,
      "label": "Explicit source list",
      "help": "An explicit list of folders. Its presence turns discovery off entirely — "

@@ -20,11 +20,17 @@ Nothing references it. No configuration needs editing. The web UI notices it is 
 and falls back to its empty state, which explains what a concept is and names the two
 commands that matter.
 
-To bring it back:
+To bring it back, copy it from the download:
 
 ```bash
-okfm init --guide
+cp -r Open-Knowledge-Format-Mesh/.okfm/guide my-project/.okfm/guide
 ```
+
+> This used to name an `init --guide` subcommand, which was never a command and could not
+> have been one. The guide ships in the **download**, not in the drop-in — `dropin/` carries
+> fourteen modules and a vocabulary, and nothing to restore from. A restore instruction
+> naming a command that does not exist, for content the tool does not hold, is two promises
+> broken in one line.
 
 # You probably do not need to
 

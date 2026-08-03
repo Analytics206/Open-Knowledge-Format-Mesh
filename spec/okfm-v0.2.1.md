@@ -1237,10 +1237,17 @@ and honest about it: extracted descriptions, `status: draft`, no `verified` entr
 **Level 3, credentialed variant** — OKFM drives a provider rather than an agent driving OKFM.
 
 ```shell
-okfm init --pack warehouse      # writes okfm.json, index.md, log.md, one concept
-okfm validate                   # green on an empty mesh
-okfm index                      # see what an agent would be handed
+cp -r packs/warehouse my-project/packs/warehouse   # the pack: vocabulary, no code
+# then one line in okfm.json:  "pack": "packs/warehouse"
+python okfm/okfm.py validate    # green on an empty mesh
+python okfm/okfm.py index       # see what an agent would be handed
 ```
+
+> This read as an `init --pack warehouse` subcommand, and no such command exists or is
+> planned — installing a pack is a copy and a config line, which `examples/warehouse/`
+> demonstrates and CI stands up on every run. Naming an invocation for a capability that has
+> none is a promise the corpus cannot keep, and it is why `dev/check_commands.py` now fails
+> on any subcommand name the dispatcher does not answer to.
 
 This was a fourth level and collapsed into a variant of the third. The ladder asks for a
 browser, then Python, then a model; who holds the key after that is a change of direction
@@ -1405,7 +1412,9 @@ adopter may introduce their own — `vendor`, `archive` — and keep it out of t
 any change to the tooling.
 
 `rm -rf .okfm/guide/` is the entire removal procedure — nothing references it, and the
-viewer falls back to its empty state. `okfm init --guide` restores it.
+viewer falls back to its empty state. Copying `.okfm/guide/` back out of the download
+restores it; there is no command, because the guide ships in the download and the drop-in
+holds no copy to restore from.
 
 ### 14.6 Three views
 

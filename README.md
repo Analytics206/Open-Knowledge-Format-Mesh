@@ -108,13 +108,16 @@ That works from level 1 and needs nothing from us.
 
 ## Status
 
-Phase 1 closed, Phase 2 in progress. The specification is stable enough to build against, the
-deterministic tooling runs, and there is no CLI yet.
+Phase 1 closed, Phase 2 in progress. The specification is stable enough to build against and
+the deterministic tooling runs. The commands are there — `validate`, `index`, `build`,
+`view`, `refresh`, `enrich`, `guard`, `revalidate` — reached as `python okfm/okfm.py <name>`.
+What is missing is a packaged `okfm` on your PATH, which needs an install step that
+[DR-0001](docs/decisions/0001-runtime-and-packaging.md) deliberately does not have yet.
 
 | | |
 |---|---|
 | Specification, rationale, roadmap, prior art | ✅ |
-| The mesh — 7 bundles, 66 concepts, self-hosted | ✅ |
+| The mesh — 7 bundles, 67 concepts, self-hosted | ✅ |
 | `okfm-web-ui.html` — graph, closure ledger, health panel, config editor | ✅ works offline |
 | `dropin/` — paste into a project, build a mesh | ✅ level 2, deterministic |
 | Config validation — one rule table, terminal and browser | ✅ |
@@ -123,7 +126,8 @@ deterministic tooling runs, and there is no CLI yet.
 | Benchmark harness | ✅ first run recorded — 8 real questions, no measurable gap |
 | Domain packs — a second domain on config alone | ✅ `packs/warehouse`, checked every CI run |
 | Distribution test (§13.7) — a stranger, with only this page | ◐ the commands run; whether they *read* is untested |
-| `okfm` CLI, live resolvers, console app | ⬜ Phase 2 |
+| `okfm index` — what an agent would actually be handed | ✅ budgeted, and says what it cut |
+| Packaged `okfm` command, live resolvers, console app | ⬜ Phase 2 |
 | Providers, federation's negotiation half | ⬜ Phase 3+ |
 
 See the [roadmap](docs/roadmap.md) for phases, and [decisions](docs/decisions/index.md) for

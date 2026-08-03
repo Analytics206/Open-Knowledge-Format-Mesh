@@ -56,7 +56,15 @@ STEPS = [
 # is the union of everything it invokes, so listing it in STEPS would take the whole pipeline
 # out of CI on a fork's pull request. It stays reachable and stays out of the run.
 EXTRA = {"enrich": "enrich.py", "enrich-local": "enrich_local.py",
-         "guard": "guard.py", "revalidate": "revalidate.py"}
+         "guard": "guard.py", "revalidate": "revalidate.py",
+         # `index` is what an agent would be handed; `check` is whether the mesh is legal.
+         # Both were documented long before this dispatcher knew either name.
+         "index": "index.py",
+         # `validate` is what the specification, the README and the guide all call it —
+         # six times between them — while the dispatcher only answered to `check`. One
+         # command with two names is a coin toss for whoever read the other document, and
+         # the one they were told to type was the one that printed `unknown command`.
+         "validate": "check_bundles.py"}
 
 BY_NAME = {name: script for name, script, *_ in STEPS} | EXTRA
 

@@ -109,6 +109,23 @@ def actor_of(block: str, key: str) -> str | None:
     return m.group(1) if m else None
 
 
+def trust(block: str) -> str | None:
+    """`human`, `machine`, or None when nothing has verified this. DERIVED, never stored.
+
+    Read from the actor's PREFIX, not from whether `human:` appears somewhere on the line.
+    The substring test awarded the top tier to `nonhuman:bot`, which is the worst direction
+    for that mistake to run — a false `unverified` is a nuisance, a false `human` is a review
+    nobody performed.
+
+    Lives here because a second reader was about to copy it. Every rule this project has had
+    to reunify — RESERVED, the config schema, the relation parser — was two implementations
+    that agreed until one was fixed.
+    """
+    if not re.search(r"^verified:", block, re.M):
+        return None
+    return "human" if actor_kind(actor_of(block, "verified")) == "human" else "machine"
+
+
 def parse_relations(block: str) -> list[tuple[str, str]]:
     """(predicate, target) for every typed edge in a frontmatter block.
 
@@ -171,6 +188,7 @@ def normalize(cfg: dict) -> dict:
         ("mode", b, "mode", "mirror"),
         ("sources", b, "sources", None),
         ("vocab_overlays", b, "vocab_overlays", None),
+        ("bundle_tags", b, "bundle_tags", None),
         ("web_ui", r, "web_ui", None),
         ("index", r, "index", None),
         ("exclude_scopes", r, "exclude_scopes", None),

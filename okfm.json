@@ -12,7 +12,15 @@
     "out": ".okfm",
     "mesh": "mesh",
     "mode": "mirror",
-    "vocab_overlays": []
+    "vocab_overlays": [],
+    "bundle_tags": {
+      "level-1-view": [
+        "needs-nothing"
+      ],
+      "level-2-build": [
+        "needs-nothing"
+      ]
+    }
   },
   "bundles": {
     "decisions": "./docs/decisions",
@@ -53,5 +61,6 @@
   "stores": {},
   "federation": {
     "registry": "./.okfm/mesh"
-  }
+  },
+  "_bundle_tags": "Levels 1 and 2 are needs-nothing BY DEFINITION — that is the boundary dev/check_levels.py enforces, and it is a property of the bundle rather than of any file in it. level-3-enrich is deliberately absent: its components differ, so a blanket tag there would assert something false."
 }

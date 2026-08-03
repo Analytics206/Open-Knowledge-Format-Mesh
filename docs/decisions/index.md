@@ -37,6 +37,7 @@ the implementation disagree, the implementation is right and a record here says 
 | [0013](0013-the-local-model-variant.md) | Level 2+ — a local model, on level 2's terms | accepted, amended | DR-0008, DR-0009 |
 | [0014](0014-packs-and-in-place-bundles.md) | A pack is a directory; in-place bundles are authored, not built | accepted | §13.2, §13.4, DR-0007 |
 | [0015](0015-the-install-has-an-upgrade.md) | The tool, the mesh and the config are three things | accepted | §13.3, §13.7, DR-0007 |
+| [0016](0016-documented-commands-must-exist.md) | Documentation may not name a command that does not exist | accepted | §13.6, DR-0011 |
 
 ## Two different axes, easily confused
 
@@ -133,3 +134,11 @@ Three directories now — `okfm/`, `.okfm/`, `okfm.json` — so upgrading is a d
 Both layouts still work and the build warns when it finds the fused one. This repository had
 the safe arrangement all along and the README described the other, which is exactly the gap
 §13.7 exists to find.
+
+**0016** — three commands were documented and did not run: `validate` (the dispatcher knew it
+as `check`), `index` (which existed in no form while its config knobs shipped to every
+adopter and read nothing), and a phantom `init`. Both real ones are built, and the rule is
+wider than the fix — the documentation may not *name* a command that does not exist, in any
+form, because a reader scanning for something to type cannot tell a roadmap entry from an
+instruction. `build.bundle_tags` came out of the same work: a claim the build cannot derive
+and a human cannot make stick has to be declared where the build reads it.

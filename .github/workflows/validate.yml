@@ -47,6 +47,13 @@ jobs:
       - name: Every component fits its level
         run: python dev/check_levels.py
 
+      # Every `okfm <name>` the documentation tells someone to type must be one the
+      # dispatcher answers to. Two were not — `validate` (six mentions, the dispatcher knew
+      # it as `check`) and `index` (four, including the page a first-time author reads,
+      # and it existed in no form while its config knobs shipped to every adopter).
+      - name: Every documented command exists
+        run: python dev/check_commands.py
+
       # The README's Level 2 commands, executed against a fresh project. The MECHANICAL half
       # of §13.7 only — whether a stranger understands the page is not checkable here, and
       # the script says so on every run so a green tick cannot be read as the exit criterion.

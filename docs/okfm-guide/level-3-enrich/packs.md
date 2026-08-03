@@ -1,11 +1,25 @@
-# Partly built already
+# Built, and standing up a second domain on every CI run
 
-The mechanism works today. `vocab_overlays` in the config layers extra predicates, types and
-reason codes on top of core, and the validator reads the union. A domain that needs `Incident`
-or `data_gap` declares it and the warning goes away.
+A pack is a directory of YAML. `"pack": "packs/warehouse"` in the config is the whole
+installation, and the validator reads core plus the pack as one vocabulary. A domain that
+needs `Incident` or `data_gap` declares it and the warning goes away.
 
-What does not exist is the rest of a pack: workflows, prompts, resolver configuration, and an
-`okfm init --pack <name>` that installs the set.
+`packs/warehouse/` is a real one — three files, no code. `examples/warehouse/` is a project
+standing on it, and `dev/check_pack_example.py` builds that project from scratch on every CI
+run, checking both that it works and that **removing the pack makes the same mesh fail**. A
+pack that changes nothing when removed was decorative.
+
+**The vocabulary is per-family, and that was the defect worth knowing about.** Overlays were
+once a flat list of files read into every family at once, so a pack declaring one reason code
+also registered that term as a valid type, role and *predicate* — and predicates are the one
+vocabulary the validator rejects on, because traversal reads a typed edge as fact. An overlay
+is now a directory and the filename inside names the family, which makes it unreachable
+rather than fixed.
+
+What does not exist is the rest of a pack: workflows, prompts, resolver configuration, and a
+single command that installs the set. Installing one is a copy and a config line, and there
+is no invocation for it — naming one here would put a command in the corpus that nothing
+answers to.
 
 # Core carries no domain words
 
