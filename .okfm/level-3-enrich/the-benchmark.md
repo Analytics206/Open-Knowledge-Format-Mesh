@@ -3,7 +3,7 @@ type: Document
 title: The benchmark
 description: "Two arms over one corpus, blind grading, and a harness that reports what it found about this repository rather than producing a flattering number. The deterministic half runs today."
 status: draft
-verified: { by: "human:analytics206", at: 2026-08-03T02:15:13Z }
+verified: { by: "human:analytics206", at: 2026-08-03T02:22:16Z }
 tags: [needs-nothing]
 generated: { by: "agent:claude-opus-5", at: 2026-08-02T03:09:28Z }
 sources:

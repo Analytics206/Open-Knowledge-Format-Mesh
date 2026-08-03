@@ -3,7 +3,7 @@ type: Document
 title: The shipped mesh
 description: "Seven real bundles you can read, validate and copy — a working mesh split on change cadence, not a demonstration built to be looked at."
 status: draft
-verified: { by: "human:analytics206", at: 2026-08-03T02:15:13Z }
+verified: { by: "human:analytics206", at: 2026-08-03T02:22:16Z }
 tags: [needs-nothing]
 generated: { by: "agent:claude-opus-5", at: 2026-08-02T03:09:28Z }
 sources:

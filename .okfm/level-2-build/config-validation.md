@@ -3,7 +3,7 @@ type: Document
 title: Config validation
 description: "Every consumer ignores keys it does not recognise, so a misspelled key does not fail — it builds the wrong thing quietly. This is the step that says so, and the rules it reads are the same table the web UI's config form is generated from."
 status: draft
-verified: { by: "human:analytics206", at: 2026-08-03T02:15:13Z }
+verified: { by: "human:analytics206", at: 2026-08-03T02:22:16Z }
 tags: [needs-nothing]
 generated: { by: "agent:claude-opus-5", at: 2026-08-02T00:00:00Z }
 sources:

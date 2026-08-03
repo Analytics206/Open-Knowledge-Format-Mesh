@@ -3,7 +3,7 @@ type: Document
 title: The web UI bake
 description: "Regenerates the index the level 1 web UI reads, so disagreement between the web UI and the mesh is a state that cannot exist rather than a bug you can have."
 status: draft
-verified: { by: "human:analytics206", at: 2026-08-03T02:15:13Z }
+verified: { by: "human:analytics206", at: 2026-08-03T02:22:16Z }
 tags: [needs-nothing]
 generated: { by: "agent:claude-opus-5", at: 2026-08-02T03:09:28Z }
 sources:

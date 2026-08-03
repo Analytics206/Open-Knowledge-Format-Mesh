@@ -3,7 +3,7 @@ type: Document
 title: Your own agent
 description: Point a coding agent at the repository and ask it for whatever you want. This works from level 1 and needs nothing from OKFM.
 status: draft
-verified: { by: "human:analytics206", at: 2026-08-03T02:15:13Z }
+verified: { by: "human:analytics206", at: 2026-08-03T02:22:16Z }
 tags: [needs-nothing]
 generated: { by: "process:okfm-scaffold", at: 2026-08-01T00:00:00Z }
 sources:
