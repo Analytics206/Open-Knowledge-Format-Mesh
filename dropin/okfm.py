@@ -57,6 +57,11 @@ STEPS = [
 # out of CI on a fork's pull request. It stays reachable and stays out of the run.
 EXTRA = {"enrich": "enrich.py", "enrich-local": "enrich_local.py",
          "guard": "guard.py", "revalidate": "revalidate.py",
+         # `console` serves the same page `view` bakes, with the edit surface answering.
+         # `edit` is the piece underneath it, on the command line: the console calls the
+         # same module, so a concept cannot be split one way in the browser and another
+         # here. See DR-0020.
+         "console": "console.py", "edit": "concept_edit.py",
          # `index` is what an agent would be handed; `check` is whether the mesh is legal.
          # Both were documented long before this dispatcher knew either name.
          "index": "index.py",

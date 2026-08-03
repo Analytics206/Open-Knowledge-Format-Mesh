@@ -170,3 +170,13 @@ four of them did their whole job instead — `okfm config --help` wrote a config
 check meant to catch that probed commands by running them and accepted any exit code it
 liked. Help is answered in one place now, and the probe asserts the help text rather than
 tolerating an exit status.
+
+**0020** — approving a draft was four hand edits across two parts of a file, and the fourth,
+repinning `okfm_captured`, is silent when forgotten and brings back the drift you just
+reviewed. It is a button. `okfm console --by human:<id>` serves the same page with an edit
+surface that is dark unless it answers, so Level 1 from `file://` is untouched — checked by
+requiring `EDIT.on` to have exactly one assignment, inside the probe. Overturns DR-0011 on
+three counts with the reasons: the console is Level 2 because `needs: []` is the mechanical
+test, it is one page rather than a third copy of the markup, and it edits bodies as well as
+metadata. `concept_edit.py` splits a concept into keys and sections and round-trips all 74
+concepts byte-identically.

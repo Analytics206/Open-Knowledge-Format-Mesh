@@ -33,11 +33,17 @@ which is the correct amount of friction.
 
 `needs: []`.
 """
+import json
+import os
 import re
 import shutil
+import signal
+import socket
 import subprocess
 import sys
 import tempfile
+import time
+import urllib.request
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -60,6 +66,18 @@ def blocks(text: str, heading: str) -> list[str]:
     rest = text[start + len(heading):]
     end = rest.find("\n## ")
     return re.findall(r"```bash\n(.*?)```", rest[:end if end > 0 else len(rest)], re.S)
+
+
+def _kill_tree(proc: subprocess.Popen) -> None:
+    """Kill a process and everything it started. Anything less leaks a server."""
+    if os.name == "nt":
+        subprocess.run(["taskkill", "/T", "/F", "/PID", str(proc.pid)],
+                       capture_output=True)
+    else:
+        try:
+            os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+        except (ProcessLookupError, PermissionError):
+            proc.kill()
 
 
 class Shell:
@@ -135,15 +153,83 @@ class Shell:
                     target.unlink()
             return None
 
+        if args[0] == "python" and "console" in args[1:]:
+            return self._serving(cmd, args)
+
         if args[0] == "python":
-            r = subprocess.run([sys.executable, *args[1:]], cwd=self.cwd, capture_output=True,
-                               text=True, encoding="utf-8", errors="replace")
+            try:
+                # A timeout, because a checker that RUNS what a page tells people to type will
+                # eventually be told to type something that does not come back. Without this
+                # the job does not fail, it hangs — and a hung CI run costs six hours and
+                # reports nothing, which is strictly worse than a red tick in a minute.
+                r = subprocess.run([sys.executable, *args[1:]], cwd=self.cwd,
+                                   capture_output=True, text=True, encoding="utf-8",
+                                   errors="replace", timeout=180)
+            except subprocess.TimeoutExpired:
+                return (f"`{cmd}` — still running after 180s. A quickstart command must "
+                        f"finish; if it is meant to serve, this checker has to be told so.")
             self.last = r
             return None if r.returncode == 0 else f"`{cmd}` — exit {r.returncode}\n{r.stdout[-1500:]}"
 
         # Not a skip. See the module docstring.
         return (f"`{cmd}` — this checker does not know that command. Teach it, or the "
                 f"README's quickstart is no longer being verified.")
+
+    def _serving(self, cmd: str, args: list[str]) -> str | None:
+        """A command that is supposed to NOT come back, verified by connecting to it.
+
+        Recognised by name, which is usually the mistake — a filename allow-list is how the
+        benchmark's contamination guard came to be excluding a file the corpus never held.
+        Here the name is the contract rather than a description of one: `console` is what the
+        dispatcher answers to and what the README tells people to type, so matching it is
+        matching the documented command, not guessing at its behaviour.
+
+        The alternative — infer "this serves" from it not exiting — cannot tell a server from
+        a hang, which is the exact distinction this needs to make.
+
+        What is asserted is the README's actual claim: it starts, and something answers.
+        """
+        port = 7345
+        for i, a in enumerate(args):
+            if a == "--port" and i + 1 < len(args):
+                port = int(args[i + 1])
+        proc = subprocess.Popen([sys.executable, *args[1:], "--no-open"], cwd=self.cwd,
+                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+                                encoding="utf-8", errors="replace",
+                                start_new_session=(os.name != "nt"))
+        try:
+            answered = False
+            for _ in range(60):                       # up to ~15s, polled
+                if proc.poll() is not None:
+                    out = (proc.stdout.read() or "")[-800:]
+                    return f"`{cmd}` — exited {proc.returncode} instead of serving\n{out}"
+                try:
+                    with socket.create_connection(("127.0.0.1", port), 0.25):
+                        answered = True
+                        break
+                except OSError:
+                    time.sleep(0.25)
+            if not answered:
+                return f"`{cmd}` — started but nothing answered on 127.0.0.1:{port}"
+            with urllib.request.urlopen(f"http://127.0.0.1:{port}/api/ping", timeout=3) as r:
+                ping = json.load(r)
+            if not ping.get("ok") or not str(ping.get("by", "")).startswith("human:"):
+                return f"`{cmd}` — served, but /api/ping did not report a human actor: {ping}"
+            return None
+        finally:
+            # The TREE, not the process. `okfm.py console` is a dispatcher that runs
+            # `console.py` as a CHILD, so killing what Popen returned kills the wrapper and
+            # leaves the server running — against a sandbox that is deleted moments later.
+            #
+            # That is not hypothetical. It leaked every run: the orphan held the temp
+            # directory open, so the cleanup raised PermissionError and printed a traceback
+            # after a green tick, and it kept port 7345 bound afterwards. A console started
+            # later against the real repository then bound the same port — Windows allows
+            # that under `allow_reuse_address` — and every request went to the dead sandbox
+            # while the banner claimed 73 concepts from here. Both bugs are fixed; this is
+            # the half that created the orphan.
+            _kill_tree(proc)
+            proc.wait(timeout=10)
 
 
 def main() -> int:

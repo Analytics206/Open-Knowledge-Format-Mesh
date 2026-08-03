@@ -166,6 +166,17 @@ def scalar(block: str, key: str):
     return v.replace('\\"', '"') or None
 
 
+def mesh_path(bundle_id: str, src: Path, f: Path) -> str:
+    """How the mesh addresses a concept: `/<bundle>/<path inside it>`.
+
+    Thin enough to inline, and inlined in two places is exactly how this project has broken
+    a rule four times. `bake_web_ui` stamps this into every baked concept and the console
+    resolves the browser's clicks with it; if the two ever spelled it differently, every
+    button in the review queue would open the wrong file or nothing at all.
+    """
+    return f"/{bundle_id}/{f.relative_to(src).as_posix()}"
+
+
 def frontmatter(path: Path):
     """Return (block, body) for a concept, or (None, None) if the file is not one."""
     text = path.read_text(encoding="utf-8")

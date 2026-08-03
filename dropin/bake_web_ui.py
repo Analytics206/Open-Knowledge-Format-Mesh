@@ -23,8 +23,8 @@ from pathlib import Path
 
 import config_schema
 from okfm_core import (HERE, PROJECT, configured_bundles, find_config,
-                       load_or_create_config, parse_relations, reject_unknown,
-                       actor_kind, actor_of, trust)
+                       load_or_create_config, mesh_path as _mesh_path, parse_relations,
+                       reject_unknown, actor_kind, actor_of, trust)
 
 ROOT = PROJECT
 CACHE = HERE / ".okfm-cache" / "observations.json"
@@ -203,7 +203,7 @@ def collect():
             if not ctype:
                 continue
 
-            mesh_path = f"{root}/{f.relative_to(src).as_posix()}"
+            mesh_path = _mesh_path(bundle_id, src, f)
             body = text[fm.end():].strip()
             bodies[mesh_path] = body
             concepts.append({

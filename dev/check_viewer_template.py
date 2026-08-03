@@ -111,6 +111,36 @@ def main() -> int:
         if not problems:
             print("  ok  it carries no concept, no bundle and no owner from this project")
 
+    # ---- the edit surface has exactly one switch, and it is the probe ----------
+    #
+    # DR-0020 put the console's edit surface in the same file as the read-only viewer, on the
+    # single condition that it is dark unless `okfm console` answers `/api/ping`. That
+    # condition is what keeps Level 1 — a page opened from `file://`, where the probe cannot
+    # succeed — read-only, and it is worth exactly as much as it is enforced.
+    #
+    # Verified live once: from `file://` the page reports `EDIT.on: false`, no Review tab, no
+    # badge, zero approve buttons, zero textareas. A browser result is a fact about one
+    # afternoon, so the invariant behind it is checked here instead: **`EDIT.on` is assigned
+    # true in exactly one place, inside `probeConsole`.** A second assignment — a debug flag,
+    # a "force edit" query parameter, a well-meant offline mode — is how a page that must not
+    # write acquires the ability to, and it would be one line and invisible in review.
+    for path in (SHIPPED, TEMPLATE):
+        if not path.is_file():
+            continue
+        src = path.read_text(encoding="utf-8")
+        rel = path.relative_to(PROJECT).as_posix()
+        hits = re.findall(r"EDIT\.on\s*=\s*true", src)
+        if len(hits) != 1:
+            problems.append(f"{rel} switches the edit surface on in {len(hits)} place(s) — "
+                            f"it must be exactly one, inside probeConsole()")
+            continue
+        probe = re.search(r"async function probeConsole\(\)\{.*?\n\}", src, re.S)
+        if not probe or "EDIT.on = true" not in probe.group(0):
+            problems.append(f"{rel} sets EDIT.on outside probeConsole() — the edit surface "
+                            f"must be unlocked by the console answering, and by nothing else")
+    if not problems:
+        print("  ok  the edit surface is unlocked only by probeConsole(), in both viewers")
+
     print()
     for p in problems:
         print(f"  FAIL  {p}")

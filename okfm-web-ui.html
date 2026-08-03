@@ -351,6 +351,49 @@
     section.stage{height:60vh}
   }
   @media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
+
+  /* ---- console: the edit surface -------------------------------------------
+     Dark unless `okfm console` is answering. Everything below is inert on
+     file://, which is where level 1 lives and stays read-only. */
+  body[data-page="review"] main{grid-template-columns:1fr}
+  body[data-page="review"] aside{display:none}
+  body[data-page="review"] section.stage{overflow-y:auto}
+  body[data-page="review"] .gauges{display:none}
+
+  .badge.live{background:var(--ok,#1f7a4d); color:#fff; border-color:transparent}
+
+  .review{padding:18px 22px; max-width:900px}
+  .review h2{font-size:15px; margin:0 0 4px}
+  .review .sub{color:var(--slate); font-size:12px; margin-bottom:18px}
+  .qrow{display:flex; align-items:center; gap:12px; padding:10px 12px;
+        border:1px solid var(--line); border-radius:7px; margin-bottom:8px;
+        background:var(--panel)}
+  .qrow .t{flex:1; min-width:0}
+  .qrow .t b{display:block; font-size:13px; font-weight:600}
+  .qrow .t span{font-family:var(--mono); font-size:10.5px; color:var(--slate-dim);
+                display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .qempty{color:var(--slate); font-size:13px; padding:18px 0}
+
+  button.approve{background:#1f7a4d; color:#fff; border:0; border-radius:6px;
+                 padding:7px 14px; font-size:12px; font-weight:600; cursor:pointer;
+                 font-family:inherit; white-space:nowrap}
+  button.approve:hover{filter:brightness(1.12)}
+  button.approve:disabled{opacity:.45; cursor:default; filter:none}
+  button.ghostbtn{background:transparent; color:var(--slate); border:1px solid var(--line);
+                  border-radius:6px; padding:6px 11px; font-size:11.5px; cursor:pointer;
+                  font-family:inherit; white-space:nowrap}
+  button.ghostbtn:hover{color:var(--ink); border-color:var(--slate-dim)}
+
+  .editrow{display:flex; gap:6px; margin:10px 0 2px; flex-wrap:wrap}
+  .fieldedit{width:100%; box-sizing:border-box; font-family:var(--mono); font-size:11px;
+             line-height:1.5; padding:7px 9px; border:1px solid var(--line); border-radius:6px;
+             background:var(--bg); color:var(--ink); resize:vertical}
+  .fieldedit:focus{outline:none; border-color:var(--slate-dim)}
+  .locked{color:var(--slate-dim); font-size:10.5px; font-style:italic}
+  .saynote{font-size:11.5px; padding:8px 10px; border-radius:6px; margin-top:10px;
+           white-space:pre-wrap; font-family:var(--mono); line-height:1.45}
+  .saynote.ok{background:rgba(31,122,77,.12); color:var(--ink)}
+  .saynote.bad{background:rgba(190,60,50,.14); color:var(--ink)}
 </style>
 </head>
 <body>
@@ -362,12 +405,14 @@
     <span class="badge" id="okfmVer">okfm 0.2.1</span>
     <span class="badge">okf 0.2</span>
     <span class="badge" id="genAt">derived view</span>
+    <span class="badge live" id="signedAs" hidden></span>
   </div>
   <div class="gauges" id="gauges"></div>
   <nav class="views" aria-label="Pages">
     <a href="#graph"   data-view="graph">Graph</a>
     <a href="#closure" data-view="chains">Closure</a>
     <a href="#health"  data-view="stats">Health</a>
+    <a href="#review"  data-view="review" id="navReview" hidden>Review</a>
     <a href="#config"  data-view="config">Config</a>
     <span class="lede" id="lede"></span>
   </nav>
@@ -385,6 +430,7 @@
     </div>
     <div class="chains" id="chains" hidden></div>
     <div class="stats" id="stats" hidden></div>
+    <div class="review" id="review" hidden></div>
     <div id="config" hidden></div>
   </section>
   <aside class="detail" id="detail"></aside>
@@ -1138,6 +1184,33 @@ const BOOTSTRAP = {
    "w": 5851
   },
   {
+   "p": "/decisions/0020-the-console-edits-concepts.md",
+   "b": "decisions",
+   "t": "Decision",
+   "title": "DR-0020 — Approve is a button, and the console edits concepts",
+   "d": "Approving a draft was four hand edits across two parts of a file, one of which is silent when forgotten. It is one click now. DR-0011 said the console would be a separate artifact editing metadata only; both halves are overturned here, deliberately, with the reasons.",
+   "v": null,
+   "sa": null,
+   "src": 0,
+   "drift": 0,
+   "r": [
+    [
+     "part_of",
+     "/decisions/index.md"
+    ],
+    [
+     "supersedes",
+     "/decisions/0011-viewer-and-console.md"
+    ],
+    [
+     "depends_on",
+     "/decisions/0017-two-viewers.md"
+    ]
+   ],
+   "scope": "project",
+   "w": 8289
+  },
+  {
    "p": "/decisions/index.md",
    "b": "decisions",
    "t": "Index",
@@ -1149,7 +1222,7 @@ const BOOTSTRAP = {
    "drift": 0,
    "r": [],
    "scope": "project",
-   "w": 11396
+   "w": 12153
   },
   {
    "p": "/docs/index.md",
@@ -1624,6 +1697,20 @@ const BOOTSTRAP = {
    "w": 273
   },
   {
+   "p": "/level-2-build/the-console.md",
+   "b": "level-2-build",
+   "t": "Document",
+   "title": "Approving used to be four edits",
+   "d": "Everything the build writes is `status: draft`. Approving one by hand meant opening the file and changing four things: `status` to `stable`, a `verified` entry with your handle and the time, and a…",
+   "v": null,
+   "sa": null,
+   "src": 1,
+   "drift": 0,
+   "r": [],
+   "scope": null,
+   "w": 267
+  },
+  {
    "p": "/level-2-build/the-index.md",
    "b": "level-2-build",
    "t": "Document",
@@ -2001,7 +2088,7 @@ const BOOTSTRAP = {
    "b": "mesh",
    "t": "OKF Member",
    "title": "decisions",
-   "d": "19 concept(s) authored in place in docs/decisions.",
+   "d": "20 concept(s) authored in place in docs/decisions.",
    "v": null,
    "sa": null,
    "src": 0,
@@ -2155,7 +2242,8 @@ const BOOTSTRAP = {
   "/decisions/0017-two-viewers.md": "# Context\n\n`okfm-web-ui.html` at the download's root is Level 1. Open it and OKFM's own mesh is\nthere — the guide, the decision records, the graph, the health panel. It works with no\nserver and no build **because the data is baked into the file**. That is the whole design.\n\nThe README then told an adopter to copy that same file into their project.\n\n# What was wrong\n\nMeasured, not reasoned about: the shipped viewer carries **68 concepts and\n`human:analytics206` as the owner of four bundles.**\n\nAn adopter who copies it and opens it before running a build — the obvious thing to do after\ncopying a folder — sees another project's decision records and another person's name, in a\nfile they have just added to their own repository, looking exactly like it worked. If they\ncommit before building, that ships with their code.\n\nOne file was serving two purposes that want opposite things. At Level 1 the baked data is the\nfeature. At Level 2 it is somebody else's data sitting where theirs should be.\n\n# Decision\n\n**Two files, one generated from the other.**\n\n| | Holds | For |\n|---|---|---|\n| `okfm-web-ui.html` at the download root | this project's mesh, baked | Level 1 — open it and read |\n| `dropin/okfm-web-ui.html` | the same page with the three data blocks emptied | Level 2 — the build fills it |\n\n**The build seeds it.** On a first run, if the configured viewer path holds no file and the\ndrop-in has a blank one, it is copied there and then filled with the adopter's mesh. So\nLevel 2 is now **one folder and one command** — which is what it always claimed to be, while\nactually requiring two copies and a paragraph explaining why the second file lived somewhere\nelse.\n\n**The template is generated, not maintained.** Two HTML files would be two copies of the\nviewer's markup, and this project has had to reunify a rule split across two implementations\nfour times. `dev/check_viewer_template.py` blanks the shipped viewer and compares; editing\nthe page and forgetting the template fails there rather than shipping an adopter a page whose\nmarkup is a version behind its data.\n\nIt also asserts the property directly rather than inferring it from the regeneration passing:\nno concept, no bundle, and above all no person's name from this project appears in the blank\none. A template that merely looked right would still carry a name.\n\n# What this is not\n\nNot a privacy control. The data in question is a public repository's own documentation, and\nthe steward's handle is in every commit. The problem is that it is **wrong**, in a file whose\nentire job is to show the reader their own mesh — and wrong in the way that looks like\nworking, which is the expensive kind.\n\n# Consequences\n\n`dev/check_readme.py` and `dev/check_pack_example.py` no longer copy the viewer into their\ntemporary projects. Both did, which pre-seeded the exact artefact under test — a fixture that\nsupplies the thing being checked reports success either way.\n\nThe skip path stays for the case where neither viewer is present: the mesh is built and valid\nwithout a viewer, and taking the pipeline down for a missing reader would end an adopter's\nfirst run in an error about a file they had never heard of.",
   "/decisions/0018-the-viewer-carries-the-mesh.md": "# Context\n\nReviewing Google's OKF reference viewer against ours. Theirs embeds every concept body and\nrenders it in a detail panel; ours fetched bodies at click time and embedded none.\n\nOurs also loads nothing from a network. Theirs pulls `cytoscape` and `marked` from a CDN, so\nwith the network off it renders no graph and no markdown at all. That trade is not one to\ncopy — a viewer that needs the internet to read a local file has given up the property that\nmakes shipping it as one file worth anything.\n\nBut the feature gap was real, and checking it surfaced something worse than a gap.\n\n# The defect\n\n**Level 1 could not read anything.** `fetch` is blocked on `file://`, and `file://` is how\nLevel 1 is used — download a folder, open the page. So clicking any concept produced:\n\n> **Body not available here.** … Open `<path>`, or run the viewer with a `--serve` flag\n> to read bodies live.\n\nThat flag was never a flag. Running it printed `unknown option: --serve` and exited 2. It was recommended in the viewer, in §14.2, and in two decision records.\n\nSo the whole of Level 1 — *open the file, read the guide* — resolved to a page that showed\nthe shape of the knowledge, refused to show the knowledge, and pointed at a command that\ndid not exist.\n\n# Decision\n\n**Bodies are baked in.** 117 KB → 309 KB for 69 concepts. It is one file, it opens\ninstantly, and every concept is fully readable with no server and no network.\n\nThe old rule's three justifications are answered in §14.3 rather than dropped. The first —\n*an embedded body is a snapshot that silently diverges* — is the one that governed, and it\ndoes not survive: the page already embedded titles, descriptions, trust tiers and drift, and\n`bake --check` fails the pipeline the moment any of it disagrees with the mesh. Bodies fall\nunder the same guard at no new cost. **Access control is the justification that survives**,\nscoped to a federation with a real boundary, and it belongs to the served console rather\nthan to this page.\n\n**Four features taken from Google's viewer, all without a dependency:**\n\n| | Theirs | Ours |\n|---|---|---|\n| markdown rendering | `marked`, from a CDN | ~60 lines, inline, escapes first |\n| search | title / id / tag | title, path, type, description **and body text** |\n| layouts | five cytoscape layouts | four, including **bundles-as-columns** |\n| node size | body length | body length **and** inbound references |\n\nBundles-as-columns is not in theirs and could not be: their viewer renders one bundle.\nOwnership is the thing a mesh exists to show and the thing a force layout scrambles.\n\nSearching bodies rather than metadata matters more than it sounds. A mesh answers *why did\nwe decide X*, and the sentence that answers it lives in a body far more often than in a\ntitle; metadata-only search finds the concepts that happen to be *named* after the question.\n\n# What this cost to get right\n\n**The contamination guard was a filename list, and the filename was never in the corpus.**\n§21.3 records a published incident — a rendered bundle page carrying every body was found by\na control agent and an arm had to be rebuilt. `DERIVATIONS` excluded `okfm-web-ui.html` by\nname, and printed a reassuring note about doing so, while `CORPUS_GLOBS` did not include\n`*.html` at all. The file was absent from both arms by accident, and the note described a\nprotection that was not doing anything. The day anyone added html to that tuple, a page with\nevery concept body would have walked into the control arm unopposed.\n\nNow `*.html` is in the corpus so the viewer is considered and *then* excluded, and the guard\nis structural: a control-arm file carrying the text of three or more concepts is a rendered\nview, whatever it is called. Verified by removing the filename allow-list — it catches the\nviewer at 62 concepts.\n\n**An enforcement that was documented and never built.** §14.3 listed *\"`okfm validate` fails\nif a committed artifact under `viewer.path` contains concept body text.\"* There was no such\ncheck. Had it existed it would have caught this change on the first run — which is the\nargument for writing an enforcement at the same time as the rule, not after.\n\n**The phantom flag was invisible to the command checker**, which reads markdown and matches\ncommand names. `--serve` is a flag, on a command that does exist. `dev/check_commands.py`\nnow reads the viewer too, skipping its baked data blocks, and checks documented flags\nagainst the allow-lists the scripts declare. It immediately found two more mentions in\ndecision records and one in the specification.\n\n# What would change this\n\nA mesh large enough that the page stops opening instantly. At 69 concepts and 309 KB it is\nnot close, and the honest answer at that size is pagination or a served console, not a\nreturn to a page that cannot show its own content.",
   "/decisions/0019-help-is-a-command.md": "# Context\n\nA rewrite two commits ago replaced a block of `docs/roadmap.md` whose last line was the\n*next* section's heading. `### Phase 3 — The credentialed half` disappeared. The roadmap\nwent on defining Phase 1, Phase 2 and Phase 4, and Phase 3 is referenced twelve times across\nthe corpus — from the README, the specification, `docs/rationale.md`, and four decision\nrecords.\n\nA reader falling out of Phase 2's exit criteria lands directly on `Scope: sys:// resolvers,\nattested computations, reconciliation against a trusted report` and reads Phase 3's\nrequirements as Phase 2's. Phase 2 was declared met last week. Under that reading it never\ncan be.\n\nNothing noticed, because the corpus has two heading systems and only one of them was guarded.\n\n# Decision\n\n**A named ordinal series must be contiguous inside the document that defines it, and a\nmention must land on a heading that document gives.** `dev/check_docs.py` has enforced\nexactly this for the numbered spine — `## 15.`, `### 7.3`, one home per section, no dangling\n`§` — since the specification was split. The rule now covers `### Phase 3` and `## Level 2`\nas well. Series names are discovered from the headings rather than listed, for the reason\n`check_commands.py` gives: a list would be a second place to keep the same set in sync.\n\n**The scoping is the whole design.** `Level 4` is referenced twenty-two times and has no\nheading in the README or the roadmap, because DR-0009 defined it and then folded it into\nLevel 3 as the credentialed variant. A history of superseded ordinals is precisely what a\ndecision record is for. A corpus-wide *every ordinal mentioned must have a heading* rule\nwould report those twenty-two, be right about none of them, and be switched off within a\nweek. Contiguity inside the defining document reports one failure and it is the real one.\n\nVerified by falsification: removing the heading again produces five failures naming the gap\nand each of the four orphaned references.\n\n# The larger finding\n\nRestoring the heading meant re-running the checks, and `dev/check_commands.py` failed with:\n\n> `okfm guard --help` exited 1 — documented, dispatched, and broken\n\nThree claims, none of them true. `guard` is documented, is dispatched, and works. What\nhappened is that `guard` never handled `--help` at all, so the check's *probe* ran the guard\nfor real, against the working tree, which held an uncommitted human revalidation. The guard\ncorrectly reported it. The check read exit 1 as \"this command is broken\".\n\nThat check's verdict therefore depended on uncommitted local state: green on a clean CI\ncheckout, red on the builder's machine whenever a review had happened and not yet been\ncommitted.\n\n**Measured across all eleven commands, nine did not answer `--help`:**\n\n| | |\n|---|---|\n| `okfm config --help` | wrote an `okfm.json`, exit 0 |\n| `okfm check --help` | ran the validator, exit 0 |\n| `okfm validate --help` | ran the validator, exit 0 |\n| `okfm guard --help` | ran the guard, exit 1 on unrelated uncommitted edits |\n| `okfm view --help` | `unknown option: --help`, exit 2 |\n| `okfm refresh --help` | `unknown option: --help`, exit 2 |\n| `okfm enrich --help` | `unknown option: --help`, exit 2 |\n| `okfm enrich-local --help` | printed a configuration message, exit 2 |\n| `okfm revalidate --help` | printed a usage error, exit 2 |\n\nFour commands did their entire job in response to a request for *help*, and three refused\nthe one flag every command-line tool accepts. Only `build` (argparse) and `index` were\nright.\n\nSo a documentation checker was performing a build, a config write and two validations on\nevery CI run — and the reason none of this was visible is that the probe accepted **exit 0\nor exit 2** as a pass, which is satisfied both by printing help and by doing the work.\n\n**`-h` and `--help` are now answered inside `reject_unknown`**, which already existed in\n`okfm_core` for the neighbouring rule, and every command passes its `__doc__`. The module\ndocstrings were already written as help text and were reachable from nowhere. They are\nimplicitly allowed there too, so a caller cannot forget to list them and reintroduce this.\n\n**The probe now asserts the specific thing:** `--help` must print that script's own docstring\n(or argparse's usage line) and exit 0. Tolerating an exit code cannot tell help from work;\nrequiring the help text can. The docstring is read by parsing the file, not by importing it —\nimporting `dropin/` to read `__doc__` would run every module-level statement, which is the\nsame mistake as probing a command by executing it.\n\n# What this cost to find\n\n**The flag check covered five of eleven commands and printed a number that read like\ncoverage.** The dispatcher holds two tables in two shapes — `STEPS` is a list of tuples,\n`EXTRA` is a dict — and the pattern reading them matched only the tuple form. Six commands\nresolved to no script at all. Nothing said so, because a command that resolved to *nothing*\nwas skipped by the same branch as a command that had nothing to declare, and the summary line\nread `1 documented flag(s) match what the script accepts`. It is 4 now.\n\nThat is the third time in this project that a check has been found reporting confidently\nabout work it was not doing — after the vocabulary overlay that reached every family, and the\ncontamination guard that was a filename list for a file the corpus never contained. The\ncommon shape is a **skip that looks like a pass**. Worth stating as a rule: when a check\ndeclines to examine something, it must say so in its output, because a silent skip and a\nsuccessful check produce the same green tick.\n\n# What would change this\n\nIf a command ever grows a genuine reason to reject `--help` — none exists today — the\nassertion in `check_commands.py` is the place to record the exemption, with the reason, in\nthe file that would otherwise fail.",
-  "/decisions/index.md": "# Decision records\n\nDated, numbered, short. One decision per file, kept even when superseded — the record of\nwhat was decided and why is worth more than a tidy list of what is currently true.\n\n`accepted` was decided. `deferred` was decided *not* to decide, and carries a re-entry\ntrigger. Nothing here is a blocking question — where a detail was open, it was decided and\nnoted rather than left to resurface.\n\nThese records exist so a rule that gets broken later is broken on purpose and on the record.\nThe [specification](../../spec/okfm-v0.2.1.md) is a working document, not law: where it and\nthe implementation disagree, the implementation is right and a record here says what changed.\n\n| # | Decision | Status | Affects |\n|---|---|---|---|\n| [0001](0001-runtime-and-packaging.md) | Runtime and packaging for the implementation | partial | §13.3, §13.6, §13.7 |\n| [0002](0002-version-scheme.md) | Version scheme | deferred | versioning policy, `okfm.json` |\n| [0003](0003-phase-ordering.md) | Where federation sits in the delivery order | accepted | §15 — amended by 0010 |\n| [0004](0004-split-the-spec-preserve-numbers.md) | Split the spec, preserve section numbers | accepted | all four documents |\n| [0005](0005-path-resolution.md) | Bundle-relative in files, mesh-relative in the index | accepted | §6.5, §7.3, §12.3, §14.2 |\n| [0006](0006-drift-cost-and-caching.md) | Drift is observed at build time, never at read time | accepted | §3.4, §8.3–8.5, §13.4, §14.4, §20.8 |\n| [0007](0007-two-layers.md) | Base installs nothing; the implementation is optional | accepted | §13.2, §13.3, §13.6, §13.7, §14 |\n| [0008](0008-build-pipeline.md) | What each component requires, and what the rebuild does | accepted | §8.4, §10, §11.6, §13.6, §16 |\n| [0009](0009-adoption-levels.md) | Adoption levels — three, with level 3 credentialed as a variant | accepted, amended | §13.1, §13.3, §13.6, §13.7 |\n| [0010](0010-okfm-self-hosts-as-a-mesh.md) | OKFM's own repository is the first mesh | accepted | §12, §14.5, §21.5 |\n| [0011](0011-viewer-and-console.md) | Viewer stays read-only; a console is separate | accepted, built last | §14.3, §14.7 |\n| [0012](0012-reach-is-configured.md) | Reach is configured, not discovered | accepted | §13.4, §13.5, §21.4 |\n| [0013](0013-the-local-model-variant.md) | Level 2+ — a local model, on level 2's terms | accepted, amended | DR-0008, DR-0009 |\n| [0014](0014-packs-and-in-place-bundles.md) | A pack is a directory; in-place bundles are authored, not built | accepted | §13.2, §13.4, DR-0007 |\n| [0015](0015-the-install-has-an-upgrade.md) | The tool, the mesh and the config are three things | accepted | §13.3, §13.7, DR-0007 |\n| [0016](0016-documented-commands-must-exist.md) | Documentation may not name a command that does not exist | accepted | §13.6, DR-0011 |\n| [0017](0017-two-viewers.md) | Two viewers — the demo has data baked in, the adopter's must not | accepted | §13.7, §14.1, DR-0015 |\n| [0018](0018-the-viewer-carries-the-mesh.md) | The viewer carries the mesh — bodies embedded, not fetched | accepted | §14.2, §14.3, DR-0011 |\n\n## Two different axes, easily confused\n\n**[0009](0009-adoption-levels.md) classifies adopters** by how deeply they engage — read and\ncopy, run the process, enrich, full suite. It decides what ships, what the README promises,\nand how the repository is laid out. An adopter picks their own level.\n\n**[0008](0008-build-pipeline.md) classifies components** by what they require to execute —\n`[]`, `human`, `model`, `secrets`. It decides which CI job may run a thing and which fields\nit may write. An adopter never sees it.\n\nThey meet at exactly one boundary: **the Level 2 / Level 3 line is the `model` line.** If\nanything shipped at Level 2 declares `model`, the build fails. That is what keeps \"never\nneeds an API key\" true as the implementation grows, rather than a promise that quietly rots.\n\n[0013](0013-the-local-model-variant.md) is the first thing that tested that boundary from the\nother side — a model that costs nothing and needs no key — and it held. Removing the fee does\nnot move the line, because the line is about what has to reason and not about what it costs.\n\n## Still open\n\n**0001** — settled: Python 3.13, standard library only in `dropin/`. Packaging for the\ncredentialed variant (`uvx` vs `pipx`, the PyPI name) is still open and not blocking, because\nnothing publishes yet.\n\nTwo smaller questions sit inside accepted records: 0008's `Feedback` destination split, and\n0010's registry location. Neither blocks anything.\n\n## Settled\n\n**0002 — deferred.** Keep `v0.2.1`. The number pins to OKF v0.2 deliberately, is not expected\nto move soon, and has a single user. Every cost in that analysis is a publication cost, and\nnothing publishes yet. The re-entry trigger to watch is the first breaking change to an\n`okfm_` key, which can arrive quietly while the profile is still settling in Phase 1.\n\n**0004** — the spec is split four ways with section numbers preserved.\n\n**0005** — bundle-relative paths in files, mesh-relative in the generated index.\n\n**0007** — OKFM is a format contract that installs nothing, plus an optional, replaceable\nreference implementation.\n\n**0008** — every component declares what it requires, ordered by exposure, with a\ncomposite's set being the *union* of everything it invokes. CI gates on the set, not the\ntier number.\n\n**0009** — cumulative adoption levels, each a complete usable process rather than a teaser\nfor the next. Amended: three levels, not four. Who holds the key is a change of direction —\nOKFM driving a provider instead of your agent driving OKFM — so the credentialed case is a\n*variant* of level 3 and not another step up.\n\n**0013** — level 3 has three variants, split on who drives and who holds the key: your agent,\na model on hardware you own, a hosted provider. The middle one is named **Level 2+**, because\nwhat it costs an adopter is level 2's price — no key, no account, no bill — plus the loop.\nAmended to that name after this record argued the other way. The name is not a relocation:\nthe component still declares `needs-model`, still sits in the level 3 bundle, and\n`dev/check_levels.py` is untouched. The ladder measures what OKFM asks of you before you can\nstart; the name measures what it costs. Those were the same number until a model became free.\n\n**0012** — a concept is recognised anywhere, but read only where the config says. `exclude`\ndrops a folder inside a scan root; `include` adds a tree outside one. No project-wide sweep:\na scan wide enough to be convenient turns an adopter's templates and vendored documentation\ninto concepts on their first run.\n\n**0010** — OKFM's own repository becomes a mesh, so the project runs the thing it describes\ninstead of only specifying it. Amended: the registry names the bundles that exist and gains\nmembers as levels ship.\n\n**0003** — federation's negotiation half lands after the SugarPaws3d port; its addressing\nhalf already landed early under 0010. Phase order: baseline and addressing → distribution →\nthe port → negotiation.\n\n**0011** — a full web UI is planned and built last, as the natural consumer of everything\nbelow it. The web UI stays read-only regardless. The CLI and the UI are one surface: every\nmutation has exactly one implementation, the UI calls it, the CLI exposes it, and building\nthe UI is what reveals which commands are actually needed.\n\n**0006** — drift is observed during the build and cached; nothing resolves it at read time.\nTrust and staleness stay read-time because they are free. The cache stores observations, not\nverdicts, and a pointer that has never been observed reports `unknown` rather than defaulting\nto fresh.\n\n**0014** — a vocabulary overlay is a directory and the filename inside it names the family,\nso a pack's reason code can no longer become a legal predicate. `pack` is a path rather than\na bare name, because a name needs a search order and a search order fails silently. And\n`--in-place` is removed rather than implemented: it printed `mode : in-place` and mirrored\nanyway, and a build that edits your documents cannot also promise it never touches them.\nIn-place bundles are authored by hand and registered by path — which is what this bundle is.\n\n**0015** — the documented install put the tool, the config and the adopter's knowledge in one\ndirectory. That works on day one and has no upgrade path on day two: re-running the install\nnests a silent copy and updates nothing, and deleting first destroys every enriched concept.\nThree directories now — `okfm/`, `.okfm/`, `okfm.json` — so upgrading is a delete and a copy.\nBoth layouts still work and the build warns when it finds the fused one. This repository had\nthe safe arrangement all along and the README described the other, which is exactly the gap\n§13.7 exists to find.\n\n**0016** — three commands were documented and did not run: `validate` (the dispatcher knew it\nas `check`), `index` (which existed in no form while its config knobs shipped to every\nadopter and read nothing), and a phantom `init`. Both real ones are built, and the rule is\nwider than the fix — the documentation may not *name* a command that does not exist, in any\nform, because a reader scanning for something to type cannot tell a roadmap entry from an\ninstruction. `build.bundle_tags` came out of the same work: a claim the build cannot derive\nand a human cannot make stick has to be declared where the build reads it.\n\n**0017** — the viewer at the download root has this project's mesh baked in, which is the\npoint of it at Level 1 and exactly wrong once copied: an adopter saw 68 of somebody else's\nconcepts and somebody else's name as owner, in a file they had just added to their\nrepository. The drop-in now ships a blank one, generated from the shipped page and guarded so\nthe markup cannot drift, and the build seeds it on a first run. That is also what makes\nLevel 2 a single folder copy instead of two copies and a paragraph explaining the second.\n\n**0018** — bodies were fetched at click time, `file://` blocks fetch, and `file://` is the\nwhole of Level 1: the one thing Level 1 promises was the one thing the page could not do,\nand it recommended a `--serve` flag that never existed. Bodies are baked in now, guarded by\nthe same `--check` that already guarded every other embedded field. Four features taken from\nGoogle's reference viewer without taking its CDN dependency — inline markdown, search over\nbodies, four layouts including bundles-as-columns, node size by content. The contamination\nguard §21.3 left behind turned out to be a filename list for a file the corpus never\nincluded; it is structural now and verified by falsification.\n\n**0019** — `### Phase 3` vanished from the roadmap in a rewrite that ended one line short,\nleaving Phase 3's scope and exit criteria sitting under Phase 2's heading while twelve\nreferences pointed at a section that no longer existed. The numbered spine has been guarded\nsince the split; the corpus's other heading system, a name plus an ordinal, was guarded by\nnothing. Finding it surfaced the larger one: nine of eleven commands did not answer `--help`,\nfour of them did their whole job instead — `okfm config --help` wrote a config file — and the\ncheck meant to catch that probed commands by running them and accepted any exit code it\nliked. Help is answered in one place now, and the probe asserts the help text rather than\ntolerating an exit status.",
+  "/decisions/0020-the-console-edits-concepts.md": "# Context\n\n> *\"I think we need to update the web ui for level 2 to include a way to do things like\n> `revalidate --by human:analytics206`. Right now I need to open each file and edit. We may\n> limit what could be edited right now but it might end up being a full edit of each section.\n> I don't want an editor that just opens files, it should parse sections to edit.\"*\n>\n> *\"I would just like an approve button.\"*\n\nApproving a draft was: open the file, change `status: draft` to `stable`, add a `verified`\nentry with your handle and today's timestamp, and repin every `okfm_captured`. Four edits\nacross two parts of a file, per concept. The fourth is the one that matters and the one\nnobody remembers — skip it and the drift you just reviewed is back tomorrow, with no\nindication that the review was incomplete.\n\n`revalidate --by human:<id> --stable` already did all four in one command. The gap was never\nthe capability. It was that reaching it meant leaving the page where you had just decided the\nconcept was fine.\n\n# Decision\n\n**Approve is a button.** It runs `revalidate --by <you> --stable`. There is a Review page\nlisting every `status: draft` concept with one button per row, and the same button in the\ndetail panel of any concept.\n\n**The console is Level 2, not Level 3.** DR-0011 placed it at Level 3 by association with\nenrichment. That is wrong by this project's own mechanical test: `dev/check_levels.py` reads\n`needs:`, and a review console needs no model and no key, so `needs: []` — which is Level 2.\nThe review queue *exists* at Level 2, because drift and drafts are produced by the build, and\nputting its only interface a level above the thing that creates the work was an error nobody\nhad cause to notice until somebody wanted to use it.\n\n**One page, not two.** DR-0011 called for a separate served console. That was decided before\n[DR-0017](0017-two-viewers.md) split the viewer in two and immediately required a generator\nand a CI check to stop the markup diverging. A third copy is the larger risk, so the edit\nsurface lives in `okfm-web-ui.html` and is dark unless `okfm console` answers `/api/ping`.\nDR-0011's actual requirement — *\"an adopter who wants no server deletes the console and keeps\na fully functional viewer\"* — is met by deleting `console.py`.\n\nDR-0011 objected that this is *\"one artifact with two security postures, distinguished by how\nit was launched.\"* The objection is answered by narrowing it to something checkable:\n\n> The page has exactly one switch for its edit surface — `probeConsole()` succeeding — and\n> `dev/check_viewer_template.py` fails if `EDIT.on` is assigned anywhere else, in either\n> viewer.\n\nFalsified: adding a second assignment, of the kind a \"force edit\" query parameter would be,\nfails the check naming both places.\n\n**The console edits knowledge, not only metadata.** This is the rule that breaks. DR-0011:\n*\"the console edits metadata decisions, never knowledge… rewriting a concept body is\nauthoring, and authoring happens against files where git can see it.\"*\n\nOverturned on the ask, and the argument for it does not survive the reason it was made.\nAuthoring belongs where git can see it — and git sees these edits exactly as well, because\nthey are writes to the same files in the same repository. The rule was protecting a property\nthat was never at risk. What it did cost was real: the one interface that knew which concepts\nneeded attention could not act on any of it.\n\nEditable: everything except two keys. Not editable: `generated` and `sources`, which record\n*when a machine did something*. Editing those is not an edit, it is a claim about history,\nand the commands that wrote them are the only things that change them.\n\n`status` and `okfm_relations` being editable was flagged as putting a browser form where the\ntier guard's protected fields live, and taken anyway. The guard's purpose is intact: it\ndistinguishes an **agent** writing `verified` from a person doing it, and the console cannot\nrun without `--by human:<id>`. A console that supplied a default identity would be a process\nsigning a person's name with a web page in between to make it look otherwise.\n\n# How it is built\n\n**It never writes a concept field itself.** Approve shells out to `revalidate.py`; saving\ngoes through `concept_edit.py`; the pipeline button runs `okfm.py`. Every one is what the CLI\nruns, so a mutation cannot behave one way in a browser and another in a terminal. That was\nDR-0011's one practical rule and it is kept verbatim.\n\n**`concept_edit.py` splits, it does not reformat.** A concept is two documents in one file:\nfrontmatter a validator reads by key, and a body a person reads by heading. Top-level keys are\nedited as raw text — there is no YAML parser in `dropin/` and adding one would be a second\nparser disagreeing with the first at the margins. A key you do not touch is returned byte for\nbyte.\n\nProven rather than claimed: **all 74 concepts in this repository parse and rewrite to\nbyte-identical files.** That test found the one real bug in the module — the body rebuilder\nprepended a newline unconditionally, which put a one-line diff into the thirteen concepts\nwhose body starts immediately after the closing `---`. A save that changes nothing must\nchange nothing, or nobody can trust the saves that do.\n\n**The browser addresses concepts by mesh path only** — `/decisions/0001.md`, never a\nfilesystem path. The server resolves it against a map built from the same `mesh_path()` the\nbake stamps into the page. That function was inlined in `bake_web_ui`; it is hoisted now,\nbecause the same string computed in two places is this project's most-repeated defect and\nhere it would have meant every Open button landing on the wrong file. Path safety falls out\nas a property rather than a filter: nothing the client sends is ever joined to a directory.\n\nMutations also require an `X-OKFM` header — which a cross-origin page cannot set without a\npreflight this server does not answer — and the server binds the loopback only.\n\n# Two servers on one port, both believing they were serving\n\nThe last thing found, and the worst. Running the console against this repository to look at\nthe real review queue returned **zero drafts** — from a mesh holding fifty.\n\n`/api/ping` answered `{\"by\": \"human:you\", \"project\": \"my-project\"}`. That was\n`dev/check_readme.py`'s sandbox console, still running against a temporary directory that had\nalready been deleted, holding port 7345. The console started afterwards printed a banner\nsaying it was serving 73 concepts from this repository, and received nothing.\n\nTwo independent defects had to meet:\n\n**The check leaked the server.** `okfm.py console` is a dispatcher that runs `console.py` as\na child. `proc.kill()` killed the wrapper and left the server. Every run leaked one — which\nis also the true cause of a `PermissionError` traceback printed after a green tick, blamed at\nthe time on a Windows file-handle race. It is a process tree now, `taskkill /T` or a killed\nprocess group.\n\n**`socketserver` sets `allow_reuse_address = 1`.** On POSIX that only skips TIME_WAIT and is\nwanted. **On Windows it lets a process bind a port another process is actively serving**, and\nthe older socket keeps the connections. So the second console did not fail; it succeeded,\nsilently, into a socket nobody would ever call.\n\nThe consequence is the part worth writing down. A browser showing a review queue that looked\ncorrect was talking to a mesh that no longer existed on disk, under a different steward\nhandle, and **an Approve clicked there would have written to somewhere the person clicking\nhad never heard of.** The console binds with `allow_reuse_address` off on Windows now, so a\nsecond one refuses to start and says what is already using the port.\n\nNeither bug is about the console being wrong. Both are about a process that outlives what it\nwas serving, which is a shape worth remembering the next time anything here starts a server.\n\n# What would change this\n\nA second person editing the same mesh. Everything here assumes one steward at one keyboard:\nthere is no auth, no locking, and undo is one step deep in the server's memory. A hosted\ninstance ([DR-0010](0010-okfm-self-hosts-as-a-mesh.md)'s remote member) is where that stops\nbeing adequate, and DR-0011 named the same trigger.",
+  "/decisions/index.md": "# Decision records\n\nDated, numbered, short. One decision per file, kept even when superseded — the record of\nwhat was decided and why is worth more than a tidy list of what is currently true.\n\n`accepted` was decided. `deferred` was decided *not* to decide, and carries a re-entry\ntrigger. Nothing here is a blocking question — where a detail was open, it was decided and\nnoted rather than left to resurface.\n\nThese records exist so a rule that gets broken later is broken on purpose and on the record.\nThe [specification](../../spec/okfm-v0.2.1.md) is a working document, not law: where it and\nthe implementation disagree, the implementation is right and a record here says what changed.\n\n| # | Decision | Status | Affects |\n|---|---|---|---|\n| [0001](0001-runtime-and-packaging.md) | Runtime and packaging for the implementation | partial | §13.3, §13.6, §13.7 |\n| [0002](0002-version-scheme.md) | Version scheme | deferred | versioning policy, `okfm.json` |\n| [0003](0003-phase-ordering.md) | Where federation sits in the delivery order | accepted | §15 — amended by 0010 |\n| [0004](0004-split-the-spec-preserve-numbers.md) | Split the spec, preserve section numbers | accepted | all four documents |\n| [0005](0005-path-resolution.md) | Bundle-relative in files, mesh-relative in the index | accepted | §6.5, §7.3, §12.3, §14.2 |\n| [0006](0006-drift-cost-and-caching.md) | Drift is observed at build time, never at read time | accepted | §3.4, §8.3–8.5, §13.4, §14.4, §20.8 |\n| [0007](0007-two-layers.md) | Base installs nothing; the implementation is optional | accepted | §13.2, §13.3, §13.6, §13.7, §14 |\n| [0008](0008-build-pipeline.md) | What each component requires, and what the rebuild does | accepted | §8.4, §10, §11.6, §13.6, §16 |\n| [0009](0009-adoption-levels.md) | Adoption levels — three, with level 3 credentialed as a variant | accepted, amended | §13.1, §13.3, §13.6, §13.7 |\n| [0010](0010-okfm-self-hosts-as-a-mesh.md) | OKFM's own repository is the first mesh | accepted | §12, §14.5, §21.5 |\n| [0011](0011-viewer-and-console.md) | Viewer stays read-only; a console is separate | accepted, built last | §14.3, §14.7 |\n| [0012](0012-reach-is-configured.md) | Reach is configured, not discovered | accepted | §13.4, §13.5, §21.4 |\n| [0013](0013-the-local-model-variant.md) | Level 2+ — a local model, on level 2's terms | accepted, amended | DR-0008, DR-0009 |\n| [0014](0014-packs-and-in-place-bundles.md) | A pack is a directory; in-place bundles are authored, not built | accepted | §13.2, §13.4, DR-0007 |\n| [0015](0015-the-install-has-an-upgrade.md) | The tool, the mesh and the config are three things | accepted | §13.3, §13.7, DR-0007 |\n| [0016](0016-documented-commands-must-exist.md) | Documentation may not name a command that does not exist | accepted | §13.6, DR-0011 |\n| [0017](0017-two-viewers.md) | Two viewers — the demo has data baked in, the adopter's must not | accepted | §13.7, §14.1, DR-0015 |\n| [0018](0018-the-viewer-carries-the-mesh.md) | The viewer carries the mesh — bodies embedded, not fetched | accepted | §14.2, §14.3, DR-0011 |\n\n## Two different axes, easily confused\n\n**[0009](0009-adoption-levels.md) classifies adopters** by how deeply they engage — read and\ncopy, run the process, enrich, full suite. It decides what ships, what the README promises,\nand how the repository is laid out. An adopter picks their own level.\n\n**[0008](0008-build-pipeline.md) classifies components** by what they require to execute —\n`[]`, `human`, `model`, `secrets`. It decides which CI job may run a thing and which fields\nit may write. An adopter never sees it.\n\nThey meet at exactly one boundary: **the Level 2 / Level 3 line is the `model` line.** If\nanything shipped at Level 2 declares `model`, the build fails. That is what keeps \"never\nneeds an API key\" true as the implementation grows, rather than a promise that quietly rots.\n\n[0013](0013-the-local-model-variant.md) is the first thing that tested that boundary from the\nother side — a model that costs nothing and needs no key — and it held. Removing the fee does\nnot move the line, because the line is about what has to reason and not about what it costs.\n\n## Still open\n\n**0001** — settled: Python 3.13, standard library only in `dropin/`. Packaging for the\ncredentialed variant (`uvx` vs `pipx`, the PyPI name) is still open and not blocking, because\nnothing publishes yet.\n\nTwo smaller questions sit inside accepted records: 0008's `Feedback` destination split, and\n0010's registry location. Neither blocks anything.\n\n## Settled\n\n**0002 — deferred.** Keep `v0.2.1`. The number pins to OKF v0.2 deliberately, is not expected\nto move soon, and has a single user. Every cost in that analysis is a publication cost, and\nnothing publishes yet. The re-entry trigger to watch is the first breaking change to an\n`okfm_` key, which can arrive quietly while the profile is still settling in Phase 1.\n\n**0004** — the spec is split four ways with section numbers preserved.\n\n**0005** — bundle-relative paths in files, mesh-relative in the generated index.\n\n**0007** — OKFM is a format contract that installs nothing, plus an optional, replaceable\nreference implementation.\n\n**0008** — every component declares what it requires, ordered by exposure, with a\ncomposite's set being the *union* of everything it invokes. CI gates on the set, not the\ntier number.\n\n**0009** — cumulative adoption levels, each a complete usable process rather than a teaser\nfor the next. Amended: three levels, not four. Who holds the key is a change of direction —\nOKFM driving a provider instead of your agent driving OKFM — so the credentialed case is a\n*variant* of level 3 and not another step up.\n\n**0013** — level 3 has three variants, split on who drives and who holds the key: your agent,\na model on hardware you own, a hosted provider. The middle one is named **Level 2+**, because\nwhat it costs an adopter is level 2's price — no key, no account, no bill — plus the loop.\nAmended to that name after this record argued the other way. The name is not a relocation:\nthe component still declares `needs-model`, still sits in the level 3 bundle, and\n`dev/check_levels.py` is untouched. The ladder measures what OKFM asks of you before you can\nstart; the name measures what it costs. Those were the same number until a model became free.\n\n**0012** — a concept is recognised anywhere, but read only where the config says. `exclude`\ndrops a folder inside a scan root; `include` adds a tree outside one. No project-wide sweep:\na scan wide enough to be convenient turns an adopter's templates and vendored documentation\ninto concepts on their first run.\n\n**0010** — OKFM's own repository becomes a mesh, so the project runs the thing it describes\ninstead of only specifying it. Amended: the registry names the bundles that exist and gains\nmembers as levels ship.\n\n**0003** — federation's negotiation half lands after the SugarPaws3d port; its addressing\nhalf already landed early under 0010. Phase order: baseline and addressing → distribution →\nthe port → negotiation.\n\n**0011** — a full web UI is planned and built last, as the natural consumer of everything\nbelow it. The web UI stays read-only regardless. The CLI and the UI are one surface: every\nmutation has exactly one implementation, the UI calls it, the CLI exposes it, and building\nthe UI is what reveals which commands are actually needed.\n\n**0006** — drift is observed during the build and cached; nothing resolves it at read time.\nTrust and staleness stay read-time because they are free. The cache stores observations, not\nverdicts, and a pointer that has never been observed reports `unknown` rather than defaulting\nto fresh.\n\n**0014** — a vocabulary overlay is a directory and the filename inside it names the family,\nso a pack's reason code can no longer become a legal predicate. `pack` is a path rather than\na bare name, because a name needs a search order and a search order fails silently. And\n`--in-place` is removed rather than implemented: it printed `mode : in-place` and mirrored\nanyway, and a build that edits your documents cannot also promise it never touches them.\nIn-place bundles are authored by hand and registered by path — which is what this bundle is.\n\n**0015** — the documented install put the tool, the config and the adopter's knowledge in one\ndirectory. That works on day one and has no upgrade path on day two: re-running the install\nnests a silent copy and updates nothing, and deleting first destroys every enriched concept.\nThree directories now — `okfm/`, `.okfm/`, `okfm.json` — so upgrading is a delete and a copy.\nBoth layouts still work and the build warns when it finds the fused one. This repository had\nthe safe arrangement all along and the README described the other, which is exactly the gap\n§13.7 exists to find.\n\n**0016** — three commands were documented and did not run: `validate` (the dispatcher knew it\nas `check`), `index` (which existed in no form while its config knobs shipped to every\nadopter and read nothing), and a phantom `init`. Both real ones are built, and the rule is\nwider than the fix — the documentation may not *name* a command that does not exist, in any\nform, because a reader scanning for something to type cannot tell a roadmap entry from an\ninstruction. `build.bundle_tags` came out of the same work: a claim the build cannot derive\nand a human cannot make stick has to be declared where the build reads it.\n\n**0017** — the viewer at the download root has this project's mesh baked in, which is the\npoint of it at Level 1 and exactly wrong once copied: an adopter saw 68 of somebody else's\nconcepts and somebody else's name as owner, in a file they had just added to their\nrepository. The drop-in now ships a blank one, generated from the shipped page and guarded so\nthe markup cannot drift, and the build seeds it on a first run. That is also what makes\nLevel 2 a single folder copy instead of two copies and a paragraph explaining the second.\n\n**0018** — bodies were fetched at click time, `file://` blocks fetch, and `file://` is the\nwhole of Level 1: the one thing Level 1 promises was the one thing the page could not do,\nand it recommended a `--serve` flag that never existed. Bodies are baked in now, guarded by\nthe same `--check` that already guarded every other embedded field. Four features taken from\nGoogle's reference viewer without taking its CDN dependency — inline markdown, search over\nbodies, four layouts including bundles-as-columns, node size by content. The contamination\nguard §21.3 left behind turned out to be a filename list for a file the corpus never\nincluded; it is structural now and verified by falsification.\n\n**0019** — `### Phase 3` vanished from the roadmap in a rewrite that ended one line short,\nleaving Phase 3's scope and exit criteria sitting under Phase 2's heading while twelve\nreferences pointed at a section that no longer existed. The numbered spine has been guarded\nsince the split; the corpus's other heading system, a name plus an ordinal, was guarded by\nnothing. Finding it surfaced the larger one: nine of eleven commands did not answer `--help`,\nfour of them did their whole job instead — `okfm config --help` wrote a config file — and the\ncheck meant to catch that probed commands by running them and accepted any exit code it\nliked. Help is answered in one place now, and the probe asserts the help text rather than\ntolerating an exit status.\n\n**0020** — approving a draft was four hand edits across two parts of a file, and the fourth,\nrepinning `okfm_captured`, is silent when forgotten and brings back the drift you just\nreviewed. It is a button. `okfm console --by human:<id>` serves the same page with an edit\nsurface that is dark unless it answers, so Level 1 from `file://` is untouched — checked by\nrequiring `EDIT.on` to have exactly one assignment, inside the probe. Overturns DR-0011 on\nthree counts with the reasons: the console is Level 2 because `needs: []` is the mechanical\ntest, it is one page rather than a third copy of the markup, and it edits bodies as well as\nmetadata. `concept_edit.py` splits a concept into keys and sections and round-trips all 74\nconcepts byte-identically.",
   "/docs/index.md": "# docs\n\n- [prior-art](prior-art.md)\n- [rationale](rationale.md)\n- [roadmap](roadmap.md)",
   "/docs/prior-art.md": "# OKFM — Ecosystem and Prior Art\n\nThis concept points at its source; it does not restate it. Add here only what\nthe source cannot say — why a choice was made, what was rejected, what would\nchange it. If there is nothing to add, the pointer alone is the right answer.",
   "/docs/rationale.md": "# OKFM — Rationale\n\nThis concept points at its source; it does not restate it. Add here only what\nthe source cannot say — why a choice was made, what was rejected, what would\nchange it. If there is nothing to add, the pointer alone is the right answer.",
@@ -2182,6 +2270,7 @@ const BOOTSTRAP = {
   "/level-2-build/log.md": "# 2026-08-01 — bundle created\n\nLevel 2 became a bundle. Every component it names already existed and had been run against a\nscratch project: `docs/architecture/`, `docs/guides/`, `src/`, and `node_modules/`, with no\nconfig. It found both doc directories, skipped the noise, wrote four concepts and two\nindexes, and left every source file untouched.\n\n# What the build taught the design\n\nThree rules in [extraction](extraction.md) exist because the corpus broke the previous\nversion, not because they were designed in:\n\n- Splitting on `## ` headings left the heading text as the first paragraph, which made seven\n  descriptions into bare heading names.\n- The not-prose filter matched `**`, which silently discarded every paragraph opening with a\n  bold lead-in — most of this project's own prose.\n- Extracted concepts were landing `status: stable`, contradicting the record that says\n  extraction produces drafts.\n\n# The drift bug worth remembering\n\nIn-place concepts reported drift on every file. The captured hash had been computed before\nfrontmatter was added, so a whole-file comparison could never match. The fix was to compare\nbodies when the concept and its source are the same file — see\n[drift observation](drift-observation.md).\n\nEleven false positives is the failure mode that matters most here: a drift signal nobody\nbelieves is worse than no drift signal.",
   "/level-2-build/mirror-mode.md": "# Mirror mode\n\nThe text is in [`docs/okfm-guide/level-2-build/mirror-mode.md`](../../docs/okfm-guide/level-2-build/mirror-mode.md). This concept\nrecords what that document is, what it needs to run, and where it sits in the\nlevel ladder — none of which the document itself states.",
   "/level-2-build/telemetry.md": "# Telemetry\n\nThe text is in [`docs/okfm-guide/level-2-build/telemetry.md`](../../docs/okfm-guide/level-2-build/telemetry.md). This concept\nrecords what that document is, what it needs to run, and where it sits in the\nlevel ladder — none of which the document itself states.",
+  "/level-2-build/the-console.md": "# Approving used to be four edits\n\nThis concept points at its source; it does not restate it. Add here only what\nthe source cannot say — why a choice was made, what was rejected, what would\nchange it. If there is nothing to add, the pointer alone is the right answer.",
   "/level-2-build/the-index.md": "# What an agent would actually be handed\n\nThis concept points at its source; it does not restate it. Add here only what\nthe source cannot say — why a choice was made, what was rejected, what would\nchange it. If there is nothing to add, the pointer alone is the right answer.",
   "/level-2-build/the-pipeline.md": "# The pipeline\n\nThe text is in [`docs/okfm-guide/level-2-build/the-pipeline.md`](../../docs/okfm-guide/level-2-build/the-pipeline.md). This concept\nrecords what that document is, what it needs to run, and where it sits in the\nlevel ladder — none of which the document itself states.",
   "/level-2-build/the-web-ui-bake.md": "# The web UI bake\n\nThe text is in [`docs/okfm-guide/level-2-build/the-web-ui-bake.md`](../../docs/okfm-guide/level-2-build/the-web-ui-bake.md). This concept\nrecords what that document is, what it needs to run, and where it sits in the\nlevel ladder — none of which the document itself states.",
@@ -2841,9 +2930,11 @@ function detail(){
       ${rel?`<dt>relations out</dt><dd><ul>${rel}</ul></dd>`:""}
       ${backs?`<dt>referenced by</dt><dd><ul>${backs}</ul></dd>`:""}
     </dl>
-    ${bodyBlock(c)}`;
+    ${bodyBlock(c)}
+    ${editBlock(c)}`;
 
   el.querySelectorAll("a[data-p]").forEach(a=>a.addEventListener("click",()=>select(a.dataset.p)));
+  wireEdit(el, c);
 }
 
 function bodyBlock(c){
@@ -2853,6 +2944,200 @@ function bodyBlock(c){
   return `<dt style="font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
     text-transform:uppercase;color:var(--slate-dim);margin-top:18px">body</dt>
     <div class="bodytext">${md(state.body)}</div>`;
+}
+
+/* ---------- the console: approve, and edit ------------------------------------
+   Everything here is DARK unless `okfm console` is answering on the same origin.
+   Opened from file:// the probe fails, `EDIT.on` stays false, and this page is the
+   read-only viewer it has always been — which is level 1's whole promise and is not
+   negotiable. See DR-0020.
+
+   The button that matters is Approve. Approving used to be four hand edits across two
+   parts of a file: change `status`, add `verified` with your handle and today's date, and
+   repin `okfm_captured` — the last of which is silent when forgotten and brings the drift
+   you just reviewed straight back. It is one click, and the click runs `revalidate --by
+   <you> --stable`, the command that already did all four.
+
+   Nothing here writes a field itself. Every mutation is an endpoint that shells out to the
+   same component the CLI runs. -------------------------------------------------------*/
+const EDIT = { on:false, by:null, queue:[], doc:null, note:null, busy:false };
+
+async function api(path, body){
+  const opt = body === undefined
+    ? {}
+    : { method:"POST", headers:{ "X-OKFM":"1", "Content-Type":"application/json" },
+        body: JSON.stringify(body) };
+  const r = await fetch(path, opt);
+  return r.json();
+}
+
+/* One probe, at startup. A page that cannot reach a console must look exactly like a page
+   that was never served — no disabled buttons, no "connect" affordance, nothing that
+   invites a reader at level 1 to go looking for a server they were never told to run. */
+async function probeConsole(){
+  try{
+    const p = await api("/api/ping");
+    if(!p || !p.ok) return;
+    EDIT.on = true; EDIT.by = p.by;
+    const b = document.getElementById("signedAs");
+    b.textContent = "signing as " + p.by; b.hidden = false;
+    document.getElementById("navReview").hidden = false;
+    await refreshQueue();
+    render();
+  }catch(e){ /* file://, or nothing listening. Read-only, silently and correctly. */ }
+}
+
+async function refreshQueue(){
+  try{ EDIT.queue = (await api("/api/queue")).queue || []; }
+  catch(e){ EDIT.queue = []; }
+}
+
+async function approve(p){
+  if(EDIT.busy) return;
+  EDIT.busy = true;
+  const res = await api("/api/approve", { p });
+  EDIT.busy = false;
+  EDIT.note = { ok: !!res.ok, text: res.ok
+    ? "Approved — status is stable, verified is stamped " + EDIT.by + ", captures repinned.\n"
+      + "Re-run the pipeline to refresh the graph."
+    : (res.error || res.output || "approve failed") };
+  await refreshQueue();
+  if(EDIT.doc && EDIT.doc.p === p) await openDoc(p);
+  render(); detail();
+}
+
+async function openDoc(p){
+  try{
+    const d = await api("/api/concept?p=" + encodeURIComponent(p));
+    EDIT.doc = d.error ? null : d;
+  }catch(e){ EDIT.doc = null; }
+}
+
+async function saveDoc(){
+  if(!EDIT.doc || EDIT.busy) return;
+  EDIT.busy = true;
+  const fields = {};
+  document.querySelectorAll("[data-field]").forEach(t => { fields[t.dataset.field] = t.value; });
+  const sections = (EDIT.doc.sections || []).map((s, i) => {
+    const t = document.querySelector(`[data-section="${i}"]`);
+    return { ...s, text: t ? t.value : s.text };
+  });
+  const res = await api("/api/save", { p: EDIT.doc.p, fields, sections });
+  EDIT.busy = false;
+  EDIT.note = { ok: !!res.ok, text: res.ok
+    ? "Saved, and the mesh still validates.\nRun the pipeline to rebuild the graph."
+    : "Saved, but validation FAILED:\n" + (res.error || res.output || "") +
+      "\n\nUndo puts the file back exactly as it was." };
+  await openDoc(EDIT.doc.p); await refreshQueue();
+  detail();
+}
+
+async function undoDoc(){
+  if(!EDIT.doc) return;
+  const res = await api("/api/undo", { p: EDIT.doc.p });
+  EDIT.note = { ok: !!res.ok, text: res.ok ? "Reverted to the text before the last save."
+                                           : (res.error || "nothing to undo") };
+  await openDoc(EDIT.doc.p); await refreshQueue(); detail();
+}
+
+async function runPipeline(){
+  if(EDIT.busy) return;
+  EDIT.busy = true; EDIT.note = { ok:true, text:"Running the pipeline…" }; detail();
+  const res = await api("/api/pipeline", {});
+  EDIT.busy = false;
+  EDIT.note = { ok: !!res.ok, text: (res.ok ? "Pipeline finished.\n" : "Pipeline FAILED.\n")
+                                     + "Reload to see the rebuilt graph." };
+  detail(); render();
+}
+
+function buildReview(){
+  const el = document.getElementById("review");
+  const q = EDIT.queue;
+  el.innerHTML = `
+    <h2>Review queue</h2>
+    <div class="sub">${q.length} concept${q.length===1?"":"s"} still <code>draft</code>.
+      Approve sets <code>status: stable</code>, stamps <code>verified</code> as
+      <b>${esc(EDIT.by||"")}</b>, and repins every <code>okfm_captured</code> — the step
+      that is easy to forget by hand and silent when forgotten.</div>
+    ${q.length ? q.map(r=>`
+      <div class="qrow">
+        <div class="t"><b>${esc(r.title)}</b><span>${esc(r.file)}</span></div>
+        <button class="ghostbtn" data-open="${esc(r.p)}">Open</button>
+        <button class="approve" data-approve="${esc(r.p)}">Approve</button>
+      </div>`).join("")
+      : `<div class="qempty">Nothing is waiting. Every concept is past <code>draft</code>.</div>`}
+    <div class="editrow" style="margin-top:18px">
+      <button class="ghostbtn" id="runPipe">Run the pipeline</button>
+    </div>
+    ${EDIT.note ? `<div class="saynote ${EDIT.note.ok?"ok":"bad"}">${esc(EDIT.note.text)}</div>` : ""}`;
+
+  el.querySelectorAll("[data-approve]").forEach(b =>
+    b.addEventListener("click", ()=>approve(b.dataset.approve)));
+  el.querySelectorAll("[data-open]").forEach(b =>
+    b.addEventListener("click", async ()=>{
+      location.hash = "graph"; await openDoc(b.dataset.open); select(b.dataset.open);
+    }));
+  const rp = document.getElementById("runPipe");
+  if(rp) rp.addEventListener("click", runPipeline);
+}
+
+/* The edit surface inside the detail panel. Frontmatter keys as raw text, body sections as
+   textareas. Raw text because there is no YAML parser on either side of this — see
+   `concept_edit.py`. A key you do not touch is returned byte for byte. */
+function editBlock(c){
+  if(!EDIT.on) return "";
+  const d = EDIT.doc && EDIT.doc.p === c.p ? EDIT.doc : null;
+  const isDraft = d ? (d.status||"").trim()==="draft" : false;
+
+  if(!d) return `<div class="editrow" style="margin-top:16px">
+      <button class="ghostbtn" id="loadEdit">Edit this concept</button>
+      <button class="approve" data-approve="${esc(c.p)}">Approve</button>
+    </div>`;
+
+  const fields = (d.fields||[]).map(f => f.locked
+    ? `<div style="margin-top:10px"><code style="font-family:var(--mono);font-size:10.5px">${esc(f.key)}</code>
+         <div class="locked">${esc(f.locked)}</div></div>`
+    : `<div style="margin-top:10px"><code style="font-family:var(--mono);font-size:10.5px">${esc(f.key)}</code>
+         <textarea class="fieldedit" data-field="${esc(f.key)}"
+           rows="${Math.min(8, f.raw.split("\n").length)}">${esc(f.raw)}</textarea></div>`).join("");
+
+  const secs = (d.sections||[]).map((s,i) =>
+    `<div style="margin-top:12px"><code style="font-family:var(--mono);font-size:10.5px">${
+       esc(s.level ? "#".repeat(s.level)+" "+s.heading : "(preamble)")}</code>
+       <textarea class="fieldedit" data-section="${i}" style="font-family:var(--sans);font-size:12px"
+         rows="${Math.min(14, Math.max(3, s.text.split("\n").length))}">${esc(s.text)}</textarea></div>`).join("");
+
+  return `
+    <dt style="font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+      color:var(--slate-dim);margin-top:22px">edit</dt>
+    <div class="editrow">
+      <button class="approve" data-approve="${esc(c.p)}" ${isDraft?"":"disabled"}>${
+        isDraft ? "Approve" : "Approved — already stable"}</button>
+      <button class="ghostbtn" id="saveEdit">Save changes</button>
+      ${d.undo?`<button class="ghostbtn" id="undoEdit">Undo last save</button>`:""}
+      <button class="ghostbtn" id="closeEdit">Close</button>
+    </div>
+    ${EDIT.note ? `<div class="saynote ${EDIT.note.ok?"ok":"bad"}">${esc(EDIT.note.text)}</div>` : ""}
+    <div style="margin-top:14px;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
+      text-transform:uppercase;color:var(--slate-dim)">frontmatter</div>
+    ${fields}
+    <div style="margin-top:18px;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
+      text-transform:uppercase;color:var(--slate-dim)">body</div>
+    ${secs}`;
+}
+
+function wireEdit(el, c){
+  if(!EDIT.on) return;
+  el.querySelectorAll("[data-approve]").forEach(b =>
+    b.addEventListener("click", ()=>approve(b.dataset.approve)));
+  const le = document.getElementById("loadEdit");
+  if(le) le.addEventListener("click", async ()=>{ EDIT.note=null; await openDoc(c.p); detail(); });
+  const se = document.getElementById("saveEdit");
+  if(se) se.addEventListener("click", saveDoc);
+  const ue = document.getElementById("undoEdit");
+  if(ue) ue.addEventListener("click", undoDoc);
+  const ce = document.getElementById("closeEdit");
+  if(ce) ce.addEventListener("click", ()=>{ EDIT.doc=null; EDIT.note=null; detail(); });
 }
 
 /* ---------- config panel ----------------------------------------------------
@@ -3385,6 +3670,8 @@ const PAGES = {
              lede:"Goal → evaluation → decision → experiment → outcome. Open loops are the point." },
   health:  { view:"stats",  label:"Health",
              lede:"Trust, staleness and drift across the whole mesh. Unfiltered, deliberately." },
+  review:  { view:"review", label:"Review",
+             lede:"Every draft, with one button that approves it. Only when the console is running." },
   config:  { view:"config", label:"Config",
              lede:"The level 2 build's okfm.json — edited here, run from a terminal." },
 };
@@ -3392,6 +3679,10 @@ const DEFAULT_PAGE = "graph";
 
 function pageFromHash(){
   const key = (location.hash || "").replace(/^#\/?/, "").toLowerCase();
+  // `#review` with no console answering is not a page — it is a bookmark from a session
+  // where one was running. Falling back beats rendering an empty queue that looks like
+  // "nothing to approve" when the truth is "nothing is listening".
+  if(key === "review" && !EDIT.on) return DEFAULT_PAGE;
   return PAGES[key] ? key : DEFAULT_PAGE;
 }
 
@@ -3416,7 +3707,8 @@ function render(){
 
   // With no concepts there is nothing to graph, but there is still a config to fix — which
   // is the whole reason an empty mesh is usually empty.
-  const live = !cf && !MESH_EMPTY;
+  const rv = page==="review";
+  const live = !cf && !rv && !MESH_EMPTY;
   const g = live && page==="graph", ch = live && page==="closure", st = live && page==="health";
   // `toggleAttribute`, never the `.hidden` property. `svg` is an SVGElement, and SVGElement
   // does not implement `hidden` — `svg.hidden = false` sets a meaningless JS property and
@@ -3424,9 +3716,9 @@ function render(){
   // for the whole life of this file; nobody noticed because `#graph{display:block}` was
   // beating the UA rule anyway, so it rendered under every other view instead of behind it.
   show("graph", g); show("legendNote", g);
-  show("chains", ch); show("stats", st); show("config", cf);
-  if(document.getElementById("emptyState")) show("emptyState", !cf);
-  if(g) buildGraph(); if(ch) buildChains(); if(st) buildStats();
+  show("chains", ch); show("stats", st); show("config", cf); show("review", rv);
+  if(document.getElementById("emptyState")) show("emptyState", !cf && !rv);
+  if(g) buildGraph(); if(ch) buildChains(); if(st) buildStats(); if(rv) buildReview();
   if(cf && !CFG.text) cLoad(JSON.stringify(CONFIG, null, 2), "okfm.json", "baked into this page", null);
   else if(cf) cRender();
 }
@@ -3490,6 +3782,11 @@ Float dollars drifted a few cents per thousand rows.</pre>
   } else {
     badge.textContent = "empty";
   }
+
+  // Probed after the page has drawn, never awaited before it. A console that is not running
+  // must cost the reader nothing — level 1 opens from disk and this request fails there by
+  // design, so blocking the first paint on it would trade the one property level 1 has.
+  probeConsole();
 
   if (!MESH.concepts.length){ MESH_EMPTY = true; showEmpty(); render(); return; }
   gauges(); filters(); detail(); render();

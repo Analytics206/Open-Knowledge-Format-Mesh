@@ -190,6 +190,34 @@ Re-running is safe: the build writes only concepts nothing else has touched.
 
 Python 3.13, standard library only. No install step, at this level or any other.
 
+### Approving what the build produced
+
+Everything the build writes is `draft`. Approving one used to mean opening the file and
+making four edits — `status`, a `verified` entry with your handle and the time, and a repin
+of every `okfm_captured`. The last is the one that matters and the one nobody remembers:
+skip it and the drift you just reviewed comes straight back.
+
+```bash
+python okfm/okfm.py console --by human:you
+```
+
+That serves the same viewer on `127.0.0.1` with an **Approve** button — a Review page listing
+every draft, one button each, and the same button on any concept. It runs
+`revalidate --by you --stable`, which is the command that already did all four.
+
+It also edits. A concept opens as its frontmatter keys and its body **sections**, each
+separately editable, with Save and a one-step Undo. `generated` and `sources` are shown but
+not editable: they record when a machine did something, and the commands that wrote them are
+the only things that change them.
+
+`--by` is required and must be `human:<id>` — the same refusal `revalidate` makes, because a
+web page does not turn a machine's edit into a person's. The server binds the loopback only
+and can read and write nothing outside your configured bundles.
+
+**The same file opened from disk has none of this.** No Review tab, no buttons, no fields —
+the edit surface only appears when the console answers, which it cannot on `file://`. That is
+what keeps Level 1 a folder and a browser.
+
 ### Three directories, and why they are three
 
 | | Holds | Yours to delete |

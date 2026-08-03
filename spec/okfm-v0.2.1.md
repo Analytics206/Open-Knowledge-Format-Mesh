@@ -1457,10 +1457,58 @@ passed staleness, unverified concepts, unreconciled rules, orphans.
 
 ### 14.7 Scope
 
-Read-only. Not an editor, not a search index, not a context source. Agents read the
-bundle; the web UI is for people. The health traversal also exports as JSON, so CI can
-fail on thresholds — open loops, drifted sources in `stable` concepts — without a
-browser.
+**Not a search index, not a context source.** Agents read the bundle; the page is for
+people. The health traversal also exports as JSON, so CI can fail on thresholds — open
+loops, drifted sources in `stable` concepts — without a browser.
+
+**Read-only from `file://`, and an editor when `okfm console` is answering.** This
+replaces the flat *"read-only, not an editor"* that stood here for most of the project's
+life. The rule it becomes is narrower and mechanically checked:
+
+> The page has exactly one switch for its edit surface — `probeConsole()` succeeding
+> against `/api/ping` — and `dev/check_viewer_template.py` fails if `EDIT.on` is assigned
+> anywhere else, in either viewer.
+
+Opened from disk the probe cannot succeed, so Level 1 is the read-only page it has always
+been: no Review tab, no badge, no buttons, no fields. Verified directly rather than
+asserted — see [DR-0020](../docs/decisions/0020-the-console-edits-concepts.md).
+
+The old rule was written to protect two things. The first was that writes need a runtime,
+which is still true and is exactly why the surface is dark until a runtime answers. The
+second was [DR-0011](../docs/decisions/0011-viewer-and-console.md)'s separate console
+artifact — which was decided *before* [DR-0017](../docs/decisions/0017-two-viewers.md)
+forced the viewer into two files and immediately required a generator and a CI check to
+stop two copies of the markup diverging. A third copy was the larger risk.
+
+### 14.8 The console
+
+`okfm console --by human:<id>` serves the page from the loopback with the edit surface on.
+
+| It does | Through |
+|---|---|
+| Approve a draft — `stable`, `verified` stamped, every `okfm_captured` repinned | `revalidate.py --stable` |
+| Re-validate without promoting | `revalidate.py` |
+| Edit frontmatter keys and body sections | `concept_edit.py` |
+| Undo the last save on a concept | the pre-edit text, held in memory |
+| Run the pipeline | `okfm.py` |
+
+**It never writes a concept field itself.** Every mutation runs the component the CLI runs,
+so a change cannot behave one way in a browser and another in a terminal.
+
+**`--by` is required and must be `human:<id>`**, the same refusal `revalidate` makes and for
+the same reason: a web page does not turn a machine's edit into a person's. The handle is in
+the masthead the whole time it runs.
+
+**The browser addresses concepts by mesh path only.** `/api/concept?p=/decisions/0001.md`,
+never a filesystem path — the server resolves it against the map `bake_web_ui` stamps into
+the page, from the same function. A path that is not a concept in a configured bundle is not
+rejected for looking dangerous; it does not exist, because nothing the client sends is ever
+joined to a directory. Mutations additionally require an `X-OKFM` header, which a
+cross-origin page cannot set without a preflight this server does not answer.
+
+`generated` and `sources` are not hand-editable in either surface. They record *when a
+machine did something*, and editing them is not an edit but a claim about history; the
+commands that made those records are the only things that change them.
 
 ---
 

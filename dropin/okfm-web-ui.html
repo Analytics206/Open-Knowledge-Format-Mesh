@@ -351,6 +351,49 @@
     section.stage{height:60vh}
   }
   @media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
+
+  /* ---- console: the edit surface -------------------------------------------
+     Dark unless `okfm console` is answering. Everything below is inert on
+     file://, which is where level 1 lives and stays read-only. */
+  body[data-page="review"] main{grid-template-columns:1fr}
+  body[data-page="review"] aside{display:none}
+  body[data-page="review"] section.stage{overflow-y:auto}
+  body[data-page="review"] .gauges{display:none}
+
+  .badge.live{background:var(--ok,#1f7a4d); color:#fff; border-color:transparent}
+
+  .review{padding:18px 22px; max-width:900px}
+  .review h2{font-size:15px; margin:0 0 4px}
+  .review .sub{color:var(--slate); font-size:12px; margin-bottom:18px}
+  .qrow{display:flex; align-items:center; gap:12px; padding:10px 12px;
+        border:1px solid var(--line); border-radius:7px; margin-bottom:8px;
+        background:var(--panel)}
+  .qrow .t{flex:1; min-width:0}
+  .qrow .t b{display:block; font-size:13px; font-weight:600}
+  .qrow .t span{font-family:var(--mono); font-size:10.5px; color:var(--slate-dim);
+                display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .qempty{color:var(--slate); font-size:13px; padding:18px 0}
+
+  button.approve{background:#1f7a4d; color:#fff; border:0; border-radius:6px;
+                 padding:7px 14px; font-size:12px; font-weight:600; cursor:pointer;
+                 font-family:inherit; white-space:nowrap}
+  button.approve:hover{filter:brightness(1.12)}
+  button.approve:disabled{opacity:.45; cursor:default; filter:none}
+  button.ghostbtn{background:transparent; color:var(--slate); border:1px solid var(--line);
+                  border-radius:6px; padding:6px 11px; font-size:11.5px; cursor:pointer;
+                  font-family:inherit; white-space:nowrap}
+  button.ghostbtn:hover{color:var(--ink); border-color:var(--slate-dim)}
+
+  .editrow{display:flex; gap:6px; margin:10px 0 2px; flex-wrap:wrap}
+  .fieldedit{width:100%; box-sizing:border-box; font-family:var(--mono); font-size:11px;
+             line-height:1.5; padding:7px 9px; border:1px solid var(--line); border-radius:6px;
+             background:var(--bg); color:var(--ink); resize:vertical}
+  .fieldedit:focus{outline:none; border-color:var(--slate-dim)}
+  .locked{color:var(--slate-dim); font-size:10.5px; font-style:italic}
+  .saynote{font-size:11.5px; padding:8px 10px; border-radius:6px; margin-top:10px;
+           white-space:pre-wrap; font-family:var(--mono); line-height:1.45}
+  .saynote.ok{background:rgba(31,122,77,.12); color:var(--ink)}
+  .saynote.bad{background:rgba(190,60,50,.14); color:var(--ink)}
 </style>
 </head>
 <body>
@@ -362,12 +405,14 @@
     <span class="badge" id="okfmVer">okfm 0.2.1</span>
     <span class="badge">okf 0.2</span>
     <span class="badge" id="genAt">derived view</span>
+    <span class="badge live" id="signedAs" hidden></span>
   </div>
   <div class="gauges" id="gauges"></div>
   <nav class="views" aria-label="Pages">
     <a href="#graph"   data-view="graph">Graph</a>
     <a href="#closure" data-view="chains">Closure</a>
     <a href="#health"  data-view="stats">Health</a>
+    <a href="#review"  data-view="review" id="navReview" hidden>Review</a>
     <a href="#config"  data-view="config">Config</a>
     <span class="lede" id="lede"></span>
   </nav>
@@ -385,6 +430,7 @@
     </div>
     <div class="chains" id="chains" hidden></div>
     <div class="stats" id="stats" hidden></div>
+    <div class="review" id="review" hidden></div>
     <div id="config" hidden></div>
   </section>
   <aside class="detail" id="detail"></aside>
@@ -1058,9 +1104,11 @@ function detail(){
       ${rel?`<dt>relations out</dt><dd><ul>${rel}</ul></dd>`:""}
       ${backs?`<dt>referenced by</dt><dd><ul>${backs}</ul></dd>`:""}
     </dl>
-    ${bodyBlock(c)}`;
+    ${bodyBlock(c)}
+    ${editBlock(c)}`;
 
   el.querySelectorAll("a[data-p]").forEach(a=>a.addEventListener("click",()=>select(a.dataset.p)));
+  wireEdit(el, c);
 }
 
 function bodyBlock(c){
@@ -1070,6 +1118,200 @@ function bodyBlock(c){
   return `<dt style="font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
     text-transform:uppercase;color:var(--slate-dim);margin-top:18px">body</dt>
     <div class="bodytext">${md(state.body)}</div>`;
+}
+
+/* ---------- the console: approve, and edit ------------------------------------
+   Everything here is DARK unless `okfm console` is answering on the same origin.
+   Opened from file:// the probe fails, `EDIT.on` stays false, and this page is the
+   read-only viewer it has always been — which is level 1's whole promise and is not
+   negotiable. See DR-0020.
+
+   The button that matters is Approve. Approving used to be four hand edits across two
+   parts of a file: change `status`, add `verified` with your handle and today's date, and
+   repin `okfm_captured` — the last of which is silent when forgotten and brings the drift
+   you just reviewed straight back. It is one click, and the click runs `revalidate --by
+   <you> --stable`, the command that already did all four.
+
+   Nothing here writes a field itself. Every mutation is an endpoint that shells out to the
+   same component the CLI runs. -------------------------------------------------------*/
+const EDIT = { on:false, by:null, queue:[], doc:null, note:null, busy:false };
+
+async function api(path, body){
+  const opt = body === undefined
+    ? {}
+    : { method:"POST", headers:{ "X-OKFM":"1", "Content-Type":"application/json" },
+        body: JSON.stringify(body) };
+  const r = await fetch(path, opt);
+  return r.json();
+}
+
+/* One probe, at startup. A page that cannot reach a console must look exactly like a page
+   that was never served — no disabled buttons, no "connect" affordance, nothing that
+   invites a reader at level 1 to go looking for a server they were never told to run. */
+async function probeConsole(){
+  try{
+    const p = await api("/api/ping");
+    if(!p || !p.ok) return;
+    EDIT.on = true; EDIT.by = p.by;
+    const b = document.getElementById("signedAs");
+    b.textContent = "signing as " + p.by; b.hidden = false;
+    document.getElementById("navReview").hidden = false;
+    await refreshQueue();
+    render();
+  }catch(e){ /* file://, or nothing listening. Read-only, silently and correctly. */ }
+}
+
+async function refreshQueue(){
+  try{ EDIT.queue = (await api("/api/queue")).queue || []; }
+  catch(e){ EDIT.queue = []; }
+}
+
+async function approve(p){
+  if(EDIT.busy) return;
+  EDIT.busy = true;
+  const res = await api("/api/approve", { p });
+  EDIT.busy = false;
+  EDIT.note = { ok: !!res.ok, text: res.ok
+    ? "Approved — status is stable, verified is stamped " + EDIT.by + ", captures repinned.\n"
+      + "Re-run the pipeline to refresh the graph."
+    : (res.error || res.output || "approve failed") };
+  await refreshQueue();
+  if(EDIT.doc && EDIT.doc.p === p) await openDoc(p);
+  render(); detail();
+}
+
+async function openDoc(p){
+  try{
+    const d = await api("/api/concept?p=" + encodeURIComponent(p));
+    EDIT.doc = d.error ? null : d;
+  }catch(e){ EDIT.doc = null; }
+}
+
+async function saveDoc(){
+  if(!EDIT.doc || EDIT.busy) return;
+  EDIT.busy = true;
+  const fields = {};
+  document.querySelectorAll("[data-field]").forEach(t => { fields[t.dataset.field] = t.value; });
+  const sections = (EDIT.doc.sections || []).map((s, i) => {
+    const t = document.querySelector(`[data-section="${i}"]`);
+    return { ...s, text: t ? t.value : s.text };
+  });
+  const res = await api("/api/save", { p: EDIT.doc.p, fields, sections });
+  EDIT.busy = false;
+  EDIT.note = { ok: !!res.ok, text: res.ok
+    ? "Saved, and the mesh still validates.\nRun the pipeline to rebuild the graph."
+    : "Saved, but validation FAILED:\n" + (res.error || res.output || "") +
+      "\n\nUndo puts the file back exactly as it was." };
+  await openDoc(EDIT.doc.p); await refreshQueue();
+  detail();
+}
+
+async function undoDoc(){
+  if(!EDIT.doc) return;
+  const res = await api("/api/undo", { p: EDIT.doc.p });
+  EDIT.note = { ok: !!res.ok, text: res.ok ? "Reverted to the text before the last save."
+                                           : (res.error || "nothing to undo") };
+  await openDoc(EDIT.doc.p); await refreshQueue(); detail();
+}
+
+async function runPipeline(){
+  if(EDIT.busy) return;
+  EDIT.busy = true; EDIT.note = { ok:true, text:"Running the pipeline…" }; detail();
+  const res = await api("/api/pipeline", {});
+  EDIT.busy = false;
+  EDIT.note = { ok: !!res.ok, text: (res.ok ? "Pipeline finished.\n" : "Pipeline FAILED.\n")
+                                     + "Reload to see the rebuilt graph." };
+  detail(); render();
+}
+
+function buildReview(){
+  const el = document.getElementById("review");
+  const q = EDIT.queue;
+  el.innerHTML = `
+    <h2>Review queue</h2>
+    <div class="sub">${q.length} concept${q.length===1?"":"s"} still <code>draft</code>.
+      Approve sets <code>status: stable</code>, stamps <code>verified</code> as
+      <b>${esc(EDIT.by||"")}</b>, and repins every <code>okfm_captured</code> — the step
+      that is easy to forget by hand and silent when forgotten.</div>
+    ${q.length ? q.map(r=>`
+      <div class="qrow">
+        <div class="t"><b>${esc(r.title)}</b><span>${esc(r.file)}</span></div>
+        <button class="ghostbtn" data-open="${esc(r.p)}">Open</button>
+        <button class="approve" data-approve="${esc(r.p)}">Approve</button>
+      </div>`).join("")
+      : `<div class="qempty">Nothing is waiting. Every concept is past <code>draft</code>.</div>`}
+    <div class="editrow" style="margin-top:18px">
+      <button class="ghostbtn" id="runPipe">Run the pipeline</button>
+    </div>
+    ${EDIT.note ? `<div class="saynote ${EDIT.note.ok?"ok":"bad"}">${esc(EDIT.note.text)}</div>` : ""}`;
+
+  el.querySelectorAll("[data-approve]").forEach(b =>
+    b.addEventListener("click", ()=>approve(b.dataset.approve)));
+  el.querySelectorAll("[data-open]").forEach(b =>
+    b.addEventListener("click", async ()=>{
+      location.hash = "graph"; await openDoc(b.dataset.open); select(b.dataset.open);
+    }));
+  const rp = document.getElementById("runPipe");
+  if(rp) rp.addEventListener("click", runPipeline);
+}
+
+/* The edit surface inside the detail panel. Frontmatter keys as raw text, body sections as
+   textareas. Raw text because there is no YAML parser on either side of this — see
+   `concept_edit.py`. A key you do not touch is returned byte for byte. */
+function editBlock(c){
+  if(!EDIT.on) return "";
+  const d = EDIT.doc && EDIT.doc.p === c.p ? EDIT.doc : null;
+  const isDraft = d ? (d.status||"").trim()==="draft" : false;
+
+  if(!d) return `<div class="editrow" style="margin-top:16px">
+      <button class="ghostbtn" id="loadEdit">Edit this concept</button>
+      <button class="approve" data-approve="${esc(c.p)}">Approve</button>
+    </div>`;
+
+  const fields = (d.fields||[]).map(f => f.locked
+    ? `<div style="margin-top:10px"><code style="font-family:var(--mono);font-size:10.5px">${esc(f.key)}</code>
+         <div class="locked">${esc(f.locked)}</div></div>`
+    : `<div style="margin-top:10px"><code style="font-family:var(--mono);font-size:10.5px">${esc(f.key)}</code>
+         <textarea class="fieldedit" data-field="${esc(f.key)}"
+           rows="${Math.min(8, f.raw.split("\n").length)}">${esc(f.raw)}</textarea></div>`).join("");
+
+  const secs = (d.sections||[]).map((s,i) =>
+    `<div style="margin-top:12px"><code style="font-family:var(--mono);font-size:10.5px">${
+       esc(s.level ? "#".repeat(s.level)+" "+s.heading : "(preamble)")}</code>
+       <textarea class="fieldedit" data-section="${i}" style="font-family:var(--sans);font-size:12px"
+         rows="${Math.min(14, Math.max(3, s.text.split("\n").length))}">${esc(s.text)}</textarea></div>`).join("");
+
+  return `
+    <dt style="font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+      color:var(--slate-dim);margin-top:22px">edit</dt>
+    <div class="editrow">
+      <button class="approve" data-approve="${esc(c.p)}" ${isDraft?"":"disabled"}>${
+        isDraft ? "Approve" : "Approved — already stable"}</button>
+      <button class="ghostbtn" id="saveEdit">Save changes</button>
+      ${d.undo?`<button class="ghostbtn" id="undoEdit">Undo last save</button>`:""}
+      <button class="ghostbtn" id="closeEdit">Close</button>
+    </div>
+    ${EDIT.note ? `<div class="saynote ${EDIT.note.ok?"ok":"bad"}">${esc(EDIT.note.text)}</div>` : ""}
+    <div style="margin-top:14px;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
+      text-transform:uppercase;color:var(--slate-dim)">frontmatter</div>
+    ${fields}
+    <div style="margin-top:18px;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
+      text-transform:uppercase;color:var(--slate-dim)">body</div>
+    ${secs}`;
+}
+
+function wireEdit(el, c){
+  if(!EDIT.on) return;
+  el.querySelectorAll("[data-approve]").forEach(b =>
+    b.addEventListener("click", ()=>approve(b.dataset.approve)));
+  const le = document.getElementById("loadEdit");
+  if(le) le.addEventListener("click", async ()=>{ EDIT.note=null; await openDoc(c.p); detail(); });
+  const se = document.getElementById("saveEdit");
+  if(se) se.addEventListener("click", saveDoc);
+  const ue = document.getElementById("undoEdit");
+  if(ue) ue.addEventListener("click", undoDoc);
+  const ce = document.getElementById("closeEdit");
+  if(ce) ce.addEventListener("click", ()=>{ EDIT.doc=null; EDIT.note=null; detail(); });
 }
 
 /* ---------- config panel ----------------------------------------------------
@@ -1602,6 +1844,8 @@ const PAGES = {
              lede:"Goal → evaluation → decision → experiment → outcome. Open loops are the point." },
   health:  { view:"stats",  label:"Health",
              lede:"Trust, staleness and drift across the whole mesh. Unfiltered, deliberately." },
+  review:  { view:"review", label:"Review",
+             lede:"Every draft, with one button that approves it. Only when the console is running." },
   config:  { view:"config", label:"Config",
              lede:"The level 2 build's okfm.json — edited here, run from a terminal." },
 };
@@ -1609,6 +1853,10 @@ const DEFAULT_PAGE = "graph";
 
 function pageFromHash(){
   const key = (location.hash || "").replace(/^#\/?/, "").toLowerCase();
+  // `#review` with no console answering is not a page — it is a bookmark from a session
+  // where one was running. Falling back beats rendering an empty queue that looks like
+  // "nothing to approve" when the truth is "nothing is listening".
+  if(key === "review" && !EDIT.on) return DEFAULT_PAGE;
   return PAGES[key] ? key : DEFAULT_PAGE;
 }
 
@@ -1633,7 +1881,8 @@ function render(){
 
   // With no concepts there is nothing to graph, but there is still a config to fix — which
   // is the whole reason an empty mesh is usually empty.
-  const live = !cf && !MESH_EMPTY;
+  const rv = page==="review";
+  const live = !cf && !rv && !MESH_EMPTY;
   const g = live && page==="graph", ch = live && page==="closure", st = live && page==="health";
   // `toggleAttribute`, never the `.hidden` property. `svg` is an SVGElement, and SVGElement
   // does not implement `hidden` — `svg.hidden = false` sets a meaningless JS property and
@@ -1641,9 +1890,9 @@ function render(){
   // for the whole life of this file; nobody noticed because `#graph{display:block}` was
   // beating the UA rule anyway, so it rendered under every other view instead of behind it.
   show("graph", g); show("legendNote", g);
-  show("chains", ch); show("stats", st); show("config", cf);
-  if(document.getElementById("emptyState")) show("emptyState", !cf);
-  if(g) buildGraph(); if(ch) buildChains(); if(st) buildStats();
+  show("chains", ch); show("stats", st); show("config", cf); show("review", rv);
+  if(document.getElementById("emptyState")) show("emptyState", !cf && !rv);
+  if(g) buildGraph(); if(ch) buildChains(); if(st) buildStats(); if(rv) buildReview();
   if(cf && !CFG.text) cLoad(JSON.stringify(CONFIG, null, 2), "okfm.json", "baked into this page", null);
   else if(cf) cRender();
 }
@@ -1707,6 +1956,11 @@ Float dollars drifted a few cents per thousand rows.</pre>
   } else {
     badge.textContent = "empty";
   }
+
+  // Probed after the page has drawn, never awaited before it. A console that is not running
+  // must cost the reader nothing — level 1 opens from disk and this request fails there by
+  // design, so blocking the first paint on it would trade the one property level 1 has.
+  probeConsole();
 
   if (!MESH.concepts.length){ MESH_EMPTY = true; showEmpty(); render(); return; }
   gauges(); filters(); detail(); render();
