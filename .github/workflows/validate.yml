@@ -74,6 +74,27 @@ jobs:
       - name: The README's own commands run
         run: python dev/check_readme.py
 
+      # The only code in the project that writes into a person's own prose. A save that
+      # changed nothing had to change nothing, and that was measured once over the concepts
+      # this repository happened to hold rather than enforced — with three defects sitting
+      # inside the module while a decision record described the property as proven.
+      - name: A save changes only what you edited
+        run: python dev/check_edit.py
+
+      # Approve, save and undo, against a real server over real HTTP, in a sandbox project.
+      # The console's reads were checked and its writes were not, which is the wrong half.
+      # Four of these are regressions: the Windows port hijack, the `human:` actor rule, the
+      # X-OKFM guard, and mesh-path resolution.
+      - name: The console writes what it says
+        run: python dev/check_console.py
+
+      # `generated.at` carries the build date, so the first run on any new day rewrote every
+      # concept the build owned — the whole mesh, in a project where nothing is `verified:`
+      # yet. This BACKDATES the built mesh between two builds: without that the check passes
+      # whether or not the bug is present, because two runs a second apart stamp the same day.
+      - name: A rebuild writes only what changed
+        run: python dev/check_rebuild.py
+
       # The Phase 2 exit, run rather than asserted: stand `examples/warehouse/` up in a
       # temp directory on pack + config alone, and check that dropin/ comes back
       # byte-identical AND that removing the pack makes the same mesh fail. The second half

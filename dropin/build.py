@@ -74,6 +74,44 @@ def _owned(dest: Path) -> bool:
     return (scalar(block, "generated") or "").find(MINE) >= 0
 
 
+# The two places the build records *when*, and the only two values that may differ between
+# two runs that found nothing new. Scoped to these exact shapes rather than "any date", so a
+# real change to a title or description that happens to contain a date is still a change.
+_STAMPS = (
+    re.compile(r'(generated: \{ by: "[^"]*", at: )[^}]*(\})'),
+    re.compile(r'(okfm_captured: \{ hash: "[^"]*", at: )[^}]*(\})'),
+)
+
+
+def _put(dest: Path, text: str) -> bool:
+    """Write a generated file, unless the only thing that changed is when it was written.
+
+    A rebuild that finds nothing new must change nothing. `generated.at` and
+    `okfm_captured.at` carry today's date, so without this every build on a *later day* than
+    the last one rewrites every concept the build still owns — a diff of pure timestamps
+    across the whole mesh, on a mesh where nothing happened.
+
+    That is worse than untidy. It is noise in exactly the place drift is supposed to be
+    legible, and it lands hardest on a new adopter: nothing in their mesh is `verified:` yet,
+    so the build owns all of it and every day's run is a full-mesh diff saying nothing.
+
+    Leaving the older stamp is also the more honest record. `generated.at` means *when this
+    was generated*, and a concept whose content is byte-identical was not regenerated today —
+    it was checked today, found unchanged, and left alone. The hash stays visible to the
+    comparison, so anything that actually changed still writes, with fresh stamps.
+    """
+    def blind(s: str) -> str:
+        for pat in _STAMPS:
+            s = pat.sub(r"\1<when>\2", s)
+        return s
+
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if dest.exists() and blind(dest.read_text(encoding="utf-8")) == blind(text):
+        return False
+    dest.write_text(text, encoding="utf-8", newline="\n")
+    return True
+
+
 def mirror(src_dir: Path, out_dir: Path, ctype: str, stamp: str, apply: bool,
            tags: list[str] | None = None) -> list[str]:
     """Write one concept per source document, pointing back at the source.
@@ -136,8 +174,7 @@ def mirror(src_dir: Path, out_dir: Path, ctype: str, stamp: str, apply: bool,
             "",
         ])
         if apply:
-            out_dir.mkdir(parents=True, exist_ok=True)
-            dest.write_text(concept, encoding="utf-8", newline="\n")
+            _put(dest, concept)
         written.append(f.name)
     if skipped:
         print(f"  note   {src_dir.name}/: skipped {', '.join(skipped)} — reserved names are "
@@ -163,8 +200,7 @@ def write_index(out_dir: Path, name: str, names: list[str], stamp: str, apply: b
         lines.append(f"- [{n[:-3]}]({n})")
     lines.append("")
     if apply:
-        out_dir.mkdir(parents=True, exist_ok=True)
-        (out_dir / "index.md").write_text("\n".join(lines), encoding="utf-8", newline="\n")
+        _put(out_dir / "index.md", "\n".join(lines))
 
 
 def _bundle_id(cfg: dict, out_dir: Path, fallback: str) -> str:
@@ -305,8 +341,7 @@ def write_mesh(cfg: dict, out_root: Path, mesh_name: str, built: list[tuple[str,
             "",
         ])
         if apply:
-            dest.parent.mkdir(parents=True, exist_ok=True)
-            dest.write_text(body, encoding="utf-8", newline="\n")
+            _put(dest, body)
         written += 1
 
     index = mesh_dir / "index.md"
@@ -328,8 +363,7 @@ def write_mesh(cfg: dict, out_root: Path, mesh_name: str, built: list[tuple[str,
             "",
         ]
         if apply:
-            mesh_dir.mkdir(parents=True, exist_ok=True)
-            index.write_text("\n".join(lines), encoding="utf-8", newline="\n")
+            _put(index, "\n".join(lines))
         written += 1
     return written
 

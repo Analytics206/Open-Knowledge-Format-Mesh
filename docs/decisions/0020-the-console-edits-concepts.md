@@ -94,11 +94,10 @@ edited as raw text — there is no YAML parser in `dropin/` and adding one would
 parser disagreeing with the first at the margins. A key you do not touch is returned byte for
 byte.
 
-Proven rather than claimed: **all 74 concepts in this repository parse and rewrite to
-byte-identical files.** That test found the one real bug in the module — the body rebuilder
-prepended a newline unconditionally, which put a one-line diff into the thirteen concepts
-whose body starts immediately after the closing `---`. A save that changes nothing must
-change nothing, or nobody can trust the saves that do.
+A save that changes nothing must change nothing, or nobody can trust the saves that do. That
+is enforced by `dev/check_edit.py` over every concept in the repository **and** over a table
+of deliberately awkward shapes. It was originally asserted here on the strength of the first
+half alone — see the amendment below, which is about why that was not enough.
 
 **The browser addresses concepts by mesh path only** — `/decisions/0001.md`, never a
 filesystem path. The server resolves it against a map built from the same `mesh_path()` the
@@ -141,6 +140,63 @@ second one refuses to start and says what is already using the port.
 
 Neither bug is about the console being wrong. Both are about a process that outlives what it
 was serving, which is a shape worth remembering the next time anything here starts a server.
+
+# Amendment 2026-08-03 — a corpus pass is a measurement, not a proof
+
+This record originally read: *"Proven rather than claimed: all 74 concepts in this repository
+parse and rewrite to byte-identical files."* The sentence was true and the word **proven** was
+not. It was a measurement, taken once, over the concepts that happened to exist that
+afternoon, and it was written down as an established property of the module.
+
+Three defects were live inside `concept_edit.py` while that sentence sat in this file. The
+corpus pass catches **none** of them — verified by running the new check against the old
+module, where all 80 concepts still came back byte-identical and every other assertion failed.
+
+**A `#` line inside a fenced code block was read as a heading.** Not a cosmetic misread: the
+section boundary landed between the fence's two halves, so opening the section above gave you
+text ending in an unclosed ```` ``` ```` and the section below started with orphaned code. Two
+halves of one code block, independently editable.
+
+This one was *live*, and on the file least able to afford it. `guide/first-concept.md` teaches
+a new author how to write their first concept by embedding an example concept in a
+```` ```markdown ```` block — and that example's `# Decision`, `# Why` and `# What would change
+this` headings were read as the document's own. Nine sections where there are six, on the page
+a first-time user is likeliest to open, in the one bundle whose entire job is to be read by
+somebody who does not yet know what a concept looks like.
+
+It is worth being precise about why the corpus pass missed it: the round-trip was *still
+byte-identical*, because a phantom heading is re-emitted as the same text it was read from. The
+file survived. What did not survive was the thing a person was shown — which is why the check
+now also asserts that no section ends with a fence still open, rather than only that the bytes
+come back.
+
+**A heading with no blank line after it gained one**, along with every body that ended without
+a trailing newline and every run of two blank lines. The fix is not another special case: the
+splitter now returns spans that *tile the body exactly*, so an unchanged section is written
+back as the bytes it was read from and no rebuilder has to guess at anyone's whitespace.
+
+**A frontmatter key was replaced by searching the block for its text.** With
+
+    description: "status: draft is the default"
+    status: draft
+
+a request to set `status: stable` rewrote the description and left `status` alone — silently,
+with the requested field untouched. The line span was being computed and discarded.
+
+The rule this breaks is one this project already had, and had written down: *prove it, then
+turn it into an invariant rather than leaving it as an afternoon's result.* It was applied to
+the Level 1 read-only property in the same commit and skipped here, and a decision record was
+where the skip got laundered into a fact. **A property stated in a decision record and held by
+nothing is worse than one nobody claimed**, because the next person reads it as settled and
+looks somewhere else for the bug.
+
+`dev/check_edit.py` and `dev/check_console.py` are the invariant now: 80 concepts, 16 awkward
+shapes chosen because they are hard rather than because they are present, and the console's
+approve/save/undo endpoints exercised against a real server in a sandbox project. Every
+assertion in both was falsified by breaking the behaviour it guards and confirming it names
+the right thing — including the two where it turned out the check *detected* the fault but
+reported it as a traceback three assertions later, which is a failure of the check, not of the
+code under it.
 
 # What would change this
 

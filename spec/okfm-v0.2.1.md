@@ -1508,7 +1508,31 @@ cross-origin page cannot set without a preflight this server does not answer.
 
 `generated` and `sources` are not hand-editable in either surface. They record *when a
 machine did something*, and editing them is not an edit but a claim about history; the
-commands that made those records are the only things that change them.
+commands that made those records are the only things that change them. The refusal is in
+`concept_edit.py`, not in the page, so the server declines the edit whether or not a browser
+offered it.
+
+**A save changes what you edited and nothing else** — not a blank line, not a trailing
+newline, not the spacing inside a fenced code block. This is the console's load-bearing
+property, because it is the only component that writes into a person's own prose rather than
+into a file a machine generated. It holds by construction: the body is split into spans that
+tile it exactly, so a section that did not change is written back as the bytes it was read
+from, and a frontmatter key is replaced by line span rather than by searching the block for
+its text.
+
+A **section boundary never falls inside a fenced code block.** A `#` line inside a fence is
+code, and treating it as a heading offers half a code block as an editable section with its
+closing delimiter in a different one.
+
+> All three are corrections. The rebuilder re-joined every section with separators of its own
+> choosing; the key search meant that with `description: "status: draft is the default"` above
+> it, setting `status: stable` rewrote the description and left `status` alone; and the fence
+> misread was live in this repository on `guide/first-concept.md`, which embeds an example
+> concept in a ```` ```markdown ```` block and had that example's headings read as its own.
+> `dev/check_edit.py` enforces all of it over every concept in the corpus **and** over a table
+> of deliberately awkward shapes. The corpus alone passed against all three, including the
+> fence misread — a phantom heading is re-emitted as the text it was read from, so the bytes
+> survive and only the person is misled, which is why byte-identity is not the only assertion.
 
 ---
 

@@ -178,5 +178,24 @@ surface that is dark unless it answers, so Level 1 from `file://` is untouched �
 requiring `EDIT.on` to have exactly one assignment, inside the probe. Overturns DR-0011 on
 three counts with the reasons: the console is Level 2 because `needs: []` is the mechanical
 test, it is one page rather than a third copy of the markup, and it edits bodies as well as
-metadata. `concept_edit.py` splits a concept into keys and sections and round-trips all 74
-concepts byte-identically.
+metadata. `concept_edit.py` splits a concept into keys and sections. **Amended 2026-08-03:**
+this record claimed the round-trip as proven on the strength of one pass over the repository's
+own concepts. That pass caught none of the three defects then live in the module — a `#`
+comment inside a code fence read as a heading and split the fence in half, a heading with no
+blank line under it gained one, and a frontmatter key was replaced by searching for its text,
+so setting `status` could rewrite a `description` that quoted it. The fence one was live, on
+`guide/first-concept.md` — the page that teaches a first-time author, which shows an example
+concept inside a ```` ```markdown ```` block and had that example's headings offered as
+editable sections of the outer document. `dev/check_edit.py` and `dev/check_console.py` hold
+the property now, over awkward shapes as well as real ones, and assert that no section ends
+with a fence still open — because the bytes round-tripped fine while a person was being shown
+nine sections of a six-section document.
+
+**0021** — the build stamped today's date into every concept it owned, so the first run on any
+new day rewrote the whole mesh with a diff of nothing but timestamps. Seven files here, where
+most concepts are protected by carrying a `verified:` entry; the entire mesh in a new adopter's
+project, where none of them do — laid directly over `.okfm/`, which is where drift is supposed
+to be the legible thing. A generated file is written only when its content changed, which is
+what §6.3 always said `generated.at` meant: *how current content was produced*. The check
+**backdates the mesh between the two builds**, because the obvious version — build twice, diff
+— passes whether or not the bug exists.

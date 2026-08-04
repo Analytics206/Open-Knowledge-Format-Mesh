@@ -1,10 +1,10 @@
 ---
 type: OKF Member
 title: decisions
-description: 20 concept(s) authored in place in docs/decisions.
+description: 21 concept(s) authored in place in docs/decisions.
 resource: ../../../docs/decisions
 status: draft
-generated: { by: "process:okfm-build", at: 2026-08-03T00:00:00Z }
+generated: { by: "process:okfm-build", at: 2026-08-04T00:00:00Z }
 okfm_member:
   answers: []          # what questions does this bundle answer? yours to write
   owner: null
