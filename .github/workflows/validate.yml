@@ -95,6 +95,13 @@ jobs:
       - name: A rebuild writes only what changed
         run: python dev/check_rebuild.py
 
+      # Level 3's enforcement, run against sixteen edits in a real git repository. Nothing
+      # exercised it before: two checks asserted `guard` answers --help and declares
+      # `needs: []`, and neither gave it a diff. `guard --allow verified` parsed the field
+      # name as a path and exited 0 having checked nothing.
+      - name: The tier guard enforces its own table
+        run: python dev/check_guard.py
+
       # The Phase 2 exit, run rather than asserted: stand `examples/warehouse/` up in a
       # temp directory on pack + config alone, and check that dropin/ comes back
       # byte-identical AND that removing the pack makes the same mesh fail. The second half

@@ -199,3 +199,15 @@ to be the legible thing. A generated file is written only when its content chang
 what §6.3 always said `generated.at` meant: *how current content was produced*. The check
 **backdates the mesh between the two builds**, because the obvious version — build twice, diff
 — passes whether or not the bug exists.
+
+**0022** — DR-0020 widened the console's edit surface onto the tier guard's protected fields
+and answered the objection by pointing at the guard. Nothing checked the guard. A coverage
+audit of `dropin/` found six modules with nothing behavioural on them, and opening the
+enforcement one first found five defects: `guard --allow verified` parsed the field name as a
+path, examined nothing and exited 0 with a reassuring message; a protected key inside a
+```` ```yaml ```` block in a *body* was flagged, so writing documentation trained people to
+reach for `--allow`; a deleted file's fields were blamed on its neighbour; `sources` was
+protected in DR-0008 and in the guard's own docstring but absent from its table; and an
+untracked file — the one case `CREATED_PROTECTED` exists for — was invisible in the default
+mode. The guard compares frontmatter now, through the same `split_frontmatter` the console
+edits with, and a pathspec matching nothing is an error rather than a clean pass.

@@ -9,11 +9,35 @@ DR-0008 says a `[model]` component may write `description`, `tags`, prose, and r
 codes — and may not write `verified`, `okfm_relations`, `status`, `type`, `title`,
 `sources`, or `okfm_captured`. Until now that was a rule in a document.
 
-This reads the diff and enforces it, which is what makes the human gate real rather than
-trusted. An agent that adds a `verified` entry it did not earn fails here, and the failure
-names the field.
+This enforces it, which is what makes the human gate real rather than trusted. An agent that
+adds a `verified` entry it did not earn fails here, and the failure names the field.
 
 `needs: []` — it reads git and frontmatter. No model, no network, no secrets.
+
+## It compares frontmatter, not diff text
+
+For each changed file it takes the concept's frontmatter **before** and **after** and compares
+them key by key, using `concept_edit.split_frontmatter` — the same function the console edits
+through, so the guard and the editor cannot disagree about what a top-level key is.
+
+That is a rewrite, and each of the three bugs it fixes came from reading `git diff` output as
+though a line beginning `+status:` meant a field had changed.
+
+**A protected key inside a fenced code block in a *body* was flagged.** The old parser tracked
+whether it was inside frontmatter and then never consulted the answer — and it could not have,
+because `--unified=0` emits no context lines, so the `---` boundaries are almost never in the
+diff to be seen. Every document in this repository that shows an example concept in a
+```` ```yaml ```` block tripped it. A guard that fires on writing documentation is a guard
+people learn to pass with `--allow`, which is the one failure this file cannot afford.
+
+**A deleted file's fields were blamed on another file.** git writes `+++ /dev/null` for a
+deletion, which does not match `+++ b/`, so the parser kept attributing lines to whichever
+file came before it. Deleting one concept reported four violations against an innocent
+neighbour, and the summary line miscounted the files.
+
+**A deleted concept is not checked at all, and says so.** There is no trust to be gained by a
+file that no longer exists, and pretending to check it would be the same lie in the other
+direction.
 
 ## What it cannot do
 
@@ -26,9 +50,9 @@ A **new** file is judged on whether it arrives already trusted, not on the full 
 list — see `CREATED_PROTECTED`.
 
 **Build output is not an edit pass.** A concept the deterministic build regenerated because
-its source changed carries a fresh `okfm_captured` in the diff, and flagging that made every
-routine rebuild look like a violation — which teaches people to pass `--allow=okfm_captured`
-as a matter of routine, and a guard people learn to pass is worse than no guard.
+its source changed carries a fresh `okfm_captured`, and flagging that made every routine
+rebuild look like a violation — which teaches people to pass `--allow=okfm_captured` as a
+matter of routine, and a guard people learn to pass is worse than no guard.
 
 The exemption is deliberately **one key on one kind of file**, not a skip. `okfm_captured` is
 the only field a rebuild churns for reasons that have nothing to do with a pass; `verified`,
@@ -45,7 +69,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-from okfm_core import PROJECT, frontmatter, reject_unknown, scalar, utf8_stdout
+from concept_edit import split_frontmatter
+from okfm_core import FM, PROJECT, reject_unknown, scalar, utf8_stdout
 
 utf8_stdout()
 
@@ -58,6 +83,11 @@ PROTECTED = {
     "status": "promotion out of draft is a human decision",
     "type": "drives everything downstream",
     "title": "drives everything downstream",
+    # Named in DR-0008 and in this file's own docstring for a long time, and absent from this
+    # table the whole time — so a pass could repoint a concept at a different document and
+    # nothing said anything. Compared with the captures inside it blinded, because those have
+    # their own rule and their own exemption directly below.
+    "sources": "what a concept is about — repointing it rewrites what the concept means",
     "okfm_captured": "refreshing it automatically erases the drift signal it carries",
 }
 
@@ -94,46 +124,125 @@ CREATED_PROTECTED = {
     "status": "a new concept starts `draft`; promotion is a separate human decision",
 }
 
-_FM_BOUND = re.compile(r"^[+-]---\s*$")
-_KEY = re.compile(r"^[+-](\s*)([\w_]+):[ \t]*(.*)$")
+_CAPTURE = re.compile(r"okfm_captured:\s*\{[^}]*\}")
 
 
-def is_build_output(path: str) -> bool:
+def _git(*args: str) -> subprocess.CompletedProcess:
+    return subprocess.run(["git", *args], cwd=PROJECT, capture_output=True, text=True,
+                          encoding="utf-8", errors="replace")
+
+
+def changed(staged: bool, paths: list[str]) -> list[tuple[str, str]]:
+    """`(status, path)` per changed markdown file. `--no-renames` so a move reads as D then A,
+    which is what it is for this purpose: one concept stops existing and another starts.
+
+    **Untracked files count as created.** `git diff` compares the index against the working
+    tree, and a file that has never been added is in neither — so in the default mode a
+    brand-new concept was invisible, and `CREATED_PROTECTED` only ever ran under `--staged`.
+    That is the whole case it exists for: a pass that *authors* a concept already carrying
+    `verified` has claimed a review that did not happen, and it sailed through unless somebody
+    happened to stage it first.
+    """
+    args = ["diff", "--name-status", "--no-renames"] + (["--cached"] if staged else [])
+    out = _git(*args, "--", *(paths or ["*.md"])).stdout
+    rows = []
+    for line in out.splitlines():
+        parts = line.split("\t")
+        if len(parts) >= 2 and parts[-1].endswith(".md"):
+            rows.append((parts[0][:1], parts[-1]))
+    if not staged:
+        others = _git("ls-files", "--others", "--exclude-standard", "--",
+                      *(paths or ["*.md"])).stdout
+        rows += [("A", f) for f in others.splitlines() if f.endswith(".md")]
+    return rows
+
+
+def tracks_anything(paths: list[str]) -> bool:
+    """Whether the named paths match any file git knows about, tracked or merely present.
+
+    Without this, `guard --allow verified` — the space-separated spelling, which is how
+    `revalidate --by human:you` works and therefore the one people reach for — parsed
+    `verified` as a **path**, scoped the diff to a file that does not exist, printed
+    "No markdown changes to check" and exited 0 while an agent-written `verified` sat in the
+    tree. A guard that examines nothing must not report success.
+    """
+    return not paths or bool(
+        _git("ls-files", "--cached", "--others", "--exclude-standard", "--", *paths).stdout.strip())
+
+
+def side(path: str, new: bool, staged: bool) -> str | None:
+    """The file's text on one side of the comparison, or None when it is not there."""
+    if not new:
+        r = _git("show", f"HEAD:{path}")
+        return r.stdout if r.returncode == 0 else None
+    if staged:
+        r = _git("show", f":{path}")
+        return r.stdout if r.returncode == 0 else None
+    f = PROJECT / path
+    return f.read_text(encoding="utf-8") if f.is_file() else None
+
+
+def block_of(text: str | None) -> str:
+    m = FM.match(text or "")
+    return m.group(1) if m else ""
+
+
+def keys(text: str | None) -> dict[str, str]:
+    """Top-level frontmatter keys to their exact text.
+
+    `split_frontmatter` is `concept_edit`'s on purpose. The guard and the editor disagreeing
+    about what counts as a top-level key would mean a field the console can write and the
+    guard cannot see, which is the shape every hole in this file has had.
+    """
+    return {e["key"]: e["raw"] for e in split_frontmatter(block_of(text))}
+
+
+def captures(text: str | None) -> list[str]:
+    """Every `okfm_captured` mapping, in file order.
+
+    Compared separately from `sources` because it is nested inside it and is the only
+    protected field that is not top-level — and because it is the one field with an exemption.
+    """
+    return _CAPTURE.findall(block_of(text))
+
+
+def is_build_output(text: str | None) -> bool:
     """Does the file, as it now stands, say the deterministic build wrote it?
 
-    Read from disk rather than from the diff: the build only restamps `generated.at` when the
-    day changes, so a rebuild on the same day rewrites `okfm_captured` and leaves `generated`
-    out of the diff entirely. There would be nothing to match on.
-
-    `verified` disqualifies a file regardless of the stamp, matching `build._owned()` exactly.
-    The build refuses to overwrite a verified concept, so one carrying both a `verified` entry
-    and a build stamp is not the build's any more — and the two functions answering the same
-    question differently is how an exemption becomes a hole.
+    `verified` disqualifies it regardless of the stamp, matching `build._owned()` exactly. The
+    build refuses to overwrite a verified concept, so one carrying both a `verified` entry and
+    a build stamp is not the build's any more — and two functions answering the same question
+    differently is how an exemption becomes a hole.
     """
-    f = PROJECT / path
-    if not f.is_file():
-        return False
-    block, _ = frontmatter(f)
+    block = block_of(text)
     if not block or re.search(r"^verified:", block, re.M):
         return False
     return BUILD in (scalar(block, "generated") or "")
-
-
-def diff(staged: bool, paths: list[str]) -> str:
-    args = ["git", "diff", "--unified=0"] + (["--cached"] if staged else [])
-    args += ["--", *(paths or ["*.md"])]
-    return subprocess.run(args, cwd=PROJECT, capture_output=True, text=True,
-                          encoding="utf-8").stdout
 
 
 def main() -> int:
     argv = sys.argv[1:]
     reject_unknown(argv, ("--staged", "--allow"), __doc__)
     staged = "--staged" in argv
-    allowed, paths = set(), []
-    for a in argv:
+    allowed: set[str] = set()
+    paths: list[str] = []
+    skip = False
+    for i, a in enumerate(argv):
+        if skip:
+            skip = False
+            continue
         if a.startswith("--allow="):
-            allowed |= {x.strip() for x in a.split("=", 1)[1].split(",")}
+            allowed |= {x.strip() for x in a.split("=", 1)[1].split(",") if x.strip()}
+        elif a == "--allow":
+            # Both spellings, because the other commands take `--by human:you` with a space
+            # and the mismatch turned a field name into a path. See `tracks_anything`.
+            if i + 1 < len(argv) and not argv[i + 1].startswith("-"):
+                allowed |= {x.strip() for x in argv[i + 1].split(",") if x.strip()}
+                skip = True
+            else:
+                print("error: --allow needs field names, e.g. --allow=verified,status",
+                      file=sys.stderr)
+                return 2
         elif not a.startswith("--"):
             # Naming paths scopes the check to the pass you are actually checking.
             # Without it the diff is "everything uncommitted", which mixes an enrichment
@@ -141,76 +250,88 @@ def main() -> int:
             # that fires on unrelated edits is a guard people learn to pass with --allow.
             paths.append(a)
 
-    text = diff(staged, paths)
-    if not text.strip():
-        print("No markdown changes to check"
-              + (" (staged)" if staged else " (working tree)"))
+    unknown = allowed - set(PROTECTED) - set(MUST_UPDATE) - set(CREATED_PROTECTED)
+    if unknown:
+        # An --allow naming a field nothing protects is either a typo or a belief about this
+        # tool that is wrong. Both are worth interrupting for; neither should quietly widen
+        # nothing while looking like it widened something.
+        print(f"error: --allow names {', '.join(sorted(unknown))}, which this guard does not "
+              f"protect", file=sys.stderr)
+        print(f"       it protects: {', '.join(sorted(set(PROTECTED) | set(MUST_UPDATE)))}",
+              file=sys.stderr)
+        return 2
+
+    if not tracks_anything(paths):
+        print(f"error: nothing tracked matches {', '.join(paths)}", file=sys.stderr)
+        print("       a guard that examined nothing must not report success", file=sys.stderr)
+        return 2
+
+    rows = changed(staged, paths)
+    where = " (staged)" if staged else " (working tree)"
+    if not rows:
+        print(f"No markdown changes to check{where}")
         return 0
 
-    violations, current, in_fm = [], None, False
-    files_touched, created, is_new = set(), set(), False
-    changed_keys: dict[str, set[str]] = {}
+    created = [p for s, p in rows if s == "A"]
+    removed = [p for s, p in rows if s == "D"]
+    modified = [p for s, p in rows if s not in ("A", "D")]
 
-    for line in text.splitlines():
-        if line.startswith("--- "):
-            # git writes `--- /dev/null` for an added file, immediately before its `+++`.
-            is_new = line.strip() == "--- /dev/null"
-            continue
-        if line.startswith("+++ b/"):
-            current = line[6:]
-            files_touched.add(current)
-            if is_new:
-                created.add(current)
-            is_new = in_fm = False
-            continue
-        if line.startswith("@@"):
-            # Hunk headers reset frontmatter tracking; a hunk starting mid-file is not
-            # inside frontmatter unless its own lines say so.
-            in_fm = False
-            continue
-        if _FM_BOUND.match(line):
-            in_fm = not in_fm
-            continue
+    violations: list[tuple[str, str, str, str]] = []
+    exempt = 0
 
-        m = _KEY.match(line)
-        if not m or not current:
-            continue
-        indent, key, value = m.group(1), m.group(2), m.group(3).strip()
-        changed_keys.setdefault(current, set()).add(key)
+    for path in created:
+        new = keys(side(path, True, staged))
+        for key, why in CREATED_PROTECTED.items():
+            if key in allowed or key not in new:
+                continue
+            value = new[key].split(":", 1)[1].strip().strip("\"'")
+            if key == "status" and value == "draft":
+                continue
+            violations.append((path, key, "written on a new file", why))
 
-        if current in created:
-            if key in CREATED_PROTECTED and key not in allowed:
-                if key != "status" or value.strip("\"'") != "draft":
-                    violations.append((current, key, "written on a new file",
-                                       CREATED_PROTECTED[key]))
-            continue
+    for path in modified:
+        old_t, new_t = side(path, False, staged), side(path, True, staged)
+        old, new = keys(old_t), keys(new_t)
+        if not old and not new:
+            continue                        # not a concept on either side
+        rebuilt = is_build_output(new_t)
 
-        # A protected key changed anywhere in a concept's frontmatter region. Indent is
-        # allowed to be non-zero: okfm_captured is nested inside a sources entry.
-        if key in PROTECTED and key not in allowed:
-            violations.append((current, key, "changed", PROTECTED[key]))
+        moved = set()
+        for key in set(old) | set(new):
+            a, b = old.get(key), new.get(key)
+            if key == "sources":
+                # The captures inside have their own rule and their own exemption; comparing
+                # them here as well would report a routine rebuild as a repointed source.
+                a, b = _CAPTURE.sub("<capture>", a or ""), _CAPTURE.sub("<capture>", b or "")
+            if a != b:
+                moved.add(key)
 
-    rebuilt = {p for p in files_touched - created if is_build_output(p)}
+        for key in sorted(moved & set(PROTECTED)):
+            if key not in allowed:
+                violations.append((path, key, "changed", PROTECTED[key]))
 
-    # A field a [model] pass owns changed and the stamp did not. Skipped on build output,
-    # where a rebuilt description and a drafted one are the same bytes and the tool would be
-    # guessing — `guard <paths>` is the answer to that, not a heuristic.
-    for path in sorted(files_touched - created - rebuilt):
-        keys = changed_keys.get(path, set())
-        if keys & set(MODEL_OWNED) and not keys & set(MUST_UPDATE) \
+        if captures(old_t) != captures(new_t) and "okfm_captured" not in allowed:
+            if rebuilt:
+                exempt += 1
+            else:
+                violations.append((path, "okfm_captured", "changed",
+                                   PROTECTED["okfm_captured"]))
+
+        # A field a [model] pass owns changed and the stamp did not. Skipped on build output,
+        # where a rebuilt description and a drafted one are the same bytes and the tool would
+        # be guessing — `guard <paths>` is the answer to that, not a heuristic.
+        if not rebuilt and moved & set(MODEL_OWNED) and not moved & set(MUST_UPDATE) \
                 and not allowed & set(MUST_UPDATE):
             violations.append((path, "generated", "not updated", NO_RESTAMP))
 
-    # The exemption, and all of it: one key, on files the build still owns. Everything else
-    # protected is checked on build output exactly as it is anywhere else.
-    exempt = sum(1 for path, key, *_ in violations
-                 if key == "okfm_captured" and path in rebuilt)
-    violations = [v for v in violations
-                  if not (v[1] == "okfm_captured" and v[0] in rebuilt)]
-
-    changed = len(files_touched) - len(created)
-    print(f"{changed} markdown file(s) changed, {len(created)} created"
-          + (" (staged)" if staged else " (working tree)"))
+    print(f"{len(modified)} markdown file(s) changed, {len(created)} created, "
+          f"{len(removed)} deleted{where}")
+    if removed:
+        # Named rather than passed over. A deleted concept cannot gain trust, so there is
+        # nothing here to enforce — but a check that declines to look at something has to say
+        # so, or a silent skip and a clean pass are the same green tick.
+        print(f"{len(removed)} deleted, not checked — a concept that no longer exists "
+              f"cannot have gained trust")
     if exempt:
         # Counted rather than dropped in silence: an exemption nobody can see is one nobody
         # can question, and this one runs on every rebuild.
