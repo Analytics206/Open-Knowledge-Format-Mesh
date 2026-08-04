@@ -166,6 +166,64 @@ def scalar(block: str, key: str):
     return v.replace('\\"', '"') or None
 
 
+_SRC_KEY = re.compile(r"^sources:[ \t]*$")
+_SRC_ITEM = re.compile(r"^[ \t]+-[ \t]")
+
+
+def _first(pattern: str, text: str):
+    m = re.search(pattern, text)
+    return m.group(1) if m else None
+
+
+def source_entries(block: str) -> list[dict]:
+    """Every entry under `sources:`, each with its OWN resource and its OWN capture.
+
+    One implementation, because there were three and they did not agree. `refresh` matched an
+    entry with a continuation group of `(?:\\n\\s+.*)*` — any indented line, including the next
+    `- id:` — so the first entry swallowed every entry after it and `_RESOURCE.search` then
+    returned the first resource found inside the lot. **A concept with two sources had exactly
+    one of them observed.** In this repository that was 17 of 59 pointers invisible to drift,
+    and the invisible one was systematically the second: the implementation file a concept
+    documents, which is the pointer most worth watching.
+
+    `revalidate` and `bake_web_ui` each had their own regex. Both were correct, both were
+    different, and the one that disagreed was the one that produced the signal — so
+    `revalidate` maintained pins that `refresh` never read.
+
+    Returns per entry: `id`, `resource`, `okfm_role`, `hash` (None when the pointer carries no
+    capture yet), `at`, `raw`, and `start`/`end` line indices into the block, so a caller
+    rewriting one entry cannot reach into another.
+    """
+    lines = block.splitlines()
+    head = next((i for i, ln in enumerate(lines) if _SRC_KEY.match(ln)), None)
+    if head is None:
+        return []
+    # The key owns the indented (or blank) lines beneath it, exactly as YAML block structure
+    # means at this level — the same rule `concept_edit.split_frontmatter` uses.
+    end = head + 1
+    while end < len(lines) and (not lines[end].strip() or lines[end][:1] in " \t"):
+        end += 1
+    bounds = [i for i in range(head + 1, end) if _SRC_ITEM.match(lines[i])]
+
+    out = []
+    for n, start in enumerate(bounds):
+        stop = bounds[n + 1] if n + 1 < len(bounds) else end
+        raw = "\n".join(lines[start:stop]).rstrip()
+        cap = re.search(r"okfm_captured:\s*\{([^}]*)\}", raw)
+        inner = cap.group(1) if cap else ""
+        out.append({
+            "id": _first(r"-\s*id:\s*(\S+)", raw),
+            "resource": _first(r"resource:\s*(\S+)", raw),
+            "okfm_role": _first(r"okfm_role:\s*(\S+)", raw),
+            "hash": _first(r'hash:\s*"?sha256:([0-9a-f]+)', inner),
+            "at": _first(r"at:\s*(\S+?)\s*$", inner.strip().rstrip(",")),
+            "raw": raw,
+            "start": start,
+            "end": stop,
+        })
+    return out
+
+
 def mesh_path(bundle_id: str, src: Path, f: Path) -> str:
     """How the mesh addresses a concept: `/<bundle>/<path inside it>`.
 

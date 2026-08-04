@@ -26,7 +26,8 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from okfm_core import PROJECT, frontmatter, reject_unknown, scalar, utf8_stdout
+from okfm_core import (PROJECT, frontmatter, reject_unknown, scalar, source_entries,
+                       utf8_stdout)
 # The same function `refresh.py` observes with, deliberately. If the re-pinner and the
 # observer computed a hash differently by so much as a line ending, re-validation would
 # write a value the next observation disagrees with, and drift would never clear.
@@ -34,20 +35,20 @@ from refresh import observe_file as observe
 
 utf8_stdout()
 
-# One source entry: its `resource`, then its captured hash. Matched together because a
-# concept can pin several sources and each one has its OWN hash.
+# Entries come from `okfm_core.source_entries`, which is also what `refresh` observes with and
+# `bake_web_ui` renders from. There were three parsers for this; `refresh`'s saw only the first
+# entry of each concept, so this command was faithfully repinning captures that nothing ever
+# read. Each entry is rewritten inside its own line span, so a concept that pins several
+# sources cannot have one entry's hash written into another's.
 #
-# It did not, once. This rewrote every `okfm_captured` in a concept to a single value —
-# the hash of the concept file itself — which is right only for an in-place concept, where
-# the file IS its source. For a mirrored concept it pinned the wrong file, and pinned the
-# same wrong file twice. Two different files cannot share a hash, so those pointers reported
-# drift forever and carried no signal at all. `check_bundles.py` now fails on the impossible
-# state, so this cannot go unnoticed again.
+# It did that once. This rewrote every `okfm_captured` in a concept to a single value — the
+# hash of the concept file itself — which is right only for an in-place concept, where the file
+# IS its source. For a mirrored concept it pinned the wrong file, and pinned the same wrong file
+# twice. Two different files cannot share a hash, so those pointers reported drift forever and
+# carried no signal at all. `check_bundles.py` now fails on the impossible state.
 #
 # `\.*` tolerates the trailing ellipsis on hashes written before full digests were stored.
 # They compare as prefixes; they rewrite as whole values.
-_SOURCE = re.compile(r"(resource:\s*(\S+)[\s\S]*?okfm_captured:\s*\{)([^}]*)(\})")
-# `\.*` tolerates the trailing ellipsis on hashes written before full digests were stored.
 _HASH = re.compile(r'(hash:\s*"?)sha256:[0-9a-f]+\.*')
 _AT = re.compile(r"(at:\s*)\d{4}-\d{2}-\d{2}")
 
@@ -99,34 +100,35 @@ def main() -> int:
             print(f"  skip  {raw} — not a concept")
             continue
 
-        missing = []
-
-        def repin(m: re.Match) -> str:
-            """Each source gets the hash of the file IT points at, and today's date.
-
-            `okfm_captured.at` is *when this hash was observed*. Rewriting the hash and
-            leaving the date is a capture that says it is older than it is, which is the
-            kind of small lie that makes the whole field untrustworthy.
-            """
-            target = (p.parent / m.group(2)).resolve()
+        # Each source gets the hash of the file IT points at, and today's date.
+        #
+        # `okfm_captured.at` is *when this hash was observed*. Rewriting the hash and leaving
+        # the date is a capture that says it is older than it is, which is the kind of small
+        # lie that makes the whole field untrustworthy.
+        missing, lines, n = [], block.splitlines(), 0
+        for entry in reversed(source_entries(block)):
+            # Reversed, so splicing one entry never moves the span of one not yet rewritten.
+            if not entry["resource"] or not entry["hash"]:
+                continue
+            target = (p.parent / entry["resource"]).resolve()
             if not target.is_file():
-                missing.append(m.group(2))
-                return m.group(0)
+                missing.append(entry["resource"])
+                continue
             # In-place concepts hash the body, matching how refresh observes them: the
             # capture was taken before frontmatter existed, so comparing whole files would
             # report drift forever.
             sha = observe(target, body_only=(target == p.resolve()))
-            inner = _HASH.sub(rf'\g<1>sha256:{sha}', m.group(3))
-            inner = _AT.sub(rf"\g<1>{today}", inner)
-            return f"{m.group(1)}{inner}{m.group(4)}"
+            fresh = _AT.sub(rf"\g<1>{today}", _HASH.sub(rf'\g<1>sha256:{sha}', entry["raw"]))
+            lines[entry["start"]:entry["end"]] = fresh.splitlines()
+            n += 1
 
-        new_block, n = _SOURCE.subn(repin, block)
-        if n == 0:
+        if n == 0 and not missing:
             print(f"  skip  {raw} — no okfm_captured to refresh")
             continue
         if missing:
             print(f"  skip  {raw} — cannot read {', '.join(missing)}", file=sys.stderr)
             continue
+        new_block = "\n".join(lines)
 
         entry = f'verified: {{ by: "{by}", at: {now} }}'
         if re.search(r"^verified:", new_block, re.M):

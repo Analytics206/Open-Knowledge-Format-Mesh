@@ -211,3 +211,13 @@ protected in DR-0008 and in the guard's own docstring but absent from its table;
 untracked file — the one case `CREATED_PROTECTED` exists for — was invisible in the default
 mode. The guard compares frontmatter now, through the same `split_frontmatter` the console
 edits with, and a pathspec matching nothing is an error rather than a clean pass.
+
+**0023** — the same audit reached `refresh`, which produces the drift signal every trust
+verdict derives from and which nothing had ever asserted a verdict of. Source entries had three
+parsers; `refresh`'s treated any indented line as a continuation, so the first `- id:` swallowed
+the rest and **only the first pointer of each concept was observed**. 17 of this mesh's 59 were
+invisible and 11 of those were drifted — every one a concept-to-implementation pointer, because
+a mirrored concept pins its document first and its code second. Drift was watching the prose and
+never the code. `okfm_core.source_entries` is the one parser now; the viewer and the observer
+agree about `unknown`; the cache drops observations for pointers the mesh no longer holds; and
+`max_age` stops being printed as though it governed a local file, which it never did.

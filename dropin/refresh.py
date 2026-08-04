@@ -12,15 +12,32 @@ Three states, never two:
 
     match      the source hashes to what `okfm_captured` recorded
     drifted    it does not
-    unknown    never observed, observed longer ago than `max_age`, or pinned to
-               no hash at all — the normal shape of a hand-written concept
+    unknown    the pointer needs a credential this tier does not have, resolves to nothing,
+               or is pinned to no hash at all — the normal shape of a hand-written concept
 
 `unknown` renders as unknown. Defaulting it to `match` would be a stored opinion wearing a
 computed one's clothes, which is the failure spec 3.4 exists to prevent.
 
+**Every pointer in a concept is observed, not the first one.** That reads as too obvious to
+state, and it is here because it was not true: the entry regex treated any indented line as a
+continuation, so the first `- id:` swallowed the ones after it and only its resource was ever
+read. In this repository that left **17 of 59 pointers invisible**, and the invisible one was
+systematically the second — the implementation file a concept documents, which is the pointer
+whose drift matters most. `okfm_core.source_entries` is now the one parser; `revalidate` and
+`bake_web_ui` had their own, both correct and both different, so `revalidate` was maintaining
+pins that nothing here ever read.
+
+**`max_age` does not govern a local file.** [DR-0006](../docs/decisions/0006-drift-cost-and-caching.md)
+sized it for resolvers that cost a network or database round trip, and hashing a file on disk
+costs microseconds — so a `file` pointer is re-read every run and is never *stale*, only
+*current*. It was being printed beside the cache path as though it were the rule the cache
+follows, which is a report of a policy that was not in force.
+
 **The cache stores observations, not verdicts.** *This pointer hashed to X at time T* does
 not become false later — it is the same kind of fact as `okfm_captured`, which the format
-already stores. The verdict is still derived, here, from the two of them.
+already stores. The verdict is still derived, here, from the two of them. Observations for
+pointers the mesh no longer holds are dropped, because the viewer bakes its drift state out
+of this file and a record nobody is asking about is not evidence of anything.
 
 `needs: []` for `file://` and relative paths. Live schemes (`sys://`, `store://`, `okf://`)
 need credentials and are `needs: [secrets]`; they are not implemented yet and report
@@ -34,17 +51,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from okfm_core import (HERE, PROJECT, configured_bundles, frontmatter,
-                       load_or_create_config, reject_unknown, scalar)
+                       load_or_create_config, reject_unknown, scalar, source_entries)
 
 CACHE = HERE / ".okfm-cache" / "observations.json"
 
 # Schemes this tier can resolve. Everything else needs a credential.
 LIVE_SCHEMES = ("sys://", "store://", "okf://", "http://", "https://")
-
-_SOURCE = re.compile(
-    r"^\s+- id:\s*(?P<id>\S+)(?P<rest>(?:\n\s+.*)*)", re.M)
-_RESOURCE = re.compile(r"^\s+resource:\s*(\S+)", re.M)
-_HASH = re.compile(r"hash:\s*\"?sha256:([0-9a-f]+)", re.M)
 
 _UNITS = {"s": 1, "m": 60, "h": 3600, "d": 86400}
 
@@ -98,14 +110,14 @@ def main() -> int:
     reject_unknown(sys.argv[1:], ("--check",), __doc__)
     check = "--check" in sys.argv
     _, cfg, _ = load_or_create_config(write=False)
-    drift_cfg = cfg.get("drift", {})
-    max_age = {k: parse_age(v) for k, v in (drift_cfg.get("max_age") or {}).items()}
-    default_age = max_age.get("file", 3600)
 
     now = datetime.now(timezone.utc)
     cache = load_cache()
     counts = {"match": 0, "drifted": 0, "unknown": 0}
     drifted, unresolvable, unpinned = [], [], []
+    # Every pointer the mesh holds right now, observed or not. Used to prune the cache, which
+    # otherwise only ever grew: a deleted concept's observations stayed in it forever.
+    live_keys: set[str] = set()
 
     for bid, root in sorted(configured_bundles(cfg).items()):
         if not root.is_dir():
@@ -117,13 +129,12 @@ def main() -> int:
             status = scalar(block, "status") or "stable"
             rid = f"{bid}/{f.relative_to(root).as_posix()}"
 
-            for m in _SOURCE.finditer(block):
-                entry = m.group("rest")
-                res = _RESOURCE.search(entry)
-                cap = _HASH.search(entry)
-                if not res:
+            for entry in source_entries(block):
+                uri, captured = entry["resource"], entry["hash"]
+                if not uri:
                     continue               # not a source pointer at all
-                if not cap:
+                live_keys.add(f"{uri}@{rid}")
+                if not captured:
                     # A pointer with no captured hash is `unknown`, not nothing. It used to be
                     # skipped entirely — counted in no bucket, invisible in the totals — which
                     # contradicted this file's own promise of three states and no defaulting.
@@ -132,9 +143,8 @@ def main() -> int:
                     # so an author cannot compute a sha256, and a fabricated one would report
                     # drift forever. Their bundle reported zero pointers and looked empty.
                     counts["unknown"] += 1
-                    unpinned.append(f"{rid} → {res.group(1)}")
+                    unpinned.append(f"{rid} → {uri}")
                     continue
-                uri, captured = res.group(1), cap.group(1)
 
                 if uri.startswith(LIVE_SCHEMES):
                     counts["unknown"] += 1
@@ -164,12 +174,25 @@ def main() -> int:
                     counts["drifted"] += 1
                     drifted.append((rid, uri, status))
 
+    # Keep only observations for pointers the mesh still holds. An entry for a concept that
+    # was deleted, or a source that was repointed, is a record of something that is no longer
+    # being asked about — and the viewer bakes its drift state out of this file.
+    dropped = len(cache)
+    cache = {k: v for k, v in cache.items() if k in live_keys}
+    dropped -= len(cache)
     save_cache(cache)
 
     total = sum(counts.values())
     print(f"observed {total} pointer(s) — "
           f"{counts['match']} match, {counts['drifted']} drifted, {counts['unknown']} unknown")
-    print(f"cache: {CACHE.relative_to(HERE)}  (max_age file={default_age}s)\n")
+    # `max_age` was printed here as though it governed. It does not, and for a local file it
+    # should not: DR-0006 sized it for resolvers that cost a round trip, and hashing a file on
+    # disk costs microseconds. Always re-observing beats maybe-re-observing when the saving is
+    # nothing — but a number printed beside the cache reads as the rule the cache follows.
+    print(f"cache: {CACHE.relative_to(HERE)}  ({len(cache)} observation(s), "
+          f"file pointers re-read every run)"
+          + (f", {dropped} stale entr{'y' if dropped == 1 else 'ies'} dropped" if dropped else "")
+          + "\n")
 
     for rid, uri, status in drifted:
         print(f"  DRIFTED  [{status}]  {rid}\n           → {uri}")

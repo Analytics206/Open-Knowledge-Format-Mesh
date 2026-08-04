@@ -102,6 +102,13 @@ jobs:
       - name: The tier guard enforces its own table
         run: python dev/check_guard.py
 
+      # Drift is what every trust verdict derives from, and no verdict it produced was ever
+      # asserted. Reading source entries had three implementations; the one that disagreed
+      # saw only the FIRST pointer of each concept, so 17 of this mesh's 59 were invisible —
+      # and a second pointer is systematically the implementation a concept documents.
+      - name: Every pointer is observed, and all three readers agree
+        run: python dev/check_refresh.py
+
       # The Phase 2 exit, run rather than asserted: stand `examples/warehouse/` up in a
       # temp directory on pack + config alone, and check that dropin/ comes back
       # byte-identical AND that removing the pack makes the same mesh fail. The second half

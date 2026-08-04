@@ -24,7 +24,7 @@ from pathlib import Path
 import config_schema
 from okfm_core import (HERE, PROJECT, configured_bundles, find_config,
                        load_or_create_config, mesh_path as _mesh_path, parse_relations,
-                       reject_unknown, actor_kind, actor_of, trust)
+                       reject_unknown, actor_kind, actor_of, source_entries, trust)
 
 ROOT = PROJECT
 CACHE = HERE / ".okfm-cache" / "observations.json"
@@ -95,7 +95,9 @@ def relations(block: str, bundle_root: str, bundle_ids: set[str] | None = None):
 # reader is told a human reviewed something.
 
 
-_CAPTURED = re.compile(r"resource:\s*(\S+)[\s\S]*?hash:\s*\"?sha256:([0-9a-f]+)")
+# The third of three source-entry parsers this project had. Source entries are read in one
+# place now — `okfm_core.source_entries` — because the one that disagreed was `refresh`, and
+# `refresh` is the one that produces the signal the other two render and repin.
 
 
 def load_observations() -> dict:
@@ -114,18 +116,31 @@ def drift_of(block: str, rid: str, obs: dict) -> int | None:
     """1 drifted, 0 match, None never observed.
 
     None is emitted as JSON `null` and the web UI renders it `unknown`. Defaulting it to
-    0 would be the stored-opinion failure spec §3.4 exists to prevent.
+    0 would be the stored-opinion failure spec §3.4 exists to prevent — and four lines below
+    that sentence, this did exactly that for a concept whose pointers carry no capture yet.
+    `refresh` calls such a pointer `unknown`; this rendered it **fresh**. The two disagreed
+    about the same concept, and the one a person looks at was the one being generous.
+
+    The distinction that resolves it: a concept with **no source pointers at all** cannot
+    drift, and 0 is a fact about it. A concept with pointers that are **not yet pinned** has
+    something to say and has not said it, which is `unknown`.
+
+    Entries come from `okfm_core.source_entries` — the same parser `refresh` observes with, so
+    the page cannot render a verdict about a pointer the observer never looked at.
     """
-    pairs = _CAPTURED.findall(block)
-    if not pairs:
-        return 0                            # nothing pinned means nothing to drift from
+    entries = [e for e in source_entries(block) if e["resource"]]
+    if not entries:
+        return 0                            # no pointers at all: nothing to drift from
+    pinned = [e for e in entries if e["hash"]]
+    if not pinned:
+        return None                         # pointers, none pinned — `unknown`, as refresh says
     seen_any = False
-    for uri, captured in pairs:
-        entry = obs.get(f"{uri}@{rid}")
+    for e in pinned:
+        entry = obs.get(f"{e['resource']}@{rid}")
         if not entry:
             continue
         seen_any = True
-        if not entry.get("observed", "").removeprefix("sha256:").startswith(captured):
+        if not entry.get("observed", "").removeprefix("sha256:").startswith(e["hash"]):
             return 1
     return 0 if seen_any else None
 
